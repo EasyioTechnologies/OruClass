@@ -1,6 +1,5 @@
 # oruClassrooms
 
-> **To weave. To fold. To connect.** 
 > The live-action workshop platform for teacher professional development.
 
 Welcome to oruClassrooms! This platform was built to solve a major problem in professional development: keeping a room full of people engaged, synchronized, and actively learning together. 
