@@ -1,0 +1,30 @@
+{
+  "name": "oruclassrooms",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "bun@1.3.3",
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "turbo run dev",
+    "api": "bun --cwd apps/api run dev",
+    "web": "bun --cwd apps/web run dev",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "db:migrate": "bun --cwd apps/api run migrate",
+    "db:generate": "bun --cwd apps/api run db:generate",
+    "format": "prettier --write ."
+  },
+  "devDependencies": {
+    "turbo": "^2.3.3",
+    "typescript": "^5.7.2",
+    "prettier": "^3.4.2",
+    "eslint": "^9.17.0"
+  },
+  "dependencies": {
+    "@dnd-kit/utilities": "^3.2.2"
+  }
+}

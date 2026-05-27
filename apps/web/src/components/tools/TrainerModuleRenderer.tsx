@@ -1,0 +1,37 @@
+"use client";
+
+import type { TrainingModule } from "@oruclass/types";
+import { TrainerQuiz } from "./TrainerQuiz";
+import { TrainerWhiteboard } from "./TrainerWhiteboard";
+import { TrainerReflectionJournal } from "./TrainerReflectionJournal";
+import { TrainerMatrix } from "./TrainerMatrix";
+import { TrainerStickyNotes } from "./TrainerStickyNotes";
+import { TrainerAttendance } from "./TrainerAttendance";
+
+interface Props {
+  module: TrainingModule;
+  trainingId: string;
+}
+
+const moduleComponentMap: Record<string, React.ComponentType<Props>> = {
+  attendance: TrainerAttendance,
+  quiz: TrainerQuiz,
+  whiteboard: TrainerWhiteboard,
+  reflection: TrainerReflectionJournal,
+  matrix: TrainerMatrix,
+  custom: TrainerStickyNotes,
+};
+
+export function TrainerModuleRenderer({ module, trainingId }: Props) {
+  const Component = moduleComponentMap[module.moduleType];
+
+  if (!Component) {
+    return (
+      <div className="flex items-center justify-center h-full text-gray-400 p-8">
+        <p>Unknown module type: {module.moduleType}</p>
+      </div>
+    );
+  }
+
+  return <Component module={module} trainingId={trainingId} />;
+}

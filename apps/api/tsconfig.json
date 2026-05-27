@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "paths": {
+      "@oruclass/types": ["../../packages/types/src/index.ts"],
+      "@oruclass/validators": ["../../packages/validators/src/index.ts"],
+      "@oruclass/utils": ["../../packages/utils/src/index.ts"]
+    }
+  },
+  "include": ["src/**/*"],
+  "exclude": ["node_modules", "dist"]
+}

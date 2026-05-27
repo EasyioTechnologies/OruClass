@@ -1,0 +1,162 @@
+import { Hono } from "hono";
+import { cors } from "hono/cors";
+import { logger as honoLogger } from "hono/logger";
+import { createServer } from "http";
+import { Server as SocketIOServer } from "socket.io";
+import type { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData } from "@oruclass/types";
+import { authRouter } from "./routes/auth";
+import { workspacesRouter } from "./routes/workspaces";
+import { trainingsRouter } from "./routes/trainings";
+import { modulesRouter } from "./routes/modules";
+import { daysRouter } from "./routes/days";
+import { participantsRouter } from "./routes/participants";
+import { responsesRouter } from "./routes/responses";
+import { analyticsRouter } from "./routes/analytics";
+import { invitationsRouter } from "./routes/invitations";
+import { sessionsRouter } from "./routes/sessions";
+import { errorHandler } from "./middleware/errorHandler";
+import { authRateLimiter, apiRateLimiter } from "./middleware/rateLimiter";
+import { registerSocketHandlers } from "./socket/handlers";
+import { setIO } from "./socket/io-instance";
+import { startExportWorker } from "./jobs/exportAnalytics.job";
+import { startDigestWorker } from "./jobs/sendSessionDigest.job";
+import { connectRedis } from "./db/redis";
+import { verifyJWT } from "./utils/jwt";
+import { logger } from "./utils/logger";
+
+const PORT = Number(process.env.PORT ?? 3001);
+const ALLOWED_ORIGIN = process.env.WEB_URL ?? "http://localhost:3000";
+
+// ─── Hono App ─────────────────────────────────────────────────────────────────
+const app = new Hono();
+
+app.use("*", honoLogger());
+app.use(
+  "*",
+  cors({
+    origin: (origin) => {
+      if (!origin || process.env.NODE_ENV !== "production") return origin || "http://localhost:3000";
+      return ALLOWED_ORIGIN;
+    },
+    credentials: true,
+    allowHeaders: ["Content-Type", "Authorization", "X-Workspace-ID"],
+  }),
+);
+
+app.get("/health", (c) => c.json({ status: "ok", ts: Date.now() }));
+
+app.use("/api/auth/*", authRateLimiter);
+app.use("/api/*", apiRateLimiter);
+
+app.route("/api/auth", authRouter);
+app.route("/api/workspaces", workspacesRouter);
+app.route("/api/workspaces/:workspaceId/trainings", trainingsRouter);
+app.route("/api/workspaces/:workspaceId/trainings", modulesRouter);
+app.route("/api/workspaces/:workspaceId/trainings", daysRouter);
+app.route("/api/workspaces/:workspaceId/trainings", responsesRouter);
+app.route("/api/workspaces/:workspaceId/trainings", analyticsRouter);
+app.route("/api/workspaces/:workspaceId/trainings", sessionsRouter);
+app.route("/api", participantsRouter);
+app.route("/api/workspaces/:workspaceId", invitationsRouter);
+
+app.onError(errorHandler);
+
+// ─── HTTP Server + Socket.IO ──────────────────────────────────────────────────
+const httpServer = createServer(async (req, res) => {
+  try {
+    const bodyBuffer = await new Promise<Buffer | undefined>((resolve, reject) => {
+      if (req.method === "GET" || req.method === "HEAD") {
+        return resolve(undefined);
+      }
+      const chunks: Buffer[] = [];
+      req.on("data", (chunk) => chunks.push(chunk));
+      req.on("end", () => resolve(Buffer.concat(chunks)));
+      req.on("error", reject);
+    });
+
+    const response = await app.fetch(
+      new Request(`http://localhost${req.url}`, {
+        method: req.method,
+        headers: req.headers as HeadersInit,
+        body: bodyBuffer,
+      })
+    );
+
+    res.writeHead(response.status, Object.fromEntries(response.headers));
+    
+    if (response.body) {
+      response.body.pipeTo(
+        new WritableStream({
+          write(chunk) {
+            res.write(chunk);
+          },
+          close() {
+            res.end();
+          },
+        })
+      ).catch((err) => {
+        logger.error(err, "Stream pipe error");
+        res.end();
+      });
+    } else {
+      res.end();
+    }
+  } catch (err) {
+    logger.error(err, "Server request error");
+    if (!res.headersSent) res.writeHead(500);
+    res.end("Internal Server Error");
+  }
+});
+
+export const io = new SocketIOServer<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(httpServer, {
+  cors: { 
+    origin: (origin, callback) => {
+      if (!origin || process.env.NODE_ENV !== "production") return callback(null, true);
+      callback(null, ALLOWED_ORIGIN);
+    },
+    credentials: true 
+  },
+  pingTimeout: 20000,
+  pingInterval: 25000,
+});
+setIO(io);
+
+// Verify JWT at socket handshake — sets socket.data.userId from token, not client payload
+io.use((socket, next) => {
+  const cookieHeader = socket.handshake.headers["cookie"] ?? "";
+  const cookieToken = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/)?.[1] ?? null;
+
+  const token =
+    (socket.handshake.auth as { token?: string }).token ??
+    socket.handshake.headers["authorization"]?.replace("Bearer ", "") ??
+    cookieToken;
+
+  if (!token) return next(new Error("Authentication required"));
+
+  try {
+    const payload = verifyJWT(token);
+    socket.data.userId = payload.sub;
+    socket.data.userEmail = payload.email;
+    next();
+  } catch {
+    next(new Error("Invalid token"));
+  }
+});
+
+registerSocketHandlers(io);
+
+startExportWorker();
+startDigestWorker();
+connectRedis().catch((err) => logger.error(err, "Redis connect failed"));
+
+httpServer.listen(PORT, "0.0.0.0", () => {
+  logger.info(`API server running on http://0.0.0.0:${PORT}`);
+  logger.info(`Socket.IO listening on ws://0.0.0.0:${PORT}`);
+});
+
+export { app };

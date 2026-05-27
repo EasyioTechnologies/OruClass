@@ -1,0 +1,23 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(bun add:*)",
+      "Bash(xargs grep:*)",
+      "Bash(ls F:/OruClass/apps/web/src/app/trainings/[id]/)",
+      "Bash(xargs ls:*)",
+      "Bash(ls -1 apps/api/src/routes/sessions.ts apps/web/src/hooks/useSessions.ts apps/web/src/components/live/SessionDashboard.tsx apps/web/src/app/trainings/*/sessions/page.tsx)",
+      "Read(//tmp/**)",
+      "Bash(ls F:/OruClass/apps/web/src/app/trainings/[id]/sessions/)",
+      "Bash(bun run:*)",
+      "Bash(docker exec oruclass-postgres-1:*)",
+      "Bash(python3 -c \"import json,sys; j=json.load\\(sys.stdin\\); [print\\(e['tag']\\) for e in j['entries']]\")",
+      "Bash(docker exec:*)",
+      "Bash(bun -e ':*)",
+      "Bash(node:*)",
+      "Bash(ls F:/OruClass/bun.lock*)",
+      "Bash(docker build:*)",
+      "Bash(docker system:*)",
+      "Bash(docker info:*)"
+    ]
+  }
+}
