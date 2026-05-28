@@ -154,11 +154,7 @@ authRouter.post("/logout", async (c) => {
 
 // Delegate everything else to better-auth (Google OAuth flow)
 authRouter.all("/*", async (c) => {
-  try {
-    return await getAuth().handler(c.req.raw);
-  } catch (e: any) {
-    return c.json({ error: String(e), stack: e?.stack }, 500);
-  }
+  return getAuth().handler(c.req.raw);
 });
 
 export { getAuth as auth };
