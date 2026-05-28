@@ -5,14 +5,22 @@ import { trainingParticipants, trainings } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { joinTokenToCode } from "@oruclass/utils";
+import { ScratchpadUpdateSchema, JoinCodeSchema } from "@oruclass/validators";
+import { parseBody } from "../utils/validators";
+import { trainingInWorkspace } from "../utils/workspaceAssets";
 
 export const participantsRouter = new Hono();
 
 participantsRouter.use("*", authMiddleware);
 
-// GET /trainings/:trainingId/participants
+// GET /trainings/:trainingId/participants — workspace-scoped
 participantsRouter.get("/:trainingId/participants", workspaceTenantMiddleware, async (c) => {
   const { trainingId } = c.req.param();
+  const workspaceId = c.get("workspaceId") as string;
+
+  if (!(await trainingInWorkspace(trainingId, workspaceId))) {
+    return c.json({ error: "Training not found in workspace" }, 404);
+  }
 
   const participants = await db.query.trainingParticipants.findMany({
     where: eq(trainingParticipants.trainingId, trainingId),
@@ -30,16 +38,16 @@ participantsRouter.get("/participant/sessions", async (c) => {
     where: eq(trainingParticipants.userId, userId),
     with: {
       training: {
-        with: { creator: true }
-      }
+        with: { creator: true },
+      },
     },
     orderBy: (tp, { desc }) => [desc(tp.joinedAt)],
   });
 
-  const trainingsList = participations.map(p => ({
+  const trainingsList = participations.map((p) => ({
     ...p.training,
     participantJoinedAt: p.joinedAt,
-    participantConnectionStatus: p.connectionStatus
+    participantConnectionStatus: p.connectionStatus,
   }));
 
   return c.json(trainingsList);
@@ -51,15 +59,12 @@ participantsRouter.get("/participant/trainings/:id", async (c) => {
   const { id } = c.req.param();
 
   const participation = await db.query.trainingParticipants.findFirst({
-    where: and(
-      eq(trainingParticipants.userId, userId),
-      eq(trainingParticipants.trainingId, id)
-    ),
+    where: and(eq(trainingParticipants.userId, userId), eq(trainingParticipants.trainingId, id)),
     with: {
       training: {
-        with: { creator: true, modules: { orderBy: (m, { asc }) => [asc(m.position)] } }
-      }
-    }
+        with: { creator: true, modules: { orderBy: (m, { asc }) => [asc(m.position)] } },
+      },
+    },
   });
 
   if (!participation) return c.json({ error: "Not found or not participating" }, 404);
@@ -67,15 +72,16 @@ participantsRouter.get("/participant/trainings/:id", async (c) => {
   return c.json(participation.training);
 });
 
-// POST /join/code — look up a live training by 6-digit session code
+// POST /join/code — look up a live training by 6-digit session code.
+// We scan only live/connecting trainings, then compare the deterministic
+// joinTokenToCode mapping in JS. Set is small in practice; if it grows
+// hot, denormalize a session_code column on trainings with a partial index.
 participantsRouter.post("/join/code", async (c) => {
-  const { code } = await c.req.json<{ code: string }>();
-  if (!code || !/^\d{6}$/.test(code)) {
-    return c.json({ error: "Code must be 6 digits" }, 400);
-  }
+  const { code } = await parseBody(c, JoinCodeSchema);
 
   const liveTrainings = await db.query.trainings.findMany({
     where: inArray(trainings.sessionStatus, ["live", "connecting"]),
+    columns: { joinToken: true },
   });
 
   const match = liveTrainings.find((t) => joinTokenToCode(t.joinToken) === code);
@@ -95,33 +101,21 @@ participantsRouter.post("/join/:joinToken", async (c) => {
 
   if (!training) return c.json({ error: "Training not found" }, 404);
   if (training.sessionStatus !== "live" && training.sessionStatus !== "connecting") {
-    return c.json({ error: "Training is not accepting participants", sessionStatus: training.sessionStatus }, 400);
+    return c.json(
+      { error: "Training is not accepting participants", sessionStatus: training.sessionStatus },
+      400,
+    );
   }
 
-  const existing = await db.query.trainingParticipants.findFirst({
-    where: and(
-      eq(trainingParticipants.trainingId, training.id),
-      eq(trainingParticipants.userId, userId),
-    ),
-  });
-
-  if (!existing) {
-    await db.insert(trainingParticipants).values({
-      trainingId: training.id,
-      userId,
-      connectionStatus: "online",
+  // Upsert participant: insert if missing, mark online if returning.
+  // Using ON CONFLICT keeps it one round-trip and atomic.
+  await db
+    .insert(trainingParticipants)
+    .values({ trainingId: training.id, userId, connectionStatus: "online" })
+    .onConflictDoUpdate({
+      target: [trainingParticipants.trainingId, trainingParticipants.userId],
+      set: { connectionStatus: "online", lastHeartbeat: new Date() },
     });
-  } else {
-    await db
-      .update(trainingParticipants)
-      .set({ connectionStatus: "online", lastHeartbeat: new Date() })
-      .where(
-        and(
-          eq(trainingParticipants.trainingId, training.id),
-          eq(trainingParticipants.userId, userId),
-        ),
-      );
-  }
 
   return c.json({ training });
 });
@@ -143,6 +137,7 @@ participantsRouter.post("/:trainingId/participants/heartbeat", async (c) => {
 
   return c.json({ success: true });
 });
+
 // GET /:trainingId/participants/me/scratchpad
 participantsRouter.get("/:trainingId/participants/me/scratchpad", async (c) => {
   const { trainingId } = c.req.param();
@@ -156,7 +151,7 @@ participantsRouter.get("/:trainingId/participants/me/scratchpad", async (c) => {
     columns: {
       personalNotes: true,
       personalWhiteboard: true,
-    }
+    },
   });
 
   if (!participation) {
@@ -170,15 +165,11 @@ participantsRouter.get("/:trainingId/participants/me/scratchpad", async (c) => {
 participantsRouter.put("/:trainingId/participants/me/scratchpad", async (c) => {
   const { trainingId } = c.req.param();
   const userId = c.get("userId") as string;
-  const body = await c.req.json<{ personalNotes?: string; personalWhiteboard?: Record<string, unknown> }>();
+  const body = await parseBody(c, ScratchpadUpdateSchema);
 
-  const updateData: Record<string, any> = {};
+  const updateData: { personalNotes?: string; personalWhiteboard?: Record<string, unknown> } = {};
   if (body.personalNotes !== undefined) updateData.personalNotes = body.personalNotes;
   if (body.personalWhiteboard !== undefined) updateData.personalWhiteboard = body.personalWhiteboard;
-
-  if (Object.keys(updateData).length === 0) {
-    return c.json({ success: true });
-  }
 
   await db
     .update(trainingParticipants)

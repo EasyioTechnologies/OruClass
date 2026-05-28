@@ -5,10 +5,10 @@ import { useParams, useRouter } from "next/navigation";
 import { useTrainings, useUpdateTrainingStatus } from "@/hooks/useTrainings";
 import { Play, StopCircle, ArrowRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import { cn } from "@oruclass/utils";
+import type { Training } from "@oruclass/types";
 
 
-function ActiveSessionWidget({ workspaceId, training }: { workspaceId: string, training: any }) {
+function ActiveSessionWidget({ workspaceId, training }: { workspaceId: string; training: Training }) {
   const router = useRouter();
   const updateStatus = useUpdateTrainingStatus(workspaceId, training.id);
 

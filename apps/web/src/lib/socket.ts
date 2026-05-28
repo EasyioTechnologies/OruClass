@@ -6,11 +6,9 @@ type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 let socket: AppSocket | null = null;
 
 const getBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    return ""; // use relative path, Next.js will proxy it
-  }
-  return process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
+  return process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 };
+
 
 export function getSocket(): AppSocket {
   if (!socket) {

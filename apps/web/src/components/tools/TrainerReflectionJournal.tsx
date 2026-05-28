@@ -1,8 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
-import { useWorkspaceStore } from "@/store/workspace";
+import { useModuleResponses } from "@/hooks/useModuleResponses";
 import type { TrainingModule } from "@oruclass/types";
 
 interface Props {
@@ -11,20 +9,7 @@ interface Props {
 }
 
 export function TrainerReflectionJournal({ module, trainingId }: Props) {
-  const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
-
-  const { data: responses, isLoading } = useQuery({
-    queryKey: ["module-responses", trainingId, module.id],
-    queryFn: async () => {
-      const res = await apiClient.get(
-        `/api/workspaces/${workspaceId}/trainings/${trainingId}/modules/${module.id}/responses`,
-        { headers: { "X-Workspace-ID": workspaceId } }
-      );
-      return Array.isArray(res.data) ? res.data : [];
-    },
-    staleTime: 0,
-    refetchInterval: 5000,
-  });
+  const { data: responses, isLoading } = useModuleResponses(trainingId, module.id);
 
   return (
     <div className="flex h-full flex-col p-6">
@@ -45,22 +30,26 @@ export function TrainerReflectionJournal({ module, trainingId }: Props) {
           </div>
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
-            {responses?.map((r: any, i: number) => (
-              <div key={i} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex flex-col">
-                <div className="font-semibold text-sm mb-3 text-brand-600 flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center text-brand-700">
-                    {(r.user?.name?.[0] ?? "A").toUpperCase()}
+            {responses?.map((r) => {
+              const text = r.responseData.type === "reflection" ? r.responseData.text : "";
+              const when = r.createdAt ?? r.submittedAt;
+              return (
+                <div key={r.id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex flex-col">
+                  <div className="font-semibold text-sm mb-3 text-brand-600 flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-full bg-brand-100 flex items-center justify-center text-brand-700">
+                      {(r.user?.name?.[0] ?? "A").toUpperCase()}
+                    </div>
+                    {r.user?.name ?? "Anonymous Participant"}
                   </div>
-                  {r.user?.name ?? "Anonymous Participant"}
+                  <p className="text-gray-700 text-sm whitespace-pre-wrap flex-1">
+                    {text || "No content"}
+                  </p>
+                  <div className="mt-4 text-xs text-gray-400 text-right">
+                    {new Date(when).toLocaleTimeString()}
+                  </div>
                 </div>
-                <p className="text-gray-700 text-sm whitespace-pre-wrap flex-1">
-                  {(r.responseData as any)?.text || "No content"}
-                </p>
-                <div className="mt-4 text-xs text-gray-400 text-right">
-                  {new Date(r.createdAt).toLocaleTimeString()}
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>

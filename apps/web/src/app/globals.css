@@ -37,3 +37,10 @@
     font-family: var(--font-sans);
   }
 }
+
+@utility hide-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}

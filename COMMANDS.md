@@ -1,45 +1,28 @@
 # Commands
 
-> Run everything from `F:\OruClass` root.
+> Run from `F:\OruClass` root.
 
-## Start
+## Run
 
 ```bash
-# Docker (postgres + redis) — run first
-docker compose up postgres redis -d
-
-# API on port 3001
-bun run api
-
-# Web on port 3000
-bun run web
-
-# Both at once
-bun run dev
+docker compose up postgres redis -d   # infra first (postgres 5433, redis 6379)
+bun run dev                           # backend + frontend together
+bun run api                           # backend only (http://localhost:3001)
+bun run web                           # frontend only (http://localhost:3000)
 ```
 
-## Stop / Kill
+## Kill
 
 ```bash
-# Stop docker
-docker compose stop
-
-# Kill port 3001 (if "port in use" error)
-npx kill-port 3001
-
-# Kill port 3000
-npx kill-port 3000
+npx kill-port 3001                    # backend
+npx kill-port 3000                    # frontend
+npx kill-port 3000 3001               # both
+docker compose stop                   # postgres + redis
+docker compose down                   # stop + remove containers
 ```
 
-## Database
+## Restart
 
 ```bash
-bun run db:migrate
-bun run db:generate
-```
-
-## Install
-
-```bash
-bun install
+npx kill-port 3000 3001 && bun run dev
 ```

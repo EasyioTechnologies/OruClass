@@ -50,12 +50,14 @@ app.use("/api/*", apiRateLimiter);
 
 app.route("/api/auth", authRouter);
 app.route("/api/workspaces", workspacesRouter);
+
+trainingsRouter.route("/", modulesRouter);
+trainingsRouter.route("/", daysRouter);
+trainingsRouter.route("/", responsesRouter);
+trainingsRouter.route("/", analyticsRouter);
+trainingsRouter.route("/", sessionsRouter);
 app.route("/api/workspaces/:workspaceId/trainings", trainingsRouter);
-app.route("/api/workspaces/:workspaceId/trainings", modulesRouter);
-app.route("/api/workspaces/:workspaceId/trainings", daysRouter);
-app.route("/api/workspaces/:workspaceId/trainings", responsesRouter);
-app.route("/api/workspaces/:workspaceId/trainings", analyticsRouter);
-app.route("/api/workspaces/:workspaceId/trainings", sessionsRouter);
+
 app.route("/api", participantsRouter);
 app.route("/api/workspaces/:workspaceId", invitationsRouter);
 

@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useSocket } from "@/hooks/useSocket";
 import type { TrainingModule, StrokeData } from "@oruclass/types";
+import { AdvancedWhiteboard } from "./AdvancedWhiteboard";
 
 interface Props {
   module: TrainingModule;
@@ -10,43 +11,47 @@ interface Props {
 }
 
 export function ParticipantWhiteboard({ module, trainingId }: Props) {
-  const canvasRef = useRef<HTMLCanvasElement>(null);
   const socket = useSocket();
-
-  const drawStroke = (ctx: CanvasRenderingContext2D, stroke: StrokeData) => {
-    if (stroke.points.length < 2) return;
-    ctx.beginPath();
-    ctx.strokeStyle = stroke.color;
-    ctx.lineWidth = stroke.width;
-    ctx.lineCap = "round";
-    ctx.moveTo(stroke.points[0].x, stroke.points[0].y);
-    ctx.lineTo(stroke.points[1].x, stroke.points[1].y);
-    ctx.stroke();
-  };
+  const [strokes, setStrokes] = useState<StrokeData[]>([]);
 
   useEffect(() => {
-    const handler = ({ stroke }: { stroke: StrokeData }) => {
-      const ctx = canvasRef.current?.getContext("2d");
-      if (ctx) drawStroke(ctx, stroke);
+    if (!socket) return;
+    
+    const handleUpdate = ({ stroke }: { stroke: StrokeData }) => {
+      setStrokes((prev) => [...prev, stroke]);
     };
-    socket.on("draw:update", handler);
-    return () => { socket.off("draw:update", handler); };
+
+    const handleClear = () => {
+      setStrokes([]);
+    };
+
+    socket.on("draw:update", handleUpdate);
+    socket.on("draw:clear", handleClear);
+
+    return () => {
+      socket.off("draw:update", handleUpdate);
+      socket.off("draw:clear", handleClear);
+    };
   }, [socket]);
 
   return (
-    <div className="flex flex-col h-full p-4 gap-3">
-      <div className="flex items-center gap-3">
-        <h2 className="font-bold text-gray-900 flex-1">{module.title}</h2>
-        <span className="text-sm text-gray-400 bg-gray-100 px-3 py-1 rounded-full font-medium">
+    <div className="flex flex-col h-[calc(100vh-100px)] min-h-[500px] bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+      <div className="flex items-center gap-3 px-6 py-4 bg-gray-50/50 border-b border-gray-100">
+        <h2 className="font-bold text-gray-800 flex-1">{module.title}</h2>
+        <span className="text-xs px-2.5 py-1 bg-gray-100 text-gray-600 font-semibold rounded-full">
           View Only
         </span>
       </div>
-      <canvas
-        ref={canvasRef}
-        width={800}
-        height={500}
-        className="flex-1 w-full border border-gray-200 rounded-lg bg-white"
-      />
+      
+      <div className="flex-1 relative bg-[#f3f3f3]">
+        <AdvancedWhiteboard
+          strokes={strokes}
+          onStrokeEnd={() => {}} // readonly, won't be called
+          onClear={() => {}}
+          readonly={true}
+          className="w-full h-full"
+        />
+      </div>
     </div>
   );
 }

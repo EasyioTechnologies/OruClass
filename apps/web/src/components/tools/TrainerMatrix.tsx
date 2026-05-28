@@ -1,8 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
-import { useWorkspaceStore } from "@/store/workspace";
+import { useModuleResponses } from "@/hooks/useModuleResponses";
 import type { TrainingModule } from "@oruclass/types";
 
 interface Props {
@@ -11,22 +9,10 @@ interface Props {
 }
 
 export function TrainerMatrix({ module, trainingId }: Props) {
-  const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const rows = (module.config?.rows as string[]) ?? ["Row 1", "Row 2"];
   const cols = (module.config?.columns as string[]) ?? ["Column 1", "Column 2"];
 
-  const { data: responses, isLoading } = useQuery({
-    queryKey: ["module-responses", trainingId, module.id],
-    queryFn: async () => {
-      const res = await apiClient.get(
-        `/api/workspaces/${workspaceId}/trainings/${trainingId}/modules/${module.id}/responses`,
-        { headers: { "X-Workspace-ID": workspaceId } }
-      );
-      return Array.isArray(res.data) ? res.data : [];
-    },
-    staleTime: 0,
-    refetchInterval: 5000,
-  });
+  const { data: responses, isLoading } = useModuleResponses(trainingId, module.id);
 
   return (
     <div className="flex h-full flex-col p-6">
@@ -46,10 +32,10 @@ export function TrainerMatrix({ module, trainingId }: Props) {
           </div>
         ) : (
           <div className="space-y-6">
-            {responses?.map((r: any, i: number) => {
-              const cells = (r.responseData as any)?.cells || {};
+            {responses?.map((r) => {
+              const cells: Record<string, string> = r.responseData.type === "matrix" ? r.responseData.cells : {};
               return (
-                <div key={i} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
+                <div key={r.id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
                   <div className="font-semibold text-sm mb-4 text-brand-600">
                     {r.user?.name ?? "Anonymous Participant"}
                   </div>

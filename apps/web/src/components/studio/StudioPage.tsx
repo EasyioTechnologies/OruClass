@@ -6,11 +6,11 @@ import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
-import { useModules, useReorderModules, useUpdateModule } from "@/hooks/useModules";
+import { useModules, useReorderModules, useUpdateModule, useDuplicateModule, useAssignModuleToDay } from "@/hooks/useModules";
 import { useDays, useCreateDay, useDeleteDay, useUpdateDay } from "@/hooks/useDays";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useWorkspaceMembers } from "@/hooks/useWorkspace";
-import { useAssignFacilitator, useTraining, useInviteFacilitator } from "@/hooks/useTrainings";
+import { useAssignFacilitator, useTraining, useInviteFacilitator, useTrainings } from "@/hooks/useTrainings";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import type { TrainingModule, TrainingRole, ModuleConfig, AttendanceField, TrainingDay } from "@oruclass/types";
@@ -40,6 +40,8 @@ import {
   Calendar,
   Pencil,
   AlertTriangle,
+  Copy,
+  MoveRight,
 } from "lucide-react";
 
 // ─── Module type config ──────────────────────────────────────────────────────
@@ -197,31 +199,62 @@ function ModuleConfigEditor({
             </select>
             {q.type === "multiple_choice" && (
               <div className="space-y-1.5 pl-1">
-                {(q.options ?? []).map((opt, oi) => (
-                  <div key={oi} className="flex gap-1.5">
-                    <div className="w-4 h-4 mt-1 rounded-full border-2 border-gray-300 shrink-0" />
-                    <input
-                      value={opt}
-                      onChange={(e) => {
-                        const opts = (q.options ?? []).map((o, i) => (i === oi ? e.target.value : o));
-                        const updated = questions.map((x, i) => (i === qi ? { ...x, options: opts } : x));
-                        onChange({ ...config, questions: updated });
-                      }}
-                      className="flex-1 px-2 py-1 border border-gray-200 bg-white rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brand-500"
-                      placeholder={`Option ${oi + 1}`}
-                    />
-                    <button
-                      onClick={() => {
-                        const opts = (q.options ?? []).filter((_, i) => i !== oi);
-                        const updated = questions.map((x, i) => (i === qi ? { ...x, options: opts } : x));
-                        onChange({ ...config, questions: updated });
-                      }}
-                      className="text-gray-300 hover:text-red-500 transition-colors"
-                    >
-                      <X size={12} />
-                    </button>
-                  </div>
-                ))}
+                {(q.options ?? []).map((opt, oi) => {
+                  const isCorrect = !!opt && q.correctAnswer === opt;
+                  return (
+                    <div key={oi} className="flex gap-1.5 items-center">
+                      <button
+                        type="button"
+                        title={isCorrect ? "Correct answer" : "Mark as correct"}
+                        onClick={() => {
+                          const updated = questions.map((x, i) =>
+                            i === qi ? { ...x, correctAnswer: opt } : x,
+                          );
+                          onChange({ ...config, questions: updated });
+                        }}
+                        className={`w-4 h-4 rounded-full border-2 shrink-0 transition-colors ${
+                          isCorrect ? "bg-emerald-500 border-emerald-500" : "border-gray-300 hover:border-emerald-400"
+                        }`}
+                      />
+                      <input
+                        value={opt}
+                        onChange={(e) => {
+                          const opts = (q.options ?? []).map((o, i) => (i === oi ? e.target.value : o));
+                          const updated = questions.map((x, i) =>
+                            i === qi
+                              ? {
+                                  ...x,
+                                  options: opts,
+                                  correctAnswer: x.correctAnswer === opt ? e.target.value : x.correctAnswer,
+                                }
+                              : x,
+                          );
+                          onChange({ ...config, questions: updated });
+                        }}
+                        className="flex-1 px-2 py-1 border border-gray-200 bg-white rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        placeholder={`Option ${oi + 1}`}
+                      />
+                      <button
+                        onClick={() => {
+                          const opts = (q.options ?? []).filter((_, i) => i !== oi);
+                          const updated = questions.map((x, i) =>
+                            i === qi
+                              ? {
+                                  ...x,
+                                  options: opts,
+                                  correctAnswer: x.correctAnswer === opt ? undefined : x.correctAnswer,
+                                }
+                              : x,
+                          );
+                          onChange({ ...config, questions: updated });
+                        }}
+                        className="text-gray-300 hover:text-red-500 transition-colors"
+                      >
+                        <X size={12} />
+                      </button>
+                    </div>
+                  );
+                })}
                 <button
                   onClick={() => {
                     const opts = [...(q.options ?? []), ""];
@@ -232,6 +265,35 @@ function ModuleConfigEditor({
                 >
                   <Plus size={11} /> Add option
                 </button>
+                <p className="text-[10px] text-gray-400 ml-5 mt-1">
+                  Click the circle to mark the correct answer.
+                </p>
+              </div>
+            )}
+            {q.type === "true_false" && (
+              <div className="flex gap-2 pl-1">
+                {["True", "False"].map((opt) => {
+                  const isCorrect = q.correctAnswer === opt;
+                  return (
+                    <button
+                      key={opt}
+                      type="button"
+                      onClick={() => {
+                        const updated = questions.map((x, i) =>
+                          i === qi ? { ...x, correctAnswer: opt } : x,
+                        );
+                        onChange({ ...config, questions: updated });
+                      }}
+                      className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                        isCorrect
+                          ? "bg-emerald-50 border-emerald-300 text-emerald-700"
+                          : "bg-white border-gray-200 text-gray-600 hover:border-emerald-300"
+                      }`}
+                    >
+                      {isCorrect ? `✓ ${opt} (correct)` : opt}
+                    </button>
+                  );
+                })}
               </div>
             )}
           </div>
@@ -518,9 +580,17 @@ function SortableModuleCard({
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: module.id });
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState(false);
+  const [moveOpen, setMoveOpen] = useState(false);
+  const [copyOpen, setCopyOpen] = useState(false);
   const [localConfig, setLocalConfig] = useState<ModuleConfig>(module.config);
 
   const updateModule = useUpdateModule(workspaceId, trainingId);
+  const assignToDay = useAssignModuleToDay(workspaceId, trainingId);
+  const duplicateModule = useDuplicateModule(workspaceId, trainingId);
+  const { data: daysList = [] } = useDays(workspaceId, trainingId);
+  const { data: trainingsList = [] } = useTrainings(workspaceId);
+  const [copyTargetTrainingId, setCopyTargetTrainingId] = useState<string>(trainingId);
+  const [copyTargetDayId, setCopyTargetDayId] = useState<string>("");
   const deleteModule = useMutation({
     mutationFn: () =>
       apiClient.delete(`/api/workspaces/${workspaceId}/trainings/${trainingId}/modules/${module.id}`, {
@@ -610,7 +680,27 @@ function SortableModuleCard({
 
         <div className="flex items-center gap-1 shrink-0">
           <button
-            onClick={() => setExpanded((v) => !v)}
+            onClick={() => { setMoveOpen((v) => !v); setCopyOpen(false); setExpanded(false); }}
+            className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+            title="Move to day"
+          >
+            <MoveRight size={14} />
+          </button>
+          <button
+            onClick={() => {
+              setCopyOpen((v) => !v);
+              setMoveOpen(false);
+              setExpanded(false);
+              setCopyTargetTrainingId(trainingId);
+              setCopyTargetDayId("");
+            }}
+            className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+            title="Copy to training or day"
+          >
+            <Copy size={14} />
+          </button>
+          <button
+            onClick={() => { setExpanded((v) => !v); setMoveOpen(false); setCopyOpen(false); }}
             className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
             title={expanded ? "Close config" : "Configure module"}
           >
@@ -627,6 +717,100 @@ function SortableModuleCard({
           </button>
         </div>
       </div>
+
+      {moveOpen && (
+        <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/60 space-y-2">
+          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Move to day</p>
+          <div className="flex flex-wrap gap-1.5">
+            <button
+              onClick={() => { assignToDay.mutate({ moduleId: module.id, dayId: null }); setMoveOpen(false); }}
+              disabled={assignToDay.isPending || module.dayId == null}
+              className={cn(
+                "text-xs px-2.5 py-1 rounded-full border font-medium transition-colors disabled:opacity-50",
+                module.dayId == null
+                  ? "bg-brand-50 border-brand-200 text-brand-700"
+                  : "bg-white border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-600",
+              )}
+            >
+              Unassigned
+            </button>
+            {daysList.map((d) => (
+              <button
+                key={d.id}
+                onClick={() => { assignToDay.mutate({ moduleId: module.id, dayId: d.id }); setMoveOpen(false); }}
+                disabled={assignToDay.isPending || module.dayId === d.id}
+                className={cn(
+                  "text-xs px-2.5 py-1 rounded-full border font-medium transition-colors disabled:opacity-50",
+                  module.dayId === d.id
+                    ? "bg-brand-50 border-brand-200 text-brand-700"
+                    : "bg-white border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-600",
+                )}
+              >
+                Day {d.dayNumber} · {d.title}
+              </button>
+            ))}
+            {daysList.length === 0 && (
+              <p className="text-xs text-gray-400">No days yet. Create a day first.</p>
+            )}
+          </div>
+        </div>
+      )}
+
+      {copyOpen && (
+        <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/60 space-y-2.5">
+          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Copy module</p>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+            <label className="text-xs text-gray-600 space-y-1">
+              <span className="font-medium">Target training</span>
+              <select
+                value={copyTargetTrainingId}
+                onChange={(e) => { setCopyTargetTrainingId(e.target.value); setCopyTargetDayId(""); }}
+                className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white"
+              >
+                {trainingsList.map((t) => (
+                  <option key={t.id} value={t.id}>
+                    {t.id === trainingId ? `${t.title} (current)` : t.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <label className="text-xs text-gray-600 space-y-1">
+              <span className="font-medium">Target day</span>
+              <select
+                value={copyTargetDayId}
+                onChange={(e) => setCopyTargetDayId(e.target.value)}
+                className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white"
+              >
+                <option value="">Unassigned</option>
+                {(copyTargetTrainingId === trainingId
+                  ? daysList
+                  : (trainingsList.find((t) => t.id === copyTargetTrainingId) as unknown as { days?: TrainingDay[] })?.days ?? []
+                ).map((d) => (
+                  <option key={d.id} value={d.id}>
+                    Day {d.dayNumber} · {d.title}
+                  </option>
+                ))}
+              </select>
+            </label>
+          </div>
+          <button
+            onClick={() => {
+              duplicateModule.mutate(
+                {
+                  moduleId: module.id,
+                  targetTrainingId: copyTargetTrainingId,
+                  targetDayId: copyTargetDayId || null,
+                },
+                { onSuccess: () => setCopyOpen(false) },
+              );
+            }}
+            disabled={duplicateModule.isPending}
+            className="w-full py-1.5 bg-brand-600 text-white rounded-lg text-xs font-semibold hover:bg-brand-700 disabled:opacity-60 transition-colors"
+          >
+            {duplicateModule.isPending ? "Copying…" : "Copy module"}
+          </button>
+        </div>
+      )}
 
       {expanded && (
         <div className="border-t border-gray-100 px-4 pb-4">
@@ -936,23 +1120,23 @@ function DayModuleList({
 
       {modules.length === 0 && !adding && (
         <div
-          className="flex flex-col items-center justify-center py-12 bg-white rounded-2xl border-2 border-dashed border-gray-200 cursor-pointer hover:border-brand-300 hover:bg-brand-50/30 transition-all group"
+          className="flex flex-col items-center justify-center py-12 bg-brand-50/40 rounded-2xl border-2 border-dashed border-brand-200 cursor-pointer hover:border-brand-400 hover:bg-brand-50 transition-all group"
           onClick={() => setAdding(true)}
         >
-          <div className="w-10 h-10 rounded-2xl bg-gray-100 group-hover:bg-brand-100 flex items-center justify-center mb-2.5 transition-colors">
-            <Plus size={18} className="text-gray-400 group-hover:text-brand-600 transition-colors" />
+          <div className="w-10 h-10 rounded-2xl bg-brand-100 group-hover:bg-brand-200 flex items-center justify-center mb-2.5 transition-colors">
+            <Plus size={18} className="text-brand-600 group-hover:text-brand-700 transition-colors" />
           </div>
-          <p className="text-sm font-semibold text-gray-600 group-hover:text-brand-700 transition-colors">
+          <p className="text-sm font-semibold text-brand-700">
             Add first module for this day
           </p>
-          <p className="text-xs text-gray-400 mt-1">Quiz, whiteboard, reflection, matrix, or sticky notes</p>
+          <p className="text-xs text-brand-500/80 mt-1">Quiz, whiteboard, reflection, matrix, or sticky notes</p>
         </div>
       )}
 
       {!adding && modules.length > 0 && (
         <button
           onClick={() => setAdding(true)}
-          className="w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-gray-200 rounded-xl text-xs font-semibold text-gray-400 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/30 transition-all"
+          className="w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-brand-300 rounded-xl text-xs font-semibold text-brand-600 bg-brand-50/40 hover:border-brand-400 hover:text-brand-700 hover:bg-brand-50 transition-all"
         >
           <Plus size={13} /> Add module
         </button>

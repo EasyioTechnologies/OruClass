@@ -4,6 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth";
+import { useWorkspaceStore } from "@/store/workspace";
 import type { PublicUser } from "@oruclass/types";
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -17,18 +18,44 @@ export function GoogleSignInButton() {
   const [mockLoading, setMockLoading] = useState<number | null>(null);
   const [error, setError] = useState<string | null>(null);
   const setUser = useAuthStore((s) => s.setUser);
+  const { setActiveWorkspace, setWorkspaces } = useWorkspaceStore();
   const router = useRouter();
 
-  const signInWithGoogle = () => {
-    window.location.href = `${API_URL}/api/auth/signin/google?callbackURL=${encodeURIComponent("http://localhost:3000/callback")}`;
+  const signInWithGoogle = async () => {
+    try {
+      const res = await fetch(`${API_URL}/api/auth/sign-in/social`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          provider: "google",
+          callbackURL: `${window.location.origin}/callback`
+        })
+      });
+      const data = await res.json();
+      if (data.url) {
+        window.location.href = data.url;
+      } else {
+        setError(data.message || "Failed to initiate Google login");
+      }
+    } catch (e) {
+      setError("Failed to connect to auth server");
+    }
   };
 
   const signInMock = async (index: number) => {
     setMockLoading(index);
     setError(null);
     try {
-      const { data } = await apiClient.post<{ user: PublicUser }>("/api/auth/mock-signin", { index });
+      const { data } = await apiClient.post<{ user: PublicUser; defaultWorkspaceId: string | null }>(
+        "/api/auth/mock-signin",
+        { index },
+      );
+      // Clear stale workspace state from previous sessions / DB resets
+      setWorkspaces([]);
       setUser(data.user);
+      if (data.defaultWorkspaceId) {
+        setActiveWorkspace(data.defaultWorkspaceId);
+      }
       window.location.href = "/dashboard";
     } catch (e: unknown) {
       setMockLoading(null);

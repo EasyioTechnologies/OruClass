@@ -108,6 +108,11 @@ export interface ParticipantResponse {
   userId: string;
   responseData: ResponseData;
   submittedAt: Date;
+  createdAt?: Date;
+}
+
+export interface ParticipantResponseWithUser extends ParticipantResponse {
+  user: { id: string; name: string; email: string } | null;
 }
 
 export interface LiveSession {
@@ -150,7 +155,7 @@ export interface StrokeData {
   points: { x: number; y: number }[];
   color: string;
   width: number;
-  tool?: "pen" | "eraser" | "highlighter";
+  tool?: "pen" | "eraser" | "highlighter" | "line" | "arrow" | "square";
 }
 
 export interface StickyNote {

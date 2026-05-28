@@ -1,11 +1,16 @@
 import { Hono } from "hono";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, isNull } from "drizzle-orm";
 import { db } from "../db/client";
 import { trainingDays, trainingModules } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { requireTrainingPermission } from "../middleware/roleGuard";
-import { CreateDaySchema, UpdateDaySchema, ReorderDaysSchema } from "@oruclass/validators";
+import {
+  CreateDaySchema,
+  UpdateDaySchema,
+  ReorderDaysSchema,
+  AssignModuleToDaySchema,
+} from "@oruclass/validators";
 import { parseBody } from "../utils/validators";
 
 export const daysRouter = new Hono();
@@ -38,12 +43,52 @@ daysRouter.post(
     const { trainingId } = c.req.param();
     const body = await parseBody(c, CreateDaySchema);
 
-    const [day] = await db
-      .insert(trainingDays)
-      .values({ trainingId, ...body, date: body.date ? new Date(body.date) : null })
-      .returning();
+    // Wrap in transaction so two concurrent inserts with the same dayNumber
+    // can't both pass the unique check; the loser surfaces a 409 cleanly.
+    try {
+      const day = await db.transaction(async (tx) => {
+        const [newDay] = await tx
+          .insert(trainingDays)
+          .values({ trainingId, ...body, date: body.date ? new Date(body.date) : null })
+          .returning();
 
-    return c.json(day, 201);
+        // Every day must own an Attendance module. Adopt any unassigned
+        // attendance into this day (covers the auto-created one from training
+        // creation); otherwise spawn a fresh attendance row at position 0.
+        const adopted = await tx
+          .update(trainingModules)
+          .set({ dayId: newDay.id, updatedAt: new Date() })
+          .where(
+            and(
+              eq(trainingModules.trainingId, trainingId),
+              eq(trainingModules.moduleType, "attendance"),
+              isNull(trainingModules.dayId),
+            ),
+          )
+          .returning({ id: trainingModules.id });
+
+        if (adopted.length === 0) {
+          await tx.insert(trainingModules).values({
+            trainingId,
+            dayId: newDay.id,
+            title: "Attendance",
+            moduleType: "attendance",
+            position: 0,
+            isAlwaysOn: true,
+            config: {},
+          });
+        }
+
+        return newDay;
+      });
+      return c.json(day, 201);
+    } catch (err) {
+      const code = (err as { code?: string }).code;
+      if (code === "23505") {
+        return c.json({ error: "Day number already exists" }, 409);
+      }
+      throw err;
+    }
   },
 );
 
@@ -76,29 +121,41 @@ daysRouter.delete(
   async (c) => {
     const { trainingId, dayId } = c.req.param();
 
-    const existing = await db.query.trainingDays.findFirst({
-      where: and(eq(trainingDays.id, dayId), eq(trainingDays.trainingId, trainingId)),
-    });
-    if (!existing) return c.json({ error: "Not found" }, 404);
+    await db.transaction(async (tx) => {
+      const existing = await tx.query.trainingDays.findFirst({
+        where: and(eq(trainingDays.id, dayId), eq(trainingDays.trainingId, trainingId)),
+      });
+      if (!existing) {
+        throw Object.assign(new Error("Not found"), { status: 404 });
+      }
 
-    await db
-      .delete(trainingDays)
-      .where(and(eq(trainingDays.id, dayId), eq(trainingDays.trainingId, trainingId)));
+      await tx
+        .delete(trainingDays)
+        .where(and(eq(trainingDays.id, dayId), eq(trainingDays.trainingId, trainingId)));
 
-    // Re-sequence remaining days so dayNumber stays contiguous
-    const remaining = await db.query.trainingDays.findMany({
-      where: eq(trainingDays.trainingId, trainingId),
-      orderBy: [asc(trainingDays.dayNumber)],
-    });
+      // Re-sequence inside the same tx. Two-pass with negative offset avoids
+      // colliding against the (trainingId, dayNumber) unique constraint mid-update.
+      const remaining = await tx.query.trainingDays.findMany({
+        where: eq(trainingDays.trainingId, trainingId),
+        orderBy: [asc(trainingDays.dayNumber)],
+      });
 
-    await Promise.all(
-      remaining.map((d, i) =>
-        db
+      for (const [i, d] of remaining.entries()) {
+        await tx
+          .update(trainingDays)
+          .set({ dayNumber: -(i + 1), updatedAt: new Date() })
+          .where(eq(trainingDays.id, d.id));
+      }
+      for (const [i, d] of remaining.entries()) {
+        await tx
           .update(trainingDays)
           .set({ dayNumber: i + 1, updatedAt: new Date() })
-          .where(eq(trainingDays.id, d.id)),
-      ),
-    );
+          .where(eq(trainingDays.id, d.id));
+      }
+    }).catch((err: { status?: number; message?: string }) => {
+      if (err.status === 404) return c.json({ error: "Not found" }, 404);
+      throw err;
+    });
 
     return c.json({ success: true });
   },
@@ -112,14 +169,22 @@ daysRouter.post(
     const { trainingId } = c.req.param();
     const { order } = await parseBody(c, ReorderDaysSchema);
 
-    await Promise.all(
-      order.map(({ id, dayNumber }) =>
-        db
+    // Two-pass inside a tx: negative offsets first so we never collide with
+    // (trainingId, dayNumber) unique constraint mid-update.
+    await db.transaction(async (tx) => {
+      for (const [i, { id }] of order.entries()) {
+        await tx
+          .update(trainingDays)
+          .set({ dayNumber: -(i + 1), updatedAt: new Date() })
+          .where(and(eq(trainingDays.id, id), eq(trainingDays.trainingId, trainingId)));
+      }
+      for (const { id, dayNumber } of order) {
+        await tx
           .update(trainingDays)
           .set({ dayNumber, updatedAt: new Date() })
-          .where(and(eq(trainingDays.id, id), eq(trainingDays.trainingId, trainingId))),
-      ),
-    );
+          .where(and(eq(trainingDays.id, id), eq(trainingDays.trainingId, trainingId)));
+      }
+    });
 
     return c.json({ success: true });
   },
@@ -131,7 +196,7 @@ daysRouter.post(
   requireTrainingPermission("edit_agenda"),
   async (c) => {
     const { trainingId, dayId } = c.req.param();
-    const { moduleId } = await c.req.json<{ moduleId: string }>();
+    const { moduleId } = await parseBody(c, AssignModuleToDaySchema);
 
     const [updated] = await db
       .update(trainingModules)

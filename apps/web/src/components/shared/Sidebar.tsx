@@ -50,21 +50,7 @@ export function Sidebar() {
   const { user, signOut } = useAuth();
   
   const { isMobileSidebarOpen, setMobileSidebarOpen } = useLayoutStore();
-  const deleteWorkspace = useDeleteWorkspace();
 
-  function handleDeleteWorkspace(id: string, e: React.MouseEvent) {
-    e.stopPropagation();
-    if (confirm("Are you sure you want to delete this workspace? This action cannot be undone.")) {
-      deleteWorkspace.mutate(id, {
-        onSuccess: () => {
-          if (activeWorkspaceId === id) {
-             setActiveWorkspace(workspaces?.find(w => w.id !== id)?.id || "");
-             router.push("/participant");
-          }
-        }
-      });
-    }
-  }
 
   useEffect(() => {
     if (workspaces?.length && !activeWorkspaceId) {
@@ -107,34 +93,7 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Workspace selector */}
-      {workspaces && workspaces.length > 0 && (
-        <div className="px-3 pt-4 pb-3 border-b border-gray-100">
-          <p className="text-[10.5px] font-600 text-gray-400 uppercase tracking-[0.08em] mb-2 px-2">
-            Workspace
-          </p>
-          <div className="space-y-0.5">
-            {workspaces.map((w) => (
-              <button
-                key={w.id}
-                onClick={() => handleSelectWorkspace(w.id)}
-                className={cn(
-                  "w-full group flex items-center gap-2.5 px-2.5 py-2 rounded-xl text-[13px] transition-all duration-150 text-left",
-                  activeWorkspaceId === w.id
-                    ? "bg-white shadow-sm border border-gray-200 text-gray-900"
-                    : "text-gray-500 hover:bg-white hover:text-gray-800 hover:shadow-sm hover:border hover:border-gray-200 border border-transparent",
-                )}
-              >
-                <WorkspaceInitials name={w.name} />
-                <span className="flex-1 truncate font-500">{w.name}</span>
-                {activeWorkspaceId === w.id && (
-                  <Check size={12} className="text-brand-500 flex-shrink-0" strokeWidth={2.5} />
-                )}
-              </button>
-            ))}
-          </div>
-        </div>
-      )}
+
 
       {/* Nav */}
       <nav className="flex-1 px-3 py-4 space-y-0.5">

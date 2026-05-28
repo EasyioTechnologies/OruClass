@@ -1,7 +1,7 @@
 import { Worker, Queue } from "bullmq";
 import { sendSessionDigestEmail } from "../services/email.service";
 
-const connection = { host: process.env.REDIS_HOST ?? "localhost", port: 6379 };
+const connection = { host: process.env.REDIS_HOST ?? "127.0.0.1", port: 6379 };
 
 export const digestQueue = new Queue("session-digest", { connection });
 

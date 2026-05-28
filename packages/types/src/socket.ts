@@ -10,6 +10,7 @@ export interface ClientToServerEvents {
   ) => void;
   "draw:update": (data: { trainingId: string; moduleId: string; stroke: StrokeData }) => void;
   "draw:clear": (data: { trainingId: string; moduleId: string }) => void;
+  "draw:sync": (data: { trainingId: string; moduleId: string; strokes: StrokeData[] }) => void;
   "note:create": (data: { trainingId: string; moduleId: string; note: StickyNote }) => void;
   "note:position": (data: { trainingId: string; moduleId: string; noteId: string; x: number; y: number }) => void;
   heartbeat: () => void;
@@ -17,13 +18,14 @@ export interface ClientToServerEvents {
 
 // Server → Client events
 export interface ServerToClientEvents {
-  "module:unlocked": (data: { moduleId: string; module: TrainingModule }) => void;
+  "module:unlocked": (data: { moduleId: string | null; module: TrainingModule | null }) => void;
   "participant:joined": (data: { userId: string; name: string; role: string; joinedAt: string; connectionStatus: ConnectionStatus }) => void;
   "participant:left": (data: { userId: string }) => void;
   "data:aggregate": (data: { trainingId: string; moduleId: string; responseCount: number }) => void;
   "session:submission_update": (data: { trainingId: string; moduleId: string; liveSessionId: string; submitted: number; totalParticipants: number }) => void;
   "draw:update": (data: { moduleId: string; userId: string; stroke: StrokeData }) => void;
   "draw:clear": (data: { moduleId: string; userId: string }) => void;
+  "draw:sync": (data: { moduleId: string; userId: string; strokes: StrokeData[] }) => void;
   "note:create": (data: { moduleId: string; note: StickyNote }) => void;
   "note:position": (data: { moduleId: string; noteId: string; x: number; y: number }) => void;
   "session:paused": () => void;

@@ -2,7 +2,7 @@ import { Worker, Queue } from "bullmq";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
 import { getTrainingAnalytics, generateCSV, saveAnalyticsSnapshot } from "../services/analytics.service";
 
-const connection = { host: process.env.REDIS_HOST ?? "localhost", port: 6379 };
+const connection = { host: process.env.REDIS_HOST ?? "127.0.0.1", port: 6379 };
 
 export const exportQueue = new Queue("analytics-export", { connection });
 

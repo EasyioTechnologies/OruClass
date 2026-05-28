@@ -36,7 +36,7 @@ export const useLiveSessionStore = create<LiveSessionState>((set) => ({
   participants: new Map(),
   isPaused: false,
   responseCounts: new Map(),
-  socketStatus: "disconnected",
+  socketStatus: "connected",
   sessionStats: null,
   setTrainingId: (trainingId) => set({ trainingId }),
   setActiveModule: (activeModule) => set({ activeModule }),
@@ -77,7 +77,7 @@ export const useLiveSessionStore = create<LiveSessionState>((set) => ({
       participants: new Map(),
       isPaused: false,
       responseCounts: new Map(),
-      socketStatus: "disconnected",
+      socketStatus: "connected",
       sessionStats: null,
     }),
 }));

@@ -28,11 +28,48 @@ export function useSocketSession(trainingId: string | null) {
       qc.invalidateQueries({ queryKey: ["participant-training"] });
     };
 
-    // Connection status
-    socket.on("connect", () => setSocketStatus("connected"));
-    socket.on("disconnect", () => setSocketStatus("disconnected"));
-    socket.on("reconnect_attempt", () => setSocketStatus("reconnecting"));
-    socket.on("reconnect", () => setSocketStatus("connected"));
+    // Debounce status downgrades — brief flickers reconnect within several
+    // seconds and shouldn't surface as "offline" to users. Also: if the
+    // browser still reports online, treat it as a transport hiccup and stay
+    // silent — only escalate if reconnect actually keeps failing.
+    let downgradeTimer: ReturnType<typeof setTimeout> | null = null;
+    const clearDowngrade = () => {
+      if (downgradeTimer) {
+        clearTimeout(downgradeTimer);
+        downgradeTimer = null;
+      }
+    };
+    const scheduleDowngrade = (status: "disconnected" | "reconnecting") => {
+      clearDowngrade();
+      // Real offline → show fast. Transport blip with browser still online
+      // → wait long enough for socket.io to reconnect silently.
+      const online = typeof navigator === "undefined" ? true : navigator.onLine;
+      const delay = online ? 8000 : 1500;
+      downgradeTimer = setTimeout(() => setSocketStatus(status), delay);
+    };
+
+    socket.on("connect", () => {
+      clearDowngrade();
+      setSocketStatus("connected");
+    });
+    socket.on("disconnect", () => scheduleDowngrade("disconnected"));
+    socket.on("reconnect_attempt", () => scheduleDowngrade("reconnecting"));
+    // io.on events for engine-level reconnects (some socket.io versions
+    // don't bubble these to the socket itself).
+    socket.io?.on?.("reconnect", () => {
+      clearDowngrade();
+      setSocketStatus("connected");
+    });
+    // Browser-level online event — clear any pending downgrade immediately
+    // so we don't show a stale "offline" banner after net comes back.
+    const handleOnline = () => clearDowngrade();
+    if (typeof window !== "undefined") {
+      window.addEventListener("online", handleOnline);
+    }
+    socket.on("reconnect", () => {
+      clearDowngrade();
+      setSocketStatus("connected");
+    });
 
     socket.on("module:unlocked", ({ moduleId, module }) => {
       setActiveModule(module || (moduleId ? ({ id: moduleId } as TrainingModule) : null));
@@ -54,10 +91,21 @@ export function useSocketSession(trainingId: string | null) {
       removeParticipant(userId);
     });
 
-    // Live response count — invalidates React Query + updates store so trainer sees immediate count
+    // Live response count — store updates immediately (cheap),
+    // query invalidation is coalesced per-moduleId so a burst of submissions
+    // doesn't trigger a refetch storm on the trainer client.
+    const aggregateTimers = new Map<string, ReturnType<typeof setTimeout>>();
     socket.on("data:aggregate", ({ moduleId, responseCount }) => {
       setResponseCount(moduleId, responseCount);
-      qc.invalidateQueries({ queryKey: ["module-responses", trainingId, moduleId] });
+      const existing = aggregateTimers.get(moduleId);
+      if (existing) clearTimeout(existing);
+      aggregateTimers.set(
+        moduleId,
+        setTimeout(() => {
+          aggregateTimers.delete(moduleId);
+          qc.invalidateQueries({ queryKey: ["module-responses", trainingId, moduleId] });
+        }, 500),
+      );
     });
 
     socket.on("session:paused", () => {
@@ -82,6 +130,13 @@ export function useSocketSession(trainingId: string | null) {
     });
 
     return () => {
+      clearDowngrade();
+      for (const t of aggregateTimers.values()) clearTimeout(t);
+      aggregateTimers.clear();
+      if (typeof window !== "undefined") {
+        window.removeEventListener("online", handleOnline);
+      }
+      socket.io?.off?.("reconnect");
       socket.off("connect");
       socket.off("disconnect");
       socket.off("reconnect_attempt");

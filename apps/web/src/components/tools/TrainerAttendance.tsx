@@ -1,8 +1,6 @@
 "use client";
 
-import { useQuery } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
-import { useWorkspaceStore } from "@/store/workspace";
+import { useModuleResponses } from "@/hooks/useModuleResponses";
 import type { TrainingModule, AttendanceField } from "@oruclass/types";
 import { ClipboardList, Users, Clock } from "lucide-react";
 
@@ -12,21 +10,9 @@ interface Props {
 }
 
 export function TrainerAttendance({ module, trainingId }: Props) {
-  const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const fields: AttendanceField[] = (module.config.attendanceFields as AttendanceField[]) ?? [];
 
-  const { data: responses, isLoading } = useQuery({
-    queryKey: ["module-responses", trainingId, module.id],
-    queryFn: async () => {
-      const res = await apiClient.get(
-        `/api/workspaces/${workspaceId}/trainings/${trainingId}/modules/${module.id}/responses`,
-        { headers: { "X-Workspace-ID": workspaceId } },
-      );
-      return Array.isArray(res.data) ? res.data : [];
-    },
-    staleTime: 0,
-    refetchInterval: 5000,
-  });
+  const { data: responses, isLoading } = useModuleResponses(trainingId, module.id);
 
   const count = responses?.length ?? 0;
 
@@ -40,7 +26,7 @@ export function TrainerAttendance({ module, trainingId }: Props) {
           </div>
           <div>
             <h2 className="text-[15px] font-bold text-gray-900">{module.title}</h2>
-            <p className="text-[11px] text-gray-400">Live attendance — auto-refreshes every 5s</p>
+            <p className="text-[11px] text-gray-400">Live attendance</p>
           </div>
         </div>
         <div className="flex items-center gap-1.5 bg-brand-50 border border-brand-100 rounded-full px-3 py-1.5">
@@ -84,8 +70,8 @@ export function TrainerAttendance({ module, trainingId }: Props) {
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
-              {responses?.map((r: any, i: number) => {
-                const data: Record<string, string> = (r.responseData as any)?.fields ?? {};
+              {responses?.map((r, i) => {
+                const data: Record<string, string> = r.responseData.type === "attendance" ? r.responseData.fields : {};
                 return (
                   <tr key={r.id ?? i} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-gray-400 text-[12px] font-medium">{i + 1}</td>

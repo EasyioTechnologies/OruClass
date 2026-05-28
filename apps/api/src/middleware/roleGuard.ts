@@ -4,9 +4,9 @@ import { db } from "../db/client";
 import { trainingFacilitators } from "../db/schema";
 import { hasPermission, type Permission } from "@oruclass/utils";
 import type { TrainingRole } from "@oruclass/types";
+import { ROLE_CACHE_TTL_MS } from "../config/limits";
 
 // In-process TTL cache keyed by `userId:trainingId` — avoids a DB round-trip on every request
-const CACHE_TTL = 60_000; // 60 seconds
 const roleCache = new Map<string, { role: TrainingRole; expiresAt: number }>();
 
 async function getFacilitatorRole(userId: string, trainingId: string): Promise<TrainingRole | null> {
@@ -26,7 +26,7 @@ async function getFacilitatorRole(userId: string, trainingId: string): Promise<T
     return null;
   }
 
-  roleCache.set(cacheKey, { role: facilitator.role as TrainingRole, expiresAt: Date.now() + CACHE_TTL });
+  roleCache.set(cacheKey, { role: facilitator.role as TrainingRole, expiresAt: Date.now() + ROLE_CACHE_TTL_MS});
   return facilitator.role as TrainingRole;
 }
 

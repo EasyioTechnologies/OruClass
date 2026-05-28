@@ -13,6 +13,52 @@ import {
 } from "../db/schema";
 import { getOrCreateState, removeParticipant, persistState, restoreState } from "./state";
 import { logger } from "../utils/logger";
+import { DrawUpdateSchema } from "@oruclass/validators";
+import { USER_NAME_CACHE_TTL_MS, USER_NAME_CACHE_MAX } from "../config/limits";
+
+// Small in-process cache for socket-join user lookups. Avoids hammering the
+// users table on every reconnect; TTL keeps profile edits visible within a minute.
+const userCache = new Map<string, { name: string; expiresAt: number }>();
+
+// Per-training liveSessionId cache. response:submit hits this on every
+// answer, and the active liveSession only changes on session start/end/reset.
+// 15s TTL bounds staleness; explicit busts on lifecycle events would be
+// stricter but aren't required for correctness (worst case: one stale
+// submission gets a previous liveSessionId).
+const liveSessionCache = new Map<string, { id: string | null; expiresAt: number }>();
+const LIVE_SESSION_TTL_MS = 15_000;
+
+async function getActiveLiveSessionId(trainingId: string): Promise<string | null> {
+  const now = Date.now();
+  const hit = liveSessionCache.get(trainingId);
+  if (hit && hit.expiresAt > now) return hit.id;
+  const session = await db.query.liveSessions.findFirst({
+    where: and(eq(liveSessions.trainingId, trainingId), eq(liveSessions.status, "active")),
+    orderBy: [desc(liveSessions.startedAt)],
+  });
+  const id = session?.id ?? null;
+  liveSessionCache.set(trainingId, { id, expiresAt: now + LIVE_SESSION_TTL_MS });
+  return id;
+}
+
+export function bustLiveSessionCache(trainingId: string): void {
+  liveSessionCache.delete(trainingId);
+}
+
+async function getUserName(userId: string): Promise<string> {
+  const now = Date.now();
+  const hit = userCache.get(userId);
+  if (hit && hit.expiresAt > now) return hit.name;
+  const rec = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  const name = rec?.name ?? "Unknown User";
+  if (userCache.size >= USER_NAME_CACHE_MAX) {
+    // Cheap FIFO eviction — Map preserves insertion order.
+    const oldest = userCache.keys().next().value;
+    if (oldest) userCache.delete(oldest);
+  }
+  userCache.set(userId, { name, expiresAt: now + USER_NAME_CACHE_TTL_MS });
+  return name;
+}
 
 type IO = SocketIOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
@@ -86,10 +132,7 @@ export function registerSocketHandlers(io: IO): void {
           }
         }
 
-        const userRec = await db.query.users.findFirst({
-          where: eq(users.id, userId),
-        });
-        const name = userRec?.name ?? "Unknown User";
+        const name = await getUserName(userId);
 
         const state = getOrCreateState(trainingId);
         state.participants.set(userId, {
@@ -161,28 +204,57 @@ export function registerSocketHandlers(io: IO): void {
     socket.on(
       "module:unlock",
       guard("module:unlock", async ({ trainingId, moduleId }: { trainingId: string; moduleId: string }) => {
-        // Only verified trainers may unlock modules
-        if (socket.data.role !== "trainer") {
-          socket.emit("error", { code: "FORBIDDEN", message: "forbidden: only trainers can unlock modules" });
+        // Re-query facilitator role inside the tx — cached socket.data.role
+        // can be stale if a trainer was demoted mid-session.
+        let moduleData: typeof trainingModules.$inferSelect | undefined;
+        let denied = false;
+        try {
+          await db.transaction(async (tx) => {
+            const facilitator = await tx.query.trainingFacilitators.findFirst({
+              where: and(
+                eq(trainingFacilitators.trainingId, trainingId),
+                eq(trainingFacilitators.userId, userId),
+              ),
+            });
+            if (!facilitator) {
+              denied = true;
+              return;
+            }
+
+            // Confirm the module actually belongs to this training before unlocking.
+            const mod = await tx.query.trainingModules.findFirst({
+              where: and(eq(trainingModules.id, moduleId), eq(trainingModules.trainingId, trainingId)),
+            });
+            if (!mod) {
+              denied = true;
+              return;
+            }
+
+            await tx
+              .update(trainingModules)
+              .set({ isUnlocked: true, updatedAt: new Date() })
+              .where(eq(trainingModules.id, moduleId));
+
+            await tx
+              .update(trainings)
+              .set({ currentActiveModuleId: moduleId, updatedAt: new Date() })
+              .where(eq(trainings.id, trainingId));
+
+            moduleData = { ...mod, isUnlocked: true };
+          });
+        } catch (err) {
+          logger.error(err, "module:unlock tx failed");
+          socket.emit("error", { code: "INTERNAL", message: "failed to unlock module" });
+          return;
+        }
+
+        if (denied || !moduleData) {
+          socket.emit("error", { code: "FORBIDDEN", message: "not authorized to unlock this module" });
           return;
         }
 
         const state = getOrCreateState(trainingId);
         state.activeModuleId = moduleId;
-
-        await db
-          .update(trainingModules)
-          .set({ isUnlocked: true, updatedAt: new Date() })
-          .where(eq(trainingModules.id, moduleId));
-
-        await db
-          .update(trainings)
-          .set({ currentActiveModuleId: moduleId, updatedAt: new Date() })
-          .where(eq(trainings.id, trainingId));
-
-        const moduleData = await db.query.trainingModules.findFirst({
-          where: eq(trainingModules.id, moduleId),
-        });
 
         io.to(`training:${trainingId}`).emit("module:unlocked", {
           moduleId,
@@ -201,51 +273,44 @@ export function registerSocketHandlers(io: IO): void {
         ack?: (result: { ok: boolean; error?: string }) => void,
       ) => {
         try {
-          // Get current live session
-          const currentSession = await db.query.liveSessions.findFirst({
-            where: and(
-              eq(liveSessions.trainingId, trainingId),
-              eq(liveSessions.status, "active"),
-            ),
-            orderBy: [desc(liveSessions.startedAt)],
-          });
-          const liveSessionId = currentSession?.id ?? null;
+          const liveSessionId = await getActiveLiveSessionId(trainingId);
 
-          // Persist response before broadcasting — upsert to avoid duplicates
-          const existing = await db.query.participantResponses.findFirst({
-            where: and(
-              eq(participantResponses.trainingId, trainingId),
-              eq(participantResponses.moduleId, moduleId),
-              eq(participantResponses.userId, userId),
-            ),
-          });
-
-          if (existing) {
-            await db
-              .update(participantResponses)
-              .set({ responseData, submittedAt: new Date() })
-              .where(eq(participantResponses.id, existing.id));
-          } else {
-            await db.insert(participantResponses).values({
-              trainingId,
-              moduleId,
-              userId,
-              responseData,
-              liveSessionId,
+          // Single upsert — requires UNIQUE (training_id, module_id, user_id).
+          // Avoids the read-then-write race that lets two near-simultaneous
+          // submissions from the same participant create duplicates.
+          await db
+            .insert(participantResponses)
+            .values({ trainingId, moduleId, userId, responseData, liveSessionId })
+            .onConflictDoUpdate({
+              target: [
+                participantResponses.trainingId,
+                participantResponses.moduleId,
+                participantResponses.userId,
+              ],
+              set: { responseData, submittedAt: new Date(), liveSessionId },
             });
-          }
 
-          // Acknowledge to participant that response was saved
+          // Ack immediately — counts/broadcasts can lag the ack without
+          // affecting the participant's UX.
           if (typeof ack === "function") ack({ ok: true });
 
-          // Emit updated count to all trainers/participants in the room
-          const [{ responseCount }] = await db
-            .select({ responseCount: count() })
-            .from(participantResponses)
-            .where(and(
-              eq(participantResponses.trainingId, trainingId),
-              eq(participantResponses.moduleId, moduleId),
-            ));
+          // Counts in parallel (single round-trip wall time).
+          const [respRow, partRow] = await Promise.all([
+            db
+              .select({ responseCount: count() })
+              .from(participantResponses)
+              .where(and(
+                eq(participantResponses.trainingId, trainingId),
+                eq(participantResponses.moduleId, moduleId),
+              )),
+            liveSessionId
+              ? db
+                  .select({ participantCount: count() })
+                  .from(trainingParticipants)
+                  .where(eq(trainingParticipants.trainingId, trainingId))
+              : Promise.resolve([{ participantCount: 0 }] as const),
+          ]);
+          const responseCount = respRow[0].responseCount;
 
           io.to(`training:${trainingId}`).emit("data:aggregate", {
             trainingId,
@@ -253,19 +318,13 @@ export function registerSocketHandlers(io: IO): void {
             responseCount,
           });
 
-          // Emit session submission update
-          if (currentSession) {
-            const [{ participantCount }] = await db
-              .select({ participantCount: count() })
-              .from(trainingParticipants)
-              .where(eq(trainingParticipants.trainingId, trainingId));
-
+          if (liveSessionId) {
             io.to(`training:${trainingId}`).emit("session:submission_update", {
               trainingId,
               moduleId,
-              liveSessionId: currentSession.id,
+              liveSessionId,
               submitted: Number(responseCount),
-              totalParticipants: Number(participantCount),
+              totalParticipants: Number(partRow[0].participantCount),
             });
           }
         } catch (err) {
@@ -277,7 +336,13 @@ export function registerSocketHandlers(io: IO): void {
 
     socket.on(
       "draw:update",
-      guard("draw:update", ({ trainingId, moduleId, stroke }: { trainingId: string; moduleId: string; stroke: any }) => {
+      guard("draw:update", (payload: unknown) => {
+        const parsed = DrawUpdateSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid draw:update payload" });
+          return;
+        }
+        const { trainingId, moduleId, stroke } = parsed.data;
         socket.to(`training:${trainingId}`).emit("draw:update", { moduleId, userId, stroke });
       }),
     );
@@ -286,6 +351,13 @@ export function registerSocketHandlers(io: IO): void {
       "draw:clear",
       guard("draw:clear", ({ trainingId, moduleId }: { trainingId: string; moduleId: string }) => {
         socket.to(`training:${trainingId}`).emit("draw:clear", { moduleId, userId });
+      }),
+    );
+
+    socket.on(
+      "draw:sync",
+      guard("draw:sync", ({ trainingId, moduleId, strokes }: { trainingId: string; moduleId: string; strokes: any[] }) => {
+        socket.to(`training:${trainingId}`).emit("draw:sync", { moduleId, userId, strokes });
       }),
     );
 

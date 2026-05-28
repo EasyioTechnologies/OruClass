@@ -4,16 +4,43 @@ import { db } from "../db/client";
 import { participantResponses } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
+import { moduleInWorkspace } from "../utils/workspaceAssets";
+import { SUBMIT_RATE_MAX, SUBMIT_RATE_WINDOW_MS } from "../config/limits";
 
 export const responsesRouter = new Hono();
 
 responsesRouter.use("*", authMiddleware);
 responsesRouter.use("*", workspaceTenantMiddleware);
 
+// Per-user submission throttle. Socket has its own bucket; HTTP path needs one too
+// or it's a trivial bypass for unlimited submissions.
+const submitBuckets = new Map<string, { count: number; resetAt: number }>();
+
+function checkSubmitRate(userId: string): boolean {
+  const now = Date.now();
+  const b = submitBuckets.get(userId);
+  if (!b || now > b.resetAt) {
+    submitBuckets.set(userId, { count: 1, resetAt: now + SUBMIT_RATE_WINDOW_MS });
+    return true;
+  }
+  b.count++;
+  return b.count <= SUBMIT_RATE_MAX;
+}
+
 // POST /trainings/:trainingId/modules/:moduleId/responses
 responsesRouter.post("/:trainingId/modules/:moduleId/responses", async (c) => {
   const { trainingId, moduleId } = c.req.param();
   const userId = c.get("userId") as string;
+  const workspaceId = c.get("workspaceId") as string;
+
+  if (!checkSubmitRate(userId)) {
+    return c.json({ error: "Too many submissions" }, 429);
+  }
+
+  if (!(await moduleInWorkspace(trainingId, moduleId, workspaceId))) {
+    return c.json({ error: "Module not found in workspace" }, 404);
+  }
+
   const body = await c.req.json<{ responseData: Record<string, unknown> }>();
 
   // Upsert — one response per user per module
@@ -45,6 +72,11 @@ responsesRouter.post("/:trainingId/modules/:moduleId/responses", async (c) => {
 // GET /trainings/:trainingId/modules/:moduleId/responses — aggregated (trainer only)
 responsesRouter.get("/:trainingId/modules/:moduleId/responses", async (c) => {
   const { trainingId, moduleId } = c.req.param();
+  const workspaceId = c.get("workspaceId") as string;
+
+  if (!(await moduleInWorkspace(trainingId, moduleId, workspaceId))) {
+    return c.json({ error: "Module not found in workspace" }, 404);
+  }
 
   const responses = await db.query.participantResponses.findMany({
     where: and(
