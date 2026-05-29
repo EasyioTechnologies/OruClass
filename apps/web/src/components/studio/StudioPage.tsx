@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useSearchParams } from "next/navigation";
+import Link from "next/link";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
 import { SortableContext, verticalListSortingStrategy, arrayMove } from "@dnd-kit/sortable";
 import { useSortable } from "@dnd-kit/sortable";
@@ -1829,13 +1830,13 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
             <h1 className="text-xl font-bold text-gray-900">Training Studio</h1>
             <p className="text-sm text-gray-500 mt-0.5">Build and configure activities for your live session</p>
           </div>
-          <a
+          <Link
             href={`/trainings/${trainingId}/live`}
             className="flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200"
           >
             <Radio size={14} />
             Go Live
-          </a>
+          </Link>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -1879,13 +1880,13 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
           <h1 className="text-xl font-bold text-gray-900">Training Studio</h1>
           <p className="text-sm text-gray-500 mt-0.5">Build and configure activities for your live session</p>
         </div>
-        <a
+        <Link
           href={`/trainings/${trainingId}/live`}
           className="flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200"
         >
           <Radio size={14} />
           Go Live
-        </a>
+        </Link>
       </div>
 
       {/* Day tabs row */}

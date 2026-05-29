@@ -33,7 +33,12 @@ export const auth = betterAuth({
   plugins: [
     anonymous(), // for guest/participant logins
   ],
-  trustedOrigins: [process.env.WEB_URL ?? "http://localhost:3000", "http://localhost:3000"],
+  trustedOrigins: [
+    process.env.WEB_URL ?? "http://localhost:3000",
+    "http://localhost:3000",
+    "https://www.dezignbuild.site",
+    "https://dezignbuild.site"
+  ],
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3001",
   session: {
@@ -56,6 +61,8 @@ export const auth = betterAuth({
   },
   advanced: {
     generateId: () => randomUUID(),
-    // crossSubDomainCookies disabled — was causing cookies to get wrong scope on localhost
+    crossSubDomainCookies: {
+      enabled: process.env.NODE_ENV === "production"
+    }
   }
 });
