@@ -5,36 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1779822053091,
-      "tag": "0000_furry_vanisher",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1779847734197,
-      "tag": "0001_fearless_ulik",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1748390400000,
-      "tag": "0002_training_days",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1779886734391,
-      "tag": "0003_live_sessions",
-      "breakpoints": true
-    },
-    {
-      "idx": 4,
-      "version": "7",
-      "when": 1779900000000,
-      "tag": "0004_unique_response_per_user",
+      "when": 1780022516825,
+      "tag": "0000_fine_major_mapleleaf",
       "breakpoints": true
     }
   ]

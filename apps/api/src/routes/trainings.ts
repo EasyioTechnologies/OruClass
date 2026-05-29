@@ -55,7 +55,7 @@ trainingsRouter.post("/", async (c) => {
       title: body.title,
       category: body.category,
       description: body.description,
-      scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : null,
+      scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : new Date(),
       joinToken: generateJoinToken(),
       createdBy: userId,
     })

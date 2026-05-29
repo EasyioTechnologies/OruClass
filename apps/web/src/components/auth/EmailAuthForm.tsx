@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn, signUp } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 
 export function EmailAuthForm({
@@ -23,26 +23,17 @@ export function EmailAuthForm({
 
   const router = useRouter();
 
-  const validateEmailDomain = (email: string) => {
-    const domain = email.split('@')[1]?.toLowerCase();
-    const allowedDomains = ["gmail.com", "outlook.com", "hotmail.com", "yahoo.com", "icloud.com"];
-    return allowedDomains.includes(domain);
-  };
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
 
-    if (!validateEmailDomain(email)) {
-      setError("Please use a valid email provider (Gmail, Outlook, Yahoo, iCloud).");
-      setLoading(false);
-      return;
-    }
 
     try {
       if (isLogin) {
-        const { error } = await signIn.email({
+        const { error } = await authClient.signIn.email({
           email,
           password,
         });
@@ -59,7 +50,7 @@ export function EmailAuthForm({
           return;
         }
         
-        const { error } = await signUp.email({
+        const { error } = await authClient.signUp.email({
           email,
           password,
           name,

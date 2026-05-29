@@ -32,26 +32,23 @@ export function AuthPanel({
         />
       ) : (
         <>
-          {/* Line 1 — Google */}
-          <GoogleSignInButton returnTo={returnTo} />
-
-          {/* Line 2 — GitHub + Email */}
-          <div className="grid grid-cols-2 gap-3">
-            <GithubSignInButton returnTo={returnTo} compact />
+          <div className="space-y-3">
+            <GoogleSignInButton returnTo={returnTo} />
+            <GithubSignInButton returnTo={returnTo} />
             <button
               type="button"
               onClick={() => setEmailMode("login")}
-              className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
+              className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm"
             >
               <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="1.8" viewBox="0 0 24 24">
                 <rect x="3" y="5" width="18" height="14" rx="2" />
                 <path d="m3 7 9 6 9-6" />
               </svg>
-              Email
+              Continue with Email
             </button>
           </div>
 
-          <p className="text-sm text-center text-gray-500">
+          <p className="text-sm text-center text-gray-500 pt-2">
             Don&apos;t have an account?{" "}
             <button
               type="button"

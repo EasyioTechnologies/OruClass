@@ -2,7 +2,6 @@
  * Dev seed — run once after DB migrations to pre-create mock users + a default workspace.
  * Usage: bun run apps/api/src/db/seed.ts
  */
-import "dotenv/config";
 import { eq, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/postgres-js";
 import postgres from "postgres";

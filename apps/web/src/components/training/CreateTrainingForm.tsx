@@ -34,7 +34,12 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<FormData>({ resolver: zodResolver(CreateTrainingSchema) as any });
+  } = useForm<FormData>({ 
+    resolver: zodResolver(CreateTrainingSchema) as any,
+    defaultValues: {
+      scheduledAt: new Date().toISOString().slice(0, 16),
+    }
+  });
 
   const onSubmit = async (data: FormData) => {
     console.log("Submitting CreateTraining form data:", data);

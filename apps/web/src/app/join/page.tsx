@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from "reac
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth";
-import { signIn } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 import { Loader2, LogIn, User } from "lucide-react";
 import type { PublicUser } from "@oruclass/types";
 
@@ -31,7 +31,7 @@ export default function JoinPage() {
     if (!participantName.trim()) return;
     setNameLoading(true);
     try {
-      const { data, error } = await signIn.anonymous();
+      const { data, error } = await authClient.signIn.anonymous({});
       if (error) throw error;
       
       setUser({

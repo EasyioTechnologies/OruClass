@@ -15,7 +15,7 @@ import { relations } from "drizzle-orm";
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 export const users = pgTable("users", {
-  id: uuid("id").defaultRandom().primaryKey(),
+  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   avatarUrl: text("avatar_url"),
@@ -30,7 +30,7 @@ export const users = pgTable("users", {
 export const workspaces = pgTable("workspaces", {
   id: uuid("id").defaultRandom().primaryKey(),
   name: text("name").notNull(),
-  ownerId: uuid("owner_id")
+  ownerId: text("owner_id")
     .notNull()
     .references(() => users.id, { onDelete: "cascade" }),
   settings: jsonb("settings").$type<Record<string, unknown>>().notNull().default({}),
@@ -44,7 +44,7 @@ export const workspaceMembers = pgTable(
     workspaceId: uuid("workspace_id")
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     role: text("role").$type<"owner" | "member">().notNull().default("member"),
@@ -71,7 +71,7 @@ export const trainings = pgTable(
       .notNull()
       .default("draft"),
     joinToken: text("join_token").notNull().unique(),
-    createdBy: uuid("created_by")
+    createdBy: text("created_by")
       .notNull()
       .references(() => users.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
@@ -131,7 +131,7 @@ export const trainingFacilitators = pgTable(
     trainingId: uuid("training_id")
       .notNull()
       .references(() => trainings.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     role: text("role")
@@ -149,7 +149,7 @@ export const trainingParticipants = pgTable(
     trainingId: uuid("training_id")
       .notNull()
       .references(() => trainings.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     joinedAt: timestamp("joined_at").notNull().defaultNow(),
@@ -179,7 +179,7 @@ export const liveSessions = pgTable(
     endedAt: timestamp("ended_at"),
     status: text("status").$type<"active" | "completed">().notNull().default("active"),
     targetResponses: integer("target_responses"),
-    createdBy: uuid("created_by").notNull().references(() => users.id),
+    createdBy: text("created_by").notNull().references(() => users.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
   (t) => [index("live_sessions_training_idx").on(t.trainingId)],
@@ -196,7 +196,7 @@ export const participantResponses = pgTable(
     moduleId: uuid("module_id")
       .notNull()
       .references(() => trainingModules.id, { onDelete: "cascade" }),
-    userId: uuid("user_id")
+    userId: text("user_id")
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     responseData: jsonb("response_data").$type<Record<string, unknown>>().notNull(),
@@ -321,14 +321,14 @@ export const session = pgTable("session", {
   updatedAt: timestamp('updated_at').notNull(),
   ipAddress: text('ip_address'),
   userAgent: text('user_agent'),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: "cascade" })
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: "cascade" })
 });
 
 export const account = pgTable("account", {
   id: text("id").primaryKey(),
   accountId: text('account_id').notNull(),
   providerId: text('provider_id').notNull(),
-  userId: uuid('user_id').notNull().references(() => users.id, { onDelete: "cascade" }),
+  userId: text('user_id').notNull().references(() => users.id, { onDelete: "cascade" }),
   accessToken: text('access_token'),
   refreshToken: text('refresh_token'),
   idToken: text('id_token'),

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { signIn } from "@/lib/auth-client";
+import { authClient } from "@/lib/auth-client";
 
 export function GithubSignInButton({
   returnTo = "/dashboard",
@@ -14,7 +14,7 @@ export function GithubSignInButton({
 
   const signInWithGithub = async () => {
     setLoading(true);
-    await signIn.social({
+    await authClient.signIn.social({
       provider: "github",
       callbackURL: `${window.location.origin}${returnTo}`,
     });
@@ -24,7 +24,7 @@ export function GithubSignInButton({
     <button
       onClick={signInWithGithub}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-2 px-4 py-3 border border-gray-300 rounded-lg text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
     >
       {loading ? (
         <span className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />

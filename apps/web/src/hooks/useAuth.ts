@@ -1,11 +1,11 @@
 "use client";
 
-import { useSession, signOut as betterSignOut } from "@/lib/auth-client";
 import { useCallback, useEffect } from "react";
 import { useAuthStore } from "@/store/auth";
+import { authClient } from "@/lib/auth-client";
 
 export function useAuth() {
-  const { data: session, isPending } = useSession();
+  const { data: session, isPending } = authClient.useSession();
   const { user, setUser, clearUser } = useAuthStore();
 
   useEffect(() => {
@@ -24,11 +24,11 @@ export function useAuth() {
     }
   }, [session, isPending, setUser, clearUser]);
 
-  const signOut = useCallback(async () => {
-    await betterSignOut();
+  const handleSignOut = useCallback(async () => {
+    await authClient.signOut();
     clearUser();
     window.location.href = "/login";
   }, [clearUser]);
 
-  return { user, isAuthenticated: !!user, signOut, isPending };
+  return { user, isAuthenticated: !!user, signOut: handleSignOut, isPending };
 }
