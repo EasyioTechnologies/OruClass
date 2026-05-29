@@ -45,7 +45,7 @@ export function WhiteboardCanvas({ module, trainingId }: Props) {
     socket.emit("draw:clear", { moduleId: module.id, trainingId });
   }, [socket, module.id, trainingId]);
 
-  const isTrainer = user?.role === "trainer" || user?.role === "admin";
+  const isTrainer = user?.authProvider === "google";
 
   return (
     <div className="flex flex-col h-full w-full">

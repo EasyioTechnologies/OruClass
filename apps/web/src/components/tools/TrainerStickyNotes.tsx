@@ -44,7 +44,7 @@ export function TrainerStickyNotes({ module, trainingId }: Props) {
       y: Math.random() * 300 + 50,
     };
     setNotes((prev) => [...prev, note]);
-    socket.emit("note:create", { moduleId: module.id, note });
+    socket.emit("note:create", { trainingId, moduleId: module.id, note });
     setDraft("");
   };
 

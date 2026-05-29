@@ -3,20 +3,17 @@
 import { useEffect, useRef, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
-import { useAuthStore } from "@/store/auth";
-import type { Training, PublicUser } from "@oruclass/types";
-import { Loader2, LogIn, User } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
+import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import type { Training } from "@oruclass/types";
 
 export default function JoinTokenPage({ params }: { params: Promise<{ token: string }> }) {
   const router = useRouter();
   const unwrappedParams = use(params);
-  const user = useAuthStore((s) => s.user);
-  const setUser = useAuthStore((s) => s.setUser);
+  const { user, isPending } = useAuth();
   const handled = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [needsAuth, setNeedsAuth] = useState(false);
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
 
   async function joinWithToken() {
     try {
@@ -35,29 +32,14 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
   }
 
   useEffect(() => {
-    if (handled.current) return;
+    if (handled.current || isPending) return;
     handled.current = true;
     if (!user) {
       setNeedsAuth(true);
       return;
     }
     joinWithToken();
-  }, []);
-
-  async function handleMockLogin() {
-    setAuthLoading(true);
-    setAuthError(null);
-    try {
-      const { data } = await apiClient.post<{ user: PublicUser }>("/api/auth/mock-signin", { index: 1 });
-      setUser(data.user);
-      setNeedsAuth(false);
-      await joinWithToken();
-    } catch {
-      setAuthError("Login failed. Try again.");
-    } finally {
-      setAuthLoading(false);
-    }
-  }
+  }, [user, isPending]);
 
   if (error) {
     return (
@@ -80,24 +62,7 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
             <p className="text-sm text-gray-500 mt-1">Sign in to join this session</p>
           </div>
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
-            <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50">
-              <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                <User size={16} className="text-emerald-600" />
-              </div>
-              <div>
-                <p className="text-sm font-medium text-gray-900">Dev Participant</p>
-                <p className="text-[11px] text-gray-400">dev.participant@oruclass.test</p>
-              </div>
-            </div>
-            {authError && <p className="text-sm text-red-500">{authError}</p>}
-            <button
-              onClick={handleMockLogin}
-              disabled={authLoading}
-              className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 disabled:opacity-40 transition-colors"
-            >
-              {authLoading ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
-              Continue & Join
-            </button>
+            <GoogleSignInButton returnTo={`/join/${unwrappedParams.token}`} />
           </div>
         </div>
       </div>

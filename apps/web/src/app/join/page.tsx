@@ -4,6 +4,7 @@ import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from "reac
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth";
+import { signIn } from "@/lib/auth-client";
 import { Loader2, LogIn, User } from "lucide-react";
 import type { PublicUser } from "@oruclass/types";
 
@@ -11,11 +12,10 @@ type Step = "auth" | "code";
 
 export default function JoinPage() {
   const router = useRouter();
-  const user = useAuthStore((s) => s.user);
-  const setUser = useAuthStore((s) => s.setUser);
+  const { user, setUser } = useAuthStore();
   const [step, setStep] = useState<Step>("auth");
-  const [authLoading, setAuthLoading] = useState(false);
-  const [authError, setAuthError] = useState<string | null>(null);
+  const [participantName, setParticipantName] = useState("");
+  const [nameLoading, setNameLoading] = useState(false);
   const [digits, setDigits] = useState(["", "", "", "", "", ""]);
   const [codeError, setCodeError] = useState<string | null>(null);
   const [codeLoading, setCodeLoading] = useState(false);
@@ -26,17 +26,27 @@ export default function JoinPage() {
     if (user) setStep("code");
   }, [user]);
 
-  async function handleMockLogin() {
-    setAuthLoading(true);
-    setAuthError(null);
+  async function handleGuestLogin(e: React.FormEvent) {
+    e.preventDefault();
+    if (!participantName.trim()) return;
+    setNameLoading(true);
     try {
-      const { data } = await apiClient.post<{ user: PublicUser }>("/api/auth/mock-signin", { index: 1 });
-      setUser(data.user);
+      const { data, error } = await signIn.anonymous();
+      if (error) throw error;
+      
+      setUser({
+        id: data?.user?.id ?? "",
+        name: participantName,
+        email: data?.user?.email ?? "",
+        avatarUrl: data?.user?.image,
+        authProvider: "guest",
+      } as any);
       setStep("code");
-    } catch {
-      setAuthError("Login failed. Try again.");
+    } catch (err) {
+      console.error(err);
+      alert("Failed to join. Please try again.");
     } finally {
-      setAuthLoading(false);
+      setNameLoading(false);
     }
   }
 
@@ -94,38 +104,42 @@ export default function JoinPage() {
 
         <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
           {step === "auth" ? (
-            <>
+            <form onSubmit={handleGuestLogin} className="space-y-4">
               <div>
                 <h2 className="text-[15px] font-semibold text-gray-900">Welcome</h2>
-                <p className="text-sm text-gray-500 mt-0.5">Sign in to join a session</p>
+                <p className="text-sm text-gray-500 mt-0.5">Please enter your name to join</p>
               </div>
 
-              {/* Mock user card */}
-              <div className="flex items-center gap-3 p-3 rounded-xl border border-gray-200 bg-gray-50">
-                <div className="w-9 h-9 rounded-full bg-emerald-100 flex items-center justify-center flex-shrink-0">
-                  <User size={16} className="text-emerald-600" />
-                </div>
-                <div>
-                  <p className="text-sm font-medium text-gray-900">Dev Participant</p>
-                  <p className="text-[11px] text-gray-400">dev.participant@oruclass.test</p>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-1">Your Name</label>
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <User className="h-5 w-5 text-gray-400" />
+                  </div>
+                  <input
+                    type="text"
+                    required
+                    value={participantName}
+                    onChange={(e) => setParticipantName(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-brand-500 focus:border-brand-500 text-sm"
+                    placeholder="E.g., Alex Johnson"
+                  />
                 </div>
               </div>
-
-              {authError && <p className="text-sm text-red-500">{authError}</p>}
 
               <button
-                onClick={handleMockLogin}
-                disabled={authLoading}
-                className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 disabled:opacity-40 transition-colors"
+                type="submit"
+                disabled={!participantName.trim() || nameLoading}
+                className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 disabled:opacity-40 transition-colors"
               >
-                {authLoading ? <Loader2 size={16} className="animate-spin" /> : <LogIn size={16} />}
+                {nameLoading ? <Loader2 size={16} className="animate-spin" /> : null}
                 Continue
               </button>
-            </>
+            </form>
           ) : (
             <>
               <div>
-                <p className="text-[11px] text-gray-400 mb-0.5">Signed in as {user?.name ?? "Participant"}</p>
+                <p className="text-[11px] text-gray-400 mb-0.5">Joining as {user?.name ?? "Participant"}</p>
                 <h2 className="text-[15px] font-semibold text-gray-900">Enter session code</h2>
                 <p className="text-sm text-gray-500 mt-0.5">
                   Enter the 6-digit code shown on the screen

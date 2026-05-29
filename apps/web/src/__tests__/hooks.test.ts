@@ -12,14 +12,14 @@ describe("useAuthStore", () => {
   });
 
   it("sets and reads user", () => {
-    const user = { id: "u1", name: "Alice", email: "alice@example.com" };
+    const user = { id: "u1", name: "Alice", email: "alice@example.com", authProvider: "google" };
     useAuthStore.getState().setUser(user);
     expect(useAuthStore.getState().user?.id).toBe("u1");
     expect(useAuthStore.getState().isAuthenticated).toBe(true);
   });
 
   it("signOut clears user", () => {
-    useAuthStore.getState().setUser({ id: "u1", name: "Alice", email: "alice@example.com" });
+    useAuthStore.getState().setUser({ id: "u1", name: "Alice", email: "alice@example.com", authProvider: "google" });
     useAuthStore.getState().setUser(null);
     expect(useAuthStore.getState().isAuthenticated).toBe(false);
   });

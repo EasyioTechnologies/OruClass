@@ -22,4 +22,4 @@ export interface JWTPayload {
   exp: number;
 }
 
-export type PublicUser = Pick<User, "id" | "name" | "email" | "avatarUrl">;
+export type PublicUser = Pick<User, "id" | "name" | "email" | "avatarUrl" | "authProvider">;

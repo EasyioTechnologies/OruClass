@@ -53,7 +53,7 @@ export function useSocketSession(trainingId: string | null) {
       setSocketStatus("connected");
     });
     socket.on("disconnect", () => scheduleDowngrade("disconnected"));
-    socket.on("reconnect_attempt", () => scheduleDowngrade("reconnecting"));
+    socket.io?.on?.("reconnect_attempt", () => scheduleDowngrade("reconnecting"));
     // io.on events for engine-level reconnects (some socket.io versions
     // don't bubble these to the socket itself).
     socket.io?.on?.("reconnect", () => {
@@ -66,10 +66,7 @@ export function useSocketSession(trainingId: string | null) {
     if (typeof window !== "undefined") {
       window.addEventListener("online", handleOnline);
     }
-    socket.on("reconnect", () => {
-      clearDowngrade();
-      setSocketStatus("connected");
-    });
+
 
     socket.on("module:unlocked", ({ moduleId, module }) => {
       setActiveModule(module || (moduleId ? ({ id: moduleId } as TrainingModule) : null));
@@ -139,8 +136,8 @@ export function useSocketSession(trainingId: string | null) {
       socket.io?.off?.("reconnect");
       socket.off("connect");
       socket.off("disconnect");
-      socket.off("reconnect_attempt");
-      socket.off("reconnect");
+      socket.io?.off?.("reconnect_attempt");
+
       socket.off("module:unlocked");
       socket.off("participant:joined");
       socket.off("participant:left");

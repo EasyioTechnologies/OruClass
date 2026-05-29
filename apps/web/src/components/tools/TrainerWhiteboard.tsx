@@ -43,21 +43,21 @@ export function TrainerWhiteboard({ module, trainingId }: Props) {
   const handleStrokeEnd = (stroke: StrokeData) => {
     setStrokes((prev) => [...prev, stroke]);
     if (socket) {
-      socket.emit("draw:update", { moduleId: module.id, stroke });
+      socket.emit("draw:update", { trainingId, moduleId: module.id, stroke });
     }
   };
 
   const handleStrokesChange = (newStrokes: StrokeData[]) => {
     setStrokes(newStrokes);
     if (socket) {
-      socket.emit("draw:sync", { moduleId: module.id, strokes: newStrokes });
+      socket.emit("draw:sync", { trainingId, moduleId: module.id, strokes: newStrokes });
     }
   };
 
   const handleClear = () => {
     setStrokes([]);
     if (socket) {
-      socket.emit("draw:clear", { moduleId: module.id });
+      socket.emit("draw:clear", { trainingId, moduleId: module.id });
     }
   };
 

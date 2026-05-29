@@ -4,7 +4,7 @@ import { logger as honoLogger } from "hono/logger";
 import { createServer } from "http";
 import { Server as SocketIOServer } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData } from "@oruclass/types";
-import { authRouter } from "./routes/auth";
+import { auth } from "./auth";
 import { workspacesRouter } from "./routes/workspaces";
 import { trainingsRouter } from "./routes/trainings";
 import { modulesRouter } from "./routes/modules";
@@ -21,7 +21,6 @@ import { setIO } from "./socket/io-instance";
 import { startExportWorker } from "./jobs/exportAnalytics.job";
 import { startDigestWorker } from "./jobs/sendSessionDigest.job";
 import { connectRedis } from "./db/redis";
-import { verifyJWT } from "./utils/jwt";
 import { logger } from "./utils/logger";
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -48,7 +47,7 @@ app.get("/health", (c) => c.json({ status: "ok", ts: Date.now() }));
 app.use("/api/auth/*", authRateLimiter);
 app.use("/api/*", apiRateLimiter);
 
-app.route("/api/auth", authRouter);
+app.on(["POST", "GET"], "/api/auth/*", (c) => auth.handler(c.req.raw));
 app.route("/api/workspaces", workspacesRouter);
 
 trainingsRouter.route("/", modulesRouter);
@@ -128,22 +127,16 @@ export const io = new SocketIOServer<
 });
 setIO(io);
 
-// Verify JWT at socket handshake — sets socket.data.userId from token, not client payload
-io.use((socket, next) => {
-  const cookieHeader = socket.handshake.headers["cookie"] ?? "";
-  const cookieToken = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/)?.[1] ?? null;
-
-  const token =
-    (socket.handshake.auth as { token?: string }).token ??
-    socket.handshake.headers["authorization"]?.replace("Bearer ", "") ??
-    cookieToken;
-
-  if (!token) return next(new Error("Authentication required"));
-
+// Verify session at socket handshake
+io.use(async (socket, next) => {
   try {
-    const payload = verifyJWT(token);
-    socket.data.userId = payload.sub;
-    socket.data.userEmail = payload.email;
+    const headers = new Headers(socket.handshake.headers as any);
+    const session = await auth.api.getSession({ headers });
+    
+    if (!session) return next(new Error("Authentication required"));
+    
+    socket.data.userId = session.user.id;
+    socket.data.userEmail = session.user.email;
     next();
   } catch {
     next(new Error("Invalid token"));

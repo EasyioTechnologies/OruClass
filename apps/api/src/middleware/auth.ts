@@ -1,28 +1,16 @@
 import type { MiddlewareHandler } from "hono";
-import { extractTokenFromHeader, verifyJWT } from "../utils/jwt";
+import { auth } from "../auth";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
-  const authHeader = c.req.header("Authorization");
-  const token = extractTokenFromHeader(authHeader)
-    ?? c.req.header("x-auth-token")
-    ?? getCookieToken(c.req.header("Cookie"));
+  const session = await auth.api.getSession({
+    headers: c.req.raw.headers
+  });
 
-  if (!token) {
-    return c.json({ error: "Unauthorized", code: "NO_TOKEN" }, 401);
+  if (!session) {
+    return c.json({ error: "Unauthorized", code: "NO_SESSION" }, 401);
   }
 
-  try {
-    const payload = verifyJWT(token);
-    c.set("userId", payload.sub);
-    c.set("userEmail", payload.email);
-    await next();
-  } catch {
-    return c.json({ error: "Unauthorized", code: "INVALID_TOKEN" }, 401);
-  }
+  c.set("userId", session.user.id);
+  c.set("userEmail", session.user.email);
+  await next();
 };
-
-function getCookieToken(cookieHeader: string | undefined): string | null {
-  if (!cookieHeader) return null;
-  const match = cookieHeader.match(/(?:^|;\s*)token=([^;]+)/);
-  return match?.[1] ?? null;
-}

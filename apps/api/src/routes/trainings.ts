@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "../db/client";
-import { trainings, trainingFacilitators, trainingModules, users } from "../db/schema";
+import { trainings, trainingFacilitators, trainingModules, trainingDays, users } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { requireTrainingPermission, invalidateRoleCache } from "../middleware/roleGuard";
@@ -69,9 +69,17 @@ trainingsRouter.post("/", async (c) => {
     assignedModules: [],
   });
 
+  const [day1] = await db.insert(trainingDays).values({
+    trainingId: training.id,
+    dayNumber: 1,
+    title: "Day 1",
+    date: training.scheduledAt,
+  }).returning();
+
   // Every training gets a default Attendance module — editable/deletable
   await db.insert(trainingModules).values({
     trainingId: training.id,
+    dayId: day1.id,
     title: "Attendance",
     moduleType: "attendance",
     position: 0,

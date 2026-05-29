@@ -24,5 +24,5 @@ docker compose down                   # stop + remove containers
 ## Restart
 
 ```bash
-npx kill-port 3000 3001 && bun run dev
+docker compose down && docker compose up postgres redis -d && npx kill-port 3000 3001 && bun run dev
 ```
