@@ -33,10 +33,23 @@ export const auth = betterAuth({
   plugins: [
     anonymous(), // for guest/participant logins
   ],
-  trustedOrigins: ["http://localhost:3000"],
+  trustedOrigins: [process.env.WEB_URL ?? "http://localhost:3000", "http://localhost:3000"],
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3001",
+  account: {
+    accountLinking: {
+      enabled: true,
+      trustedProviders: ["google", "github"],
+    }
+  },
+  rateLimit: {
+    window: 60, // 1 minute
+    max: 1000,  // 1000 requests per minute to prevent 429s during frequent rerenders
+  },
   advanced: {
     generateId: () => randomUUID(),
+    crossSubDomainCookies: {
+      enabled: true
+    }
   }
 });

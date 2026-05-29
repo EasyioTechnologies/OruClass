@@ -1,9 +1,6 @@
 import axios from "axios";
 
 const getBaseUrl = () => {
-  if (typeof window !== "undefined") {
-    return ""; // use relative path, Next.js will proxy it
-  }
   return process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
 };
 
@@ -16,11 +13,8 @@ export const apiClient = axios.create({
 apiClient.interceptors.response.use(
   (res) => res,
   async (error) => {
-    if (error.response?.status === 401) {
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
-      }
-    }
+    // We intentionally do NOT force a redirect to /login on 401 here.
+    // It causes unexpected logouts if an API endpoint throws a 401 for permission reasons.
     return Promise.reject(error);
   },
 );

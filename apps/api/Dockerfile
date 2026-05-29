@@ -3,7 +3,7 @@ WORKDIR /app
 
 # ── Install deps ──────────────────────────────────────────────────────────────
 FROM base AS deps
-COPY package.json bun.lock turbo.json ./
+COPY package.json bun.lock turbo.json tsconfig.json ./
 COPY packages/types/       packages/types/
 COPY packages/validators/  packages/validators/
 COPY packages/utils/       packages/utils/
