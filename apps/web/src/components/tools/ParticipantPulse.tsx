@@ -28,30 +28,30 @@ export function ParticipantPulse({ module, trainingId }: Props) {
 
   if (submitted) {
     return (
-      <div className="flex items-center justify-center h-full">
+      <div className="flex items-center justify-center h-full p-4">
         <div className="text-center space-y-3">
-          <div className="text-6xl">{selected}</div>
-          <p className="font-medium text-gray-700">Thanks for your feedback!</p>
+          <div className="text-5xl sm:text-6xl">{selected}</div>
+          <p className="font-medium text-gray-700 text-sm sm:text-base">Thanks for your feedback!</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex flex-col items-center justify-center h-full p-6 space-y-6">
-      <h2 className="text-xl font-bold text-gray-900">{module.title}</h2>
+    <div className="flex flex-col items-center justify-center h-full p-4 sm:p-6 space-y-4 sm:space-y-6">
+      <h2 className="text-lg sm:text-xl font-bold text-gray-900 text-center">{module.title}</h2>
       {module.config.pulsePrompt && (
-        <p className="text-gray-600 text-center">{module.config.pulsePrompt}</p>
+        <p className="text-gray-600 text-center text-sm sm:text-base">{module.config.pulsePrompt}</p>
       )}
-      <p className="text-sm text-gray-400">How are you feeling right now?</p>
+      <p className="text-xs sm:text-sm text-gray-400">How are you feeling right now?</p>
 
-      <div className="flex gap-4">
+      <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
         {emojis.map((emoji) => (
           <button
             key={emoji}
             onClick={() => submit(emoji)}
             disabled={isPending}
-            className={`text-5xl p-3 rounded-2xl transition-all hover:scale-125 hover:bg-gray-100 active:scale-95 disabled:opacity-60 ${
+            className={`text-3xl sm:text-5xl p-2 sm:p-3 rounded-2xl transition-all hover:scale-125 hover:bg-gray-100 active:scale-95 disabled:opacity-60 ${
               selected === emoji ? "bg-brand-50 scale-110" : ""
             }`}
           >

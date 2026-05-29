@@ -35,6 +35,18 @@ export default function DataPage() {
     );
   }) ?? [];
 
+  const groupedResponses = filteredResponses.reduce((acc, response) => {
+    const trainingId = response.trainingId || "unknown";
+    if (!acc[trainingId]) {
+      acc[trainingId] = {
+        training: response.training,
+        responses: [],
+      };
+    }
+    acc[trainingId].responses.push(response);
+    return acc;
+  }, {} as Record<string, { training: any; responses: typeof filteredResponses }>);
+
   return (
     <div className="flex flex-col h-full space-y-6">
       <div className="flex items-center justify-between">
@@ -56,73 +68,75 @@ export default function DataPage() {
         </div>
       </div>
 
-      <div className="flex-1 bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
-        <div className="overflow-auto flex-1">
-          <table className="w-full text-left border-collapse">
-            <thead className="bg-gray-50 border-b border-gray-200 sticky top-0 z-10">
-              <tr>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Participant
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Training
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Module
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Submitted At
-                </th>
-                <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
-                  Response Data
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-100">
-              {filteredResponses.length === 0 ? (
-                <tr>
-                  <td colSpan={5} className="px-6 py-12 text-center text-sm text-gray-500">
-                    No responses found.
-                  </td>
-                </tr>
-              ) : (
-                filteredResponses.map((response) => (
-                  <tr key={response.id} className="hover:bg-gray-50 transition-colors">
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <div className="flex items-center">
-                        <div className="flex-shrink-0 h-8 w-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-xs">
-                          {response.user?.name?.[0]?.toUpperCase()}
-                        </div>
-                        <div className="ml-3">
-                          <p className="text-sm font-medium text-gray-900">{response.user?.name}</p>
-                          <p className="text-xs text-gray-500">{response.user?.email}</p>
-                        </div>
-                      </div>
-                    </td>
-                    <td className="px-6 py-4">
-                      <span className="text-sm text-gray-900 font-medium">
-                        {response.training?.title}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap">
-                      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                        {response.module?.title}
-                      </span>
-                    </td>
-                    <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                      {format(new Date(response.submittedAt), "MMM d, yyyy h:mm a")}
-                    </td>
-                    <td className="px-6 py-4 text-sm text-gray-700 max-w-md">
-                      <pre className="whitespace-pre-wrap bg-gray-50 p-2 rounded border border-gray-100 text-xs text-gray-600 max-h-24 overflow-y-auto">
-                        {JSON.stringify(response.responseData, null, 2)}
-                      </pre>
-                    </td>
-                  </tr>
-                ))
-              )}
-            </tbody>
-          </table>
-        </div>
+      <div className="flex-1 overflow-auto space-y-6 pb-6 pr-2">
+        {Object.values(groupedResponses).length === 0 ? (
+          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-sm text-gray-500">
+            No responses found.
+          </div>
+        ) : (
+          Object.values(groupedResponses).map((group) => (
+            <div key={group.training?.id || "unknown"} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+              <div className="px-6 py-4 border-b border-gray-200 bg-gray-50/50 flex items-center justify-between">
+                <h2 className="text-lg font-semibold text-gray-900">
+                  {group.training?.title || "Unknown Training"}
+                </h2>
+                <span className="inline-flex items-center justify-center bg-brand-100 text-brand-700 px-2.5 py-0.5 rounded-full text-xs font-medium">
+                  {group.responses.length} {group.responses.length === 1 ? "Response" : "Responses"}
+                </span>
+              </div>
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse">
+                  <thead className="bg-gray-50 border-b border-gray-200">
+                    <tr>
+                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Participant
+                      </th>
+                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Module
+                      </th>
+                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Submitted At
+                      </th>
+                      <th className="px-6 py-3 text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        Response Data
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    {group.responses.map((response) => (
+                      <tr key={response.id} className="hover:bg-gray-50 transition-colors">
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center">
+                            <div className="flex-shrink-0 h-8 w-8 rounded-full bg-brand-100 flex items-center justify-center text-brand-600 font-bold text-xs">
+                              {response.user?.name?.[0]?.toUpperCase()}
+                            </div>
+                            <div className="ml-3">
+                              <p className="text-sm font-medium text-gray-900">{response.user?.name}</p>
+                              <p className="text-xs text-gray-500">{response.user?.email}</p>
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                            {response.module?.title}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          {format(new Date(response.submittedAt), "MMM d, yyyy h:mm a")}
+                        </td>
+                        <td className="px-6 py-4 text-sm text-gray-700 max-w-md">
+                          <pre className="whitespace-pre-wrap bg-gray-50 p-2 rounded border border-gray-100 text-xs text-gray-600 max-h-24 overflow-y-auto">
+                            {JSON.stringify(response.responseData, null, 2)}
+                          </pre>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          ))
+        )}
       </div>
     </div>
   );

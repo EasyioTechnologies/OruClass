@@ -1,6 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useSocket } from "@/hooks/useSocket";
 import type { TrainingModule } from "@oruclass/types";
 
 interface Props {
@@ -8,36 +9,57 @@ interface Props {
   trainingId: string;
 }
 
-export function TrainerTimer({ module }: Props) {
+export function TrainerTimer({ module, trainingId }: Props) {
+  const socket = useSocket();
   const duration = module.config.durationSeconds ?? 300;
   const label = module.config.timerLabel ?? "Time remaining";
   const [remaining, setRemaining] = useState(duration);
   const [running, setRunning] = useState(false);
   const intervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  useEffect(() => {
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, []);
+  const broadcast = useCallback(
+    (r: number, isRunning: boolean) => {
+      socket?.emit("timer:sync" as any, { trainingId, moduleId: module.id, remaining: r, running: isRunning, duration });
+    },
+    [socket, trainingId, module.id, duration],
+  );
 
   useEffect(() => {
+    if (intervalRef.current) clearInterval(intervalRef.current);
     if (running && remaining > 0) {
       intervalRef.current = setInterval(() => {
         setRemaining((prev) => {
-          if (prev <= 1) {
+          const next = prev - 1;
+          if (next <= 0) {
             clearInterval(intervalRef.current!);
             setRunning(false);
+            broadcast(0, false);
             return 0;
           }
-          return prev - 1;
+          // Broadcast every 5 seconds to keep participants in sync without flooding
+          if (next % 5 === 0) broadcast(next, true);
+          return next;
         });
       }, 1000);
     }
-    return () => {
-      if (intervalRef.current) clearInterval(intervalRef.current);
-    };
-  }, [running, remaining]);
+    return () => { if (intervalRef.current) clearInterval(intervalRef.current); };
+  }, [running]);
+
+  const handleStart = () => {
+    setRunning(true);
+    broadcast(remaining, true);
+  };
+
+  const handlePause = () => {
+    setRunning(false);
+    broadcast(remaining, false);
+  };
+
+  const handleReset = () => {
+    setRunning(false);
+    setRemaining(duration);
+    broadcast(duration, false);
+  };
 
   const mins = Math.floor(remaining / 60);
   const secs = remaining % 60;
@@ -70,24 +92,24 @@ export function TrainerTimer({ module }: Props) {
         </div>
       </div>
 
-      {isFinished ? (
-        <p className="text-red-500 font-semibold text-lg animate-pulse">Time's up!</p>
-      ) : null}
+      {isFinished && <p className="text-red-500 font-semibold text-lg animate-pulse">Time's up!</p>}
 
       <div className="flex gap-3">
         <button
-          onClick={() => setRunning(!running)}
+          onClick={running ? handlePause : handleStart}
           className="px-8 py-3 bg-brand-600 text-white rounded-xl font-semibold hover:bg-brand-700 transition-colors text-sm"
         >
           {running ? "Pause" : "Start"}
         </button>
         <button
-          onClick={() => { setRunning(false); setRemaining(duration); }}
+          onClick={handleReset}
           className="px-8 py-3 border border-gray-300 text-gray-600 rounded-xl font-semibold hover:bg-gray-50 transition-colors text-sm"
         >
           Reset
         </button>
       </div>
+
+      <p className="text-xs text-gray-400">Timer is synced to all participants in real-time.</p>
     </div>
   );
 }

@@ -13,6 +13,7 @@ export interface ClientToServerEvents {
   "draw:sync": (data: { trainingId: string; moduleId: string; strokes: StrokeData[] }) => void;
   "note:create": (data: { trainingId: string; moduleId: string; note: StickyNote }) => void;
   "note:position": (data: { trainingId: string; moduleId: string; noteId: string; x: number; y: number }) => void;
+  "timer:sync": (data: { trainingId: string; moduleId: string; remaining: number; running: boolean; duration: number }) => void;
   heartbeat: () => void;
 }
 
@@ -28,6 +29,7 @@ export interface ServerToClientEvents {
   "draw:sync": (data: { moduleId: string; userId: string; strokes: StrokeData[] }) => void;
   "note:create": (data: { moduleId: string; note: StickyNote }) => void;
   "note:position": (data: { moduleId: string; noteId: string; x: number; y: number }) => void;
+  "timer:sync": (data: { moduleId: string; remaining: number; running: boolean; duration: number }) => void;
   "session:paused": () => void;
   "session:resumed": () => void;
   "session:started": () => void;

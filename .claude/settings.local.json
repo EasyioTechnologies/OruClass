@@ -20,7 +20,8 @@
       "Bash(docker info:*)",
       "Bash(find /f/OruClass/apps/web/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec grep -l \"token\\\\|refresh\\\\|expir\" {} \\\\;)",
       "Bash(npx next:*)",
-      "Bash(find:*)"
+      "Bash(find:*)",
+      "Bash(npx --package=typescript tsc --noEmit)"
     ]
   }
 }

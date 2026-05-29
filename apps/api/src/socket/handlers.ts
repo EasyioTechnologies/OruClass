@@ -71,6 +71,7 @@ const EVENT_LIMITS: Record<string, [number, number]> = {
   "draw:update": [60, 1_000],
   "note:create": [10, 1_000],
   "note:position": [60, 1_000],
+  "timer:sync": [10, 1_000],
 };
 
 function makePerEventRateLimiter() {
@@ -372,6 +373,13 @@ export function registerSocketHandlers(io: IO): void {
       "note:position",
       guard("note:position", ({ trainingId, moduleId, noteId, x, y }: { trainingId: string; moduleId: string; noteId: string; x: number; y: number }) => {
         socket.to(`training:${trainingId}`).emit("note:position", { moduleId, noteId, x, y });
+      }),
+    );
+
+    socket.on(
+      "timer:sync",
+      guard("timer:sync", ({ trainingId, moduleId, remaining, running, duration }: { trainingId: string; moduleId: string; remaining: number; running: boolean; duration: number }) => {
+        socket.to(`training:${trainingId}`).emit("timer:sync", { moduleId, remaining, running, duration });
       }),
     );
 
