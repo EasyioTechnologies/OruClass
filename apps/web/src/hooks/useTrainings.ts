@@ -49,6 +49,23 @@ export function useCreateTraining(workspaceId: string) {
   });
 }
 
+export function useUpdateTraining(workspaceId: string, trainingId: string) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (data: { title?: string; category?: string; description?: string; scheduledAt?: string }) =>
+      apiClient.patch<Training>(
+        `/api/workspaces/${workspaceId}/trainings/${trainingId}`,
+        data,
+        { headers: { "X-Workspace-ID": workspaceId } },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["training", workspaceId, trainingId] });
+      qc.invalidateQueries({ queryKey: ["trainings", workspaceId] });
+    },
+  });
+}
+
 export function useDeleteTraining(workspaceId: string) {
   const qc = useQueryClient();
 

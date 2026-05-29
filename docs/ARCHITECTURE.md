@@ -2,7 +2,7 @@
 
 ## Overview
 
-oruClassrooms is a real-time live training platform built as a Turborepo monorepo.
+OruClassrooms is a real-time live training platform built as a Turborepo monorepo.
 
 ```
 apps/api     — Hono.js HTTP + Socket.IO WebSocket server (port 3001)

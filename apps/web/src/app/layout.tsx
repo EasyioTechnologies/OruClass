@@ -10,7 +10,7 @@ const jakarta = Plus_Jakarta_Sans({
 });
 
 export const metadata: Metadata = {
-  title: { default: "oruClassrooms", template: "%s | oruClassrooms" },
+  title: { default: "OruClassrooms", template: "%s | OruClassrooms" },
   description: "Real-time live training platform for teacher professional development",
 };
 

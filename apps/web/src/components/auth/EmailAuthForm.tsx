@@ -80,7 +80,7 @@ export function EmailAuthForm({
               placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
               required={!isLogin}
             />
           </div>
@@ -91,7 +91,7 @@ export function EmailAuthForm({
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
             required
           />
         </div>
@@ -101,7 +101,7 @@ export function EmailAuthForm({
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
             required
             minLength={8}
           />
@@ -112,7 +112,7 @@ export function EmailAuthForm({
         <button
           type="submit"
           disabled={loading}
-          className="w-full flex items-center justify-center py-3 bg-gray-900 text-white rounded-lg text-sm font-medium hover:bg-gray-800 transition-colors disabled:opacity-50"
+          className="w-full flex items-center justify-center py-3 bg-emerald-600 text-white rounded-2xl text-sm font-semibold hover:bg-emerald-700 hover:shadow-md transition-all disabled:opacity-50"
         >
           {loading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
         </button>
@@ -136,7 +136,7 @@ export function EmailAuthForm({
             setIsLogin(!isLogin);
             setError("");
           }}
-          className="text-brand-600 hover:underline"
+          className="text-emerald-600 font-semibold hover:text-emerald-700 hover:underline transition-colors"
         >
           {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
         </button>

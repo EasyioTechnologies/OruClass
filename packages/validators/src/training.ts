@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const TrainingCategorySchema = z.enum(["atl", "maker_space", "ict_cal"]);
-export const ModuleTypeSchema = z.enum(["quiz", "whiteboard", "reflection", "matrix", "custom", "attendance"]);
+export const ModuleTypeSchema = z.enum(["quiz", "whiteboard", "reflection", "matrix", "custom", "attendance", "poll", "wordcloud", "qna", "timer", "pulse"]);
 export const TrainingRoleSchema = z.enum([
   "lead_trainer",
   "full_editor",

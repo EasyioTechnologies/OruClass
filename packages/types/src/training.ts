@@ -1,6 +1,6 @@
 export type TrainingStatus = "draft" | "connecting" | "live" | "paused" | "completed";
 export type TrainingCategory = "atl" | "maker_space" | "ict_cal";
-export type ModuleType = "quiz" | "whiteboard" | "reflection" | "matrix" | "custom" | "attendance";
+export type ModuleType = "quiz" | "whiteboard" | "reflection" | "matrix" | "custom" | "attendance" | "poll" | "wordcloud" | "qna" | "timer" | "pulse";
 export type TrainingRole =
   | "lead_trainer"
   | "full_editor"
@@ -76,6 +76,22 @@ export interface ModuleConfig {
   backgroundColor?: string;
   // Attendance
   attendanceFields?: AttendanceField[];
+  // Poll
+  pollQuestion?: string;
+  pollOptions?: string[];
+  allowMultiple?: boolean;
+  // Word Cloud
+  wordcloudPrompt?: string;
+  maxWords?: number;
+  // Q&A
+  qnaPrompt?: string;
+  allowUpvote?: boolean;
+  // Timer
+  durationSeconds?: number;
+  timerLabel?: string;
+  // Pulse
+  pulsePrompt?: string;
+  pulseEmojis?: string[];
 }
 
 export interface QuizQuestion {
@@ -149,7 +165,11 @@ export type ResponseData =
   | { type: "reflection"; text: string }
   | { type: "matrix"; cells: Record<string, string> }
   | { type: "sticky"; notes: StickyNote[] }
-  | { type: "attendance"; fields: Record<string, string> };
+  | { type: "attendance"; fields: Record<string, string> }
+  | { type: "poll"; selected: string[] }
+  | { type: "wordcloud"; words: string[] }
+  | { type: "qna"; question: string }
+  | { type: "pulse"; emoji: string };
 
 export interface StrokeData {
   points: { x: number; y: number }[];

@@ -1,14 +1,14 @@
-# oruClassrooms
+# OruClassrooms
 
 > The live-action workshop platform for teacher professional development.
 
-Welcome to oruClassrooms! This platform was built to solve a major problem in professional development: keeping a room full of people engaged, synchronized, and actively learning together. 
+Welcome to OruClassrooms! This platform was built to solve a major problem in professional development: keeping a room full of people engaged, synchronized, and actively learning together. 
 
-Instead of relying on static slides or making participants scroll through digital paperwork by themselves, oruClassrooms transforms training sessions into highly collaborative, real-time digital workshops. 
+Instead of relying on static slides or making participants scroll through digital paperwork by themselves, OruClassrooms transforms training sessions into highly collaborative, real-time digital workshops. 
 
-## 🌟 What makes oruClassrooms different?
+## 🌟 What makes OruClassrooms different?
 
-Most digital learning platforms are built for "asynchronous" learning—meaning everyone goes at their own pace. oruClassrooms is built for **live, synchronous** training. 
+Most digital learning platforms are built for "asynchronous" learning—meaning everyone goes at their own pace. OruClassrooms is built for **live, synchronous** training. 
 
 We put the Lead Trainer in the driver's seat. Participants cannot skip ahead or get distracted by future slides. When the trainer is ready to move to the next activity, they simply click a button, and the activity instantly appears on every participant's screen in the room.
 

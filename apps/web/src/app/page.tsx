@@ -6,7 +6,7 @@ export default function LandingPage() {
       <div className="max-w-3xl text-center space-y-8">
         <div className="space-y-4">
           <h1 className="text-5xl font-bold text-brand-900 tracking-tight">
-            oruClassrooms
+            OruClassrooms
           </h1>
           <p className="text-xl text-brand-700 max-w-xl mx-auto">
             Real-time live training platform for teacher professional development.

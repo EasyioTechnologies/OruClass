@@ -1,7 +1,7 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = "oruClassrooms <no-reply@oruclassrooms.com>";
+const FROM = "OruClassrooms <no-reply@OruClassrooms.com>";
 
 export async function sendInvitationEmail(opts: {
   to: string;
@@ -15,7 +15,7 @@ export async function sendInvitationEmail(opts: {
     subject: `${opts.inviterName} invited you to ${opts.workspaceName}`,
     html: `
       <p>Hi,</p>
-      <p><strong>${opts.inviterName}</strong> has invited you to join the workspace <strong>${opts.workspaceName}</strong> on oruClassrooms.</p>
+      <p><strong>${opts.inviterName}</strong> has invited you to join the workspace <strong>${opts.workspaceName}</strong> on OruClassrooms.</p>
       <p><a href="${opts.joinUrl}" style="background:#2563eb;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none">Accept Invitation</a></p>
       <p>This link expires in 7 days.</p>
     `,

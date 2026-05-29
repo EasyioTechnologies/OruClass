@@ -18,6 +18,22 @@ export function useWorkspaces() {
   });
 }
 
+export function useCreateWorkspace() {
+  const qc = useQueryClient();
+  const addWorkspace = useWorkspaceStore((s) => s.addWorkspace);
+
+  return useMutation({
+    mutationFn: async (name: string) => {
+      const { data } = await apiClient.post<Workspace>("/api/workspaces", { name });
+      return data;
+    },
+    onSuccess: (workspace) => {
+      addWorkspace(workspace);
+      qc.invalidateQueries({ queryKey: ["workspaces"] });
+    },
+  });
+}
+
 export function useDeleteWorkspace() {
   const qc = useQueryClient();
 

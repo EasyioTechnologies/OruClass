@@ -19,7 +19,7 @@ export function ParticipantMatrix({ module, trainingId }: Props) {
 
   const submit = async () => {
     setIsPending(true);
-    await submitResponse(module.id, { cells });
+    await submitResponse(module.id, { type: "matrix", cells });
     setSubmitted(true);
     setIsPending(false);
   };

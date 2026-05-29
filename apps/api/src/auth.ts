@@ -36,6 +36,14 @@ export const auth = betterAuth({
   trustedOrigins: [process.env.WEB_URL ?? "http://localhost:3000", "http://localhost:3000"],
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3001",
+  session: {
+    expiresIn: 60 * 60 * 24 * 7, // 7 days
+    updateAge: 60 * 60 * 24, // refresh session every 24h
+    cookieCache: {
+      enabled: false,
+      maxAge: 60 * 5, // 5 min client-side cache to reduce session lookups
+    },
+  },
   account: {
     accountLinking: {
       enabled: true,
@@ -43,13 +51,11 @@ export const auth = betterAuth({
     }
   },
   rateLimit: {
-    window: 60, // 1 minute
-    max: 1000,  // 1000 requests per minute to prevent 429s during frequent rerenders
+    window: 60,
+    max: 1000,
   },
   advanced: {
     generateId: () => randomUUID(),
-    crossSubDomainCookies: {
-      enabled: true
-    }
+    // crossSubDomainCookies disabled — was causing cookies to get wrong scope on localhost
   }
 });

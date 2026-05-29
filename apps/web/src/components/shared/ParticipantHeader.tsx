@@ -10,14 +10,14 @@ export function ParticipantHeader() {
   return (
     <header className="h-14 border-b border-gray-100 bg-white flex items-center justify-between px-4 md:px-6 flex-shrink-0 z-10">
       <div className="flex items-center gap-2">
-        <button 
+        <button
           onClick={toggleMobileSidebar}
           className="md:hidden p-1.5 -ml-1.5 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors"
         >
           <Menu size={20} />
         </button>
         <h1 className="text-sm font-bold tracking-tight text-brand-600">
-          <Link href="/participant">oruClassrooms</Link>
+          <Link href="/participant">OruClassrooms</Link>
         </h1>
       </div>
       <div className="flex items-center gap-4">

@@ -1,17 +1,18 @@
 "use client";
 
 import Link from "next/link";
-import { useWorkspaces, useDeleteWorkspace } from "@/hooks/useWorkspace";
+import { useWorkspaces, useDeleteWorkspace, useCreateWorkspace } from "@/hooks/useWorkspace";
 import { useTrainings } from "@/hooks/useTrainings";
 import { useWorkspaceStore } from "@/store/workspace";
+import { useAuthStore } from "@/store/auth";
 import { formatDate } from "@oruclass/utils";
 
 import { useRouter } from "next/navigation";
 
-import { ChevronDown, ChevronUp, Trash2, CalendarDays, Play, ArrowRight, LayoutGrid } from "lucide-react";
-import { useState, useEffect } from "react";
+import { ChevronDown, ChevronUp, Trash2, CalendarDays, Play, ArrowRight, LayoutGrid, Pencil, X } from "lucide-react";
+import { useState, useEffect, useRef } from "react";
 import type { Training } from "@oruclass/types";
-import { useDeleteTraining } from "@/hooks/useTrainings";
+import { useDeleteTraining, useUpdateTraining } from "@/hooks/useTrainings";
 
 function DeleteTrainingModal({ isOpen, onClose, training, onDelete }: { isOpen: boolean, onClose: () => void, training: Training, onDelete: () => void }) {
   const [input, setInput] = useState("");
@@ -59,10 +60,116 @@ function DeleteTrainingModal({ isOpen, onClose, training, onDelete }: { isOpen: 
   );
 }
 
+const CATEGORIES: { value: string; label: string }[] = [
+  { value: "atl", label: "ATL" },
+  { value: "maker_space", label: "Maker Space" },
+  { value: "ict_cal", label: "ICT/CAL" },
+];
+
+function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onClose: () => void; training: Training }) {
+  const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
+  const updateTraining = useUpdateTraining(workspaceId, training.id);
+  const [title, setTitle] = useState(training.title);
+  const [category, setCategory] = useState(training.category);
+  const [description, setDescription] = useState(training.description ?? "");
+  const [scheduledAt, setScheduledAt] = useState(
+    training.scheduledAt ? new Date(training.scheduledAt).toISOString().slice(0, 16) : ""
+  );
+
+  useEffect(() => {
+    if (isOpen) {
+      setTitle(training.title);
+      setCategory(training.category);
+      setDescription(training.description ?? "");
+      setScheduledAt(training.scheduledAt ? new Date(training.scheduledAt).toISOString().slice(0, 16) : "");
+    }
+  }, [isOpen, training]);
+
+  if (!isOpen) return null;
+
+  const handleSave = () => {
+    updateTraining.mutate(
+      { title: title.trim(), category, description: description.trim() || undefined, scheduledAt: scheduledAt || undefined },
+      { onSuccess: () => onClose() },
+    );
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200 space-y-4" onClick={e => e.stopPropagation()}>
+        <div className="flex items-center justify-between">
+          <h3 className="text-lg font-bold text-slate-900">Edit Training</h3>
+          <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"><X size={18} /></button>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+          <input
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          >
+            {CATEGORIES.map((c) => (
+              <option key={c.value} value={c.value}>{c.label}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+          <textarea
+            value={description}
+            onChange={(e) => setDescription(e.target.value)}
+            rows={3}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+            placeholder="Optional description…"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled at</label>
+          <input
+            type="datetime-local"
+            value={scheduledAt}
+            onChange={(e) => setScheduledAt(e.target.value)}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+        {updateTraining.isError && (
+          <p className="text-sm text-red-500">Failed to update training. Try again.</p>
+        )}
+        <div className="flex gap-2 pt-2">
+          <button onClick={onClose} className="flex-1 py-2 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50">
+            Cancel
+          </button>
+          <button
+            onClick={handleSave}
+            disabled={updateTraining.isPending || !title.trim()}
+            className="flex-1 py-2 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 disabled:opacity-60 transition-colors"
+          >
+            {updateTraining.isPending ? "Saving…" : "Save Changes"}
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 function TrainingCard({ t }: { t: Training }) {
   const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const deleteTraining = useDeleteTraining(workspaceId);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+
+  const handleEditClick = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setIsEditModalOpen(true);
+  };
 
   const handleDeleteClick = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -92,13 +199,22 @@ function TrainingCard({ t }: { t: Training }) {
               {t.days?.length || 0} Days
             </span>
           </div>
-          <button 
-            onClick={handleDeleteClick}
-            className="text-slate-400 hover:text-red-500 hover:bg-white p-2 rounded-full transition-colors bg-white/50"
-            title="Delete training"
-          >
-            <Trash2 size={16} />
-          </button>
+          <div className="flex items-center gap-1">
+            <button
+              onClick={handleEditClick}
+              className="text-slate-400 hover:text-brand-600 hover:bg-white p-2 rounded-full transition-colors bg-white/50"
+              title="Edit training"
+            >
+              <Pencil size={15} />
+            </button>
+            <button
+              onClick={handleDeleteClick}
+              className="text-slate-400 hover:text-red-500 hover:bg-white p-2 rounded-full transition-colors bg-white/50"
+              title="Delete training"
+            >
+              <Trash2 size={16} />
+            </button>
+          </div>
         </div>
         
         <h3 className="text-xl font-extrabold text-slate-800 leading-tight mb-2 group-hover:text-brand-700 transition-colors">{t.title}</h3>
@@ -122,11 +238,16 @@ function TrainingCard({ t }: { t: Training }) {
       </div>
     </div>
     
-    <DeleteTrainingModal 
+    <DeleteTrainingModal
       isOpen={isDeleteModalOpen}
       onClose={() => setIsDeleteModalOpen(false)}
       training={t}
       onDelete={confirmDelete}
+    />
+    <EditTrainingModal
+      isOpen={isEditModalOpen}
+      onClose={() => setIsEditModalOpen(false)}
+      training={t}
     />
     </>
   );
@@ -138,6 +259,18 @@ export function WorkspaceDashboard() {
   const activeId = useWorkspaceStore((s) => s.activeWorkspaceId);
   const { data: trainings, isLoading: trainingsLoading } = useTrainings(activeId ?? "");
   const { mutate: deleteWorkspace } = useDeleteWorkspace();
+  const { mutate: createWorkspace } = useCreateWorkspace();
+  const user = useAuthStore((s) => s.user);
+  const autoCreating = useRef(false);
+
+  // Auto-create workspace for new trainers
+  useEffect(() => {
+    if (!isLoading && (!workspaces || workspaces.length === 0) && user && !autoCreating.current) {
+      autoCreating.current = true;
+      const firstName = user.name?.split(" ")[0] || "My";
+      createWorkspace(`${firstName}'s Workspace`);
+    }
+  }, [isLoading, workspaces, user, createWorkspace]);
 
   const handleDeleteWorkspace = () => {
     if (!activeId) return;
@@ -150,27 +283,10 @@ export function WorkspaceDashboard() {
     }
   };
 
-  if (isLoading) {
+  if (isLoading || (!workspaces?.length && user)) {
     return (
       <div className="flex items-center justify-center h-64">
         <div className="w-8 h-8 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
-      </div>
-    );
-  }
-
-  if (!isLoading && (!workspaces || workspaces.length === 0)) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 text-center space-y-4">
-        <h2 className="text-xl font-semibold text-gray-900">Welcome to your Admin Dashboard!</h2>
-        <p className="text-gray-500 max-w-sm">
-          You don't have any workspaces yet. Create your first workspace to start building trainings.
-        </p>
-        <Link
-          href="/workspaces/new"
-          className="px-6 py-2.5 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 transition-colors"
-        >
-          Create Workspace
-        </Link>
       </div>
     );
   }

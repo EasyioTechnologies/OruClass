@@ -24,7 +24,7 @@ export function GithubSignInButton({
     <button
       onClick={signInWithGithub}
       disabled={loading}
-      className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 transition-colors shadow-sm disabled:opacity-50"
+      className="w-full flex items-center justify-center gap-3 px-4 py-3 border border-gray-200 rounded-2xl text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-300 transition-all shadow-sm disabled:opacity-50"
     >
       {loading ? (
         <span className="w-5 h-5 border-2 border-gray-400 border-t-transparent rounded-full animate-spin" />

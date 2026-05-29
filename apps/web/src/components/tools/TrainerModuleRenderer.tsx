@@ -7,6 +7,11 @@ import { TrainerReflectionJournal } from "./TrainerReflectionJournal";
 import { TrainerMatrix } from "./TrainerMatrix";
 import { TrainerStickyNotes } from "./TrainerStickyNotes";
 import { TrainerAttendance } from "./TrainerAttendance";
+import { TrainerPoll } from "./TrainerPoll";
+import { TrainerWordCloud } from "./TrainerWordCloud";
+import { TrainerQnA } from "./TrainerQnA";
+import { TrainerTimer } from "./TrainerTimer";
+import { TrainerPulse } from "./TrainerPulse";
 
 interface Props {
   module: TrainingModule;
@@ -20,6 +25,11 @@ const moduleComponentMap: Record<string, React.ComponentType<Props>> = {
   reflection: TrainerReflectionJournal,
   matrix: TrainerMatrix,
   custom: TrainerStickyNotes,
+  poll: TrainerPoll,
+  wordcloud: TrainerWordCloud,
+  qna: TrainerQnA,
+  timer: TrainerTimer,
+  pulse: TrainerPulse,
 };
 
 export function TrainerModuleRenderer({ module, trainingId }: Props) {

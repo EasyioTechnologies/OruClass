@@ -10,8 +10,9 @@ import { useModules, useReorderModules, useUpdateModule, useDuplicateModule, use
 import { useDays, useCreateDay, useDeleteDay, useUpdateDay } from "@/hooks/useDays";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useWorkspaceMembers } from "@/hooks/useWorkspace";
-import { useAssignFacilitator, useTraining, useInviteFacilitator, useTrainings } from "@/hooks/useTrainings";
+import { useAssignFacilitator, useTraining, useInviteFacilitator, useTrainings, useUpdateTraining } from "@/hooks/useTrainings";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { apiClient } from "@/lib/api-client";
 import type { TrainingModule, TrainingRole, ModuleConfig, AttendanceField, TrainingDay } from "@oruclass/types";
 import { cn } from "@oruclass/utils";
@@ -42,6 +43,12 @@ import {
   AlertTriangle,
   Copy,
   MoveRight,
+  MoreVertical,
+  BarChart3,
+  Cloud,
+  MessageCircleQuestion,
+  Timer,
+  Heart,
 } from "lucide-react";
 
 // ─── Module type config ──────────────────────────────────────────────────────
@@ -106,6 +113,56 @@ const MODULE_TYPES = [
     bg: "bg-pink-50",
     border: "border-pink-200",
     activeBg: "bg-pink-600",
+  },
+  {
+    type: "poll",
+    label: "Poll",
+    description: "Live voting with real-time bar chart results",
+    Icon: BarChart3,
+    color: "text-indigo-600",
+    bg: "bg-indigo-50",
+    border: "border-indigo-200",
+    activeBg: "bg-indigo-600",
+  },
+  {
+    type: "wordcloud",
+    label: "Word Cloud",
+    description: "Participants submit words — see a live word cloud",
+    Icon: Cloud,
+    color: "text-cyan-600",
+    bg: "bg-cyan-50",
+    border: "border-cyan-200",
+    activeBg: "bg-cyan-600",
+  },
+  {
+    type: "qna",
+    label: "Q&A Board",
+    description: "Participants submit questions for the trainer",
+    Icon: MessageCircleQuestion,
+    color: "text-sky-600",
+    bg: "bg-sky-50",
+    border: "border-sky-200",
+    activeBg: "bg-sky-600",
+  },
+  {
+    type: "timer",
+    label: "Timer",
+    description: "Shared countdown timer for timed activities",
+    Icon: Timer,
+    color: "text-orange-600",
+    bg: "bg-orange-50",
+    border: "border-orange-200",
+    activeBg: "bg-orange-600",
+  },
+  {
+    type: "pulse",
+    label: "Pulse Check",
+    description: "Quick emoji mood check — gauge the room instantly",
+    Icon: Heart,
+    color: "text-rose-600",
+    bg: "bg-rose-50",
+    border: "border-rose-200",
+    activeBg: "bg-rose-600",
   },
 ] as const;
 
@@ -561,6 +618,183 @@ function ModuleConfigEditor({
     );
   }
 
+  if (module.moduleType === "poll") {
+    const options = (config.pollOptions as string[]) ?? [];
+    return (
+      <div className="space-y-3 mt-4">
+        <div>
+          <label className="text-xs font-semibold text-gray-700 block mb-1.5">Poll question</label>
+          <input
+            value={config.pollQuestion ?? ""}
+            onChange={(e) => onChange({ ...config, pollQuestion: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="What do you want to ask?"
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <label className="text-xs font-medium text-gray-600">Allow multiple selections</label>
+          <button
+            onClick={() => onChange({ ...config, allowMultiple: !config.allowMultiple })}
+            className={cn("flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg border transition-colors",
+              config.allowMultiple ? "bg-brand-50 border-brand-200 text-brand-700" : "bg-white border-gray-200 text-gray-400")}
+          >
+            {config.allowMultiple ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
+            {config.allowMultiple ? "On" : "Off"}
+          </button>
+        </div>
+        <div className="flex items-center justify-between">
+          <p className="text-xs font-semibold text-gray-700">Options</p>
+          <button
+            onClick={() => onChange({ ...config, pollOptions: [...options, ""] })}
+            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
+          >
+            <Plus size={12} /> Add option
+          </button>
+        </div>
+        {options.length === 0 && (
+          <div className="py-5 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
+            <p className="text-xs text-gray-400">No options yet. Add options above.</p>
+          </div>
+        )}
+        {options.map((opt, i) => (
+          <div key={i} className="flex gap-1.5">
+            <input
+              value={opt}
+              onChange={(e) => {
+                const updated = options.map((o, j) => (j === i ? e.target.value : o));
+                onChange({ ...config, pollOptions: updated });
+              }}
+              className="flex-1 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+              placeholder={`Option ${i + 1}`}
+            />
+            <button
+              onClick={() => onChange({ ...config, pollOptions: options.filter((_, j) => j !== i) })}
+              className="text-gray-300 hover:text-red-500 transition-colors"
+            >
+              <X size={14} />
+            </button>
+          </div>
+        ))}
+      </div>
+    );
+  }
+
+  if (module.moduleType === "wordcloud") {
+    return (
+      <div className="space-y-3 mt-4">
+        <div>
+          <label className="text-xs font-semibold text-gray-700 block mb-1.5">Prompt</label>
+          <textarea
+            value={config.wordcloudPrompt ?? ""}
+            onChange={(e) => onChange({ ...config, wordcloudPrompt: e.target.value })}
+            rows={3}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+            placeholder="What words come to mind when you think of…?"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <label className="text-xs font-medium text-gray-600 shrink-0">Max words per person</label>
+          <input
+            type="number"
+            min={1}
+            max={20}
+            value={config.maxWords ?? 5}
+            onChange={(e) => onChange({ ...config, maxWords: Number(e.target.value) })}
+            className="w-20 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (module.moduleType === "qna") {
+    return (
+      <div className="space-y-3 mt-4">
+        <div>
+          <label className="text-xs font-semibold text-gray-700 block mb-1.5">Instructions for participants</label>
+          <textarea
+            value={config.qnaPrompt ?? ""}
+            onChange={(e) => onChange({ ...config, qnaPrompt: e.target.value })}
+            rows={3}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+            placeholder="Ask any questions about the session…"
+          />
+        </div>
+      </div>
+    );
+  }
+
+  if (module.moduleType === "timer") {
+    const mins = Math.floor((config.durationSeconds ?? 300) / 60);
+    const secs = (config.durationSeconds ?? 300) % 60;
+    return (
+      <div className="space-y-3 mt-4">
+        <div>
+          <label className="text-xs font-semibold text-gray-700 block mb-1.5">Timer label</label>
+          <input
+            value={config.timerLabel ?? ""}
+            onChange={(e) => onChange({ ...config, timerLabel: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="Time remaining"
+          />
+        </div>
+        <div className="flex items-center gap-3">
+          <label className="text-xs font-medium text-gray-600 shrink-0">Duration</label>
+          <input
+            type="number"
+            min={0}
+            max={120}
+            value={mins}
+            onChange={(e) => onChange({ ...config, durationSeconds: Number(e.target.value) * 60 + secs })}
+            className="w-16 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+          <span className="text-xs text-gray-500">min</span>
+          <input
+            type="number"
+            min={0}
+            max={59}
+            value={secs}
+            onChange={(e) => onChange({ ...config, durationSeconds: mins * 60 + Number(e.target.value) })}
+            className="w-16 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+          <span className="text-xs text-gray-500">sec</span>
+        </div>
+      </div>
+    );
+  }
+
+  if (module.moduleType === "pulse") {
+    const emojis = (config.pulseEmojis as string[]) ?? ["😊", "🙂", "😐", "😕", "😟"];
+    return (
+      <div className="space-y-3 mt-4">
+        <div>
+          <label className="text-xs font-semibold text-gray-700 block mb-1.5">Prompt</label>
+          <input
+            value={config.pulsePrompt ?? ""}
+            onChange={(e) => onChange({ ...config, pulsePrompt: e.target.value })}
+            className="w-full px-3 py-2 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+            placeholder="How are you feeling about this topic?"
+          />
+        </div>
+        <div>
+          <p className="text-xs font-semibold text-gray-700 mb-1.5">Emoji options (one per line)</p>
+          <textarea
+            rows={3}
+            value={emojis.join("\n")}
+            onChange={(e) => onChange({ ...config, pulseEmojis: e.target.value.split("\n").filter(Boolean) })}
+            className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none font-mono"
+            placeholder={"😊\n🙂\n😐\n😕\n😟"}
+          />
+        </div>
+        <div className="flex gap-2">
+          {emojis.map((e, i) => (
+            <span key={i} className="text-2xl">{e}</span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return null;
 }
 
@@ -679,138 +913,140 @@ function SortableModuleCard({
         )}
 
         <div className="flex items-center gap-1 shrink-0">
-          <button
-            onClick={() => { setMoveOpen((v) => !v); setCopyOpen(false); setExpanded(false); }}
-            className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-            title="Move to day"
-          >
-            <MoveRight size={14} />
-          </button>
-          <button
-            onClick={() => {
-              setCopyOpen((v) => !v);
-              setMoveOpen(false);
-              setExpanded(false);
-              setCopyTargetTrainingId(trainingId);
-              setCopyTargetDayId("");
-            }}
-            className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-            title="Copy to training or day"
-          >
-            <Copy size={14} />
-          </button>
-          <button
-            onClick={() => { setExpanded((v) => !v); setMoveOpen(false); setCopyOpen(false); }}
-            className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-            title={expanded ? "Close config" : "Configure module"}
-          >
-            {expanded ? <ChevronUp size={15} /> : <ChevronDown size={15} />}
-          </button>
-          <button
-            onClick={() => {
-              if (confirm(`Delete "${module.title}"?`)) deleteModule.mutate();
-            }}
-            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors"
-            title="Delete module"
-          >
-            <Trash2 size={14} />
-          </button>
+          <DropdownMenu.Root>
+            <DropdownMenu.Trigger asChild>
+              <button
+                className="p-1.5 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors outline-none"
+                title="Module actions"
+              >
+                <MoreVertical size={16} />
+              </button>
+            </DropdownMenu.Trigger>
+
+            <DropdownMenu.Portal>
+              <DropdownMenu.Content
+                align="end"
+                sideOffset={5}
+                className="z-50 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100"
+              >
+                <DropdownMenu.Sub>
+                  <DropdownMenu.SubTrigger className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 cursor-pointer outline-none transition-colors">
+                    <div className="flex items-center gap-2">
+                      <MoveRight size={15} className="text-gray-400" />
+                      Move to day
+                    </div>
+                  </DropdownMenu.SubTrigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.SubContent sideOffset={2} alignOffset={-5} className="z-50 w-48 bg-white rounded-xl shadow-lg border border-gray-100 py-1 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                      <DropdownMenu.Item
+                        onClick={() => assignToDay.mutate({ moduleId: module.id, dayId: null })}
+                        disabled={assignToDay.isPending || module.dayId == null}
+                        className={cn("px-3 py-2 text-sm cursor-pointer outline-none transition-colors truncate", module.dayId == null ? "bg-brand-50 text-brand-700 font-medium" : "text-gray-700 hover:bg-gray-50 hover:text-brand-600", assignToDay.isPending || module.dayId == null ? "opacity-50 cursor-not-allowed" : "")}
+                      >
+                        Unassigned
+                      </DropdownMenu.Item>
+                      {daysList.map((d) => (
+                        <DropdownMenu.Item
+                          key={d.id}
+                          onClick={() => assignToDay.mutate({ moduleId: module.id, dayId: d.id })}
+                          disabled={assignToDay.isPending || module.dayId === d.id}
+                          className={cn("px-3 py-2 text-sm cursor-pointer outline-none transition-colors truncate", module.dayId === d.id ? "bg-brand-50 text-brand-700 font-medium" : "text-gray-700 hover:bg-gray-50 hover:text-brand-600", assignToDay.isPending || module.dayId === d.id ? "opacity-50 cursor-not-allowed" : "")}
+                        >
+                          Day {d.dayNumber} · {d.title}
+                        </DropdownMenu.Item>
+                      ))}
+                      {daysList.length === 0 && (
+                        <div className="px-3 py-2 text-xs text-gray-400 italic">No days yet</div>
+                      )}
+                    </DropdownMenu.SubContent>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Sub>
+
+                <DropdownMenu.Sub>
+                  <DropdownMenu.SubTrigger className="flex items-center justify-between px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 cursor-pointer outline-none transition-colors">
+                    <div className="flex items-center gap-2">
+                      <Copy size={15} className="text-gray-400" />
+                      Copy module
+                    </div>
+                  </DropdownMenu.SubTrigger>
+                  <DropdownMenu.Portal>
+                    <DropdownMenu.SubContent sideOffset={2} alignOffset={-5} className="z-50 w-56 bg-white rounded-xl shadow-lg border border-gray-100 p-2 overflow-hidden animate-in fade-in zoom-in-95 duration-100">
+                      <div className="space-y-3">
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-700">Target training</label>
+                          <select
+                            value={copyTargetTrainingId}
+                            onChange={(e) => { setCopyTargetTrainingId(e.target.value); setCopyTargetDayId(""); }}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-brand-500 outline-none"
+                          >
+                            {trainingsList.map((t) => (
+                              <option key={t.id} value={t.id}>
+                                {t.id === trainingId ? `${t.title} (current)` : t.title}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <div className="space-y-1">
+                          <label className="text-xs font-medium text-gray-700">Target day (optional)</label>
+                          <select
+                            value={copyTargetDayId}
+                            onChange={(e) => setCopyTargetDayId(e.target.value)}
+                            onClick={(e) => e.stopPropagation()}
+                            className="w-full text-xs border border-gray-200 rounded-md px-2 py-1.5 bg-white focus:ring-1 focus:ring-brand-500 outline-none"
+                          >
+                            <option value="">Unassigned</option>
+                            {daysList.map((d) => (
+                              <option key={d.id} value={d.id}>
+                                Day {d.dayNumber} · {d.title}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            duplicateModule.mutate({
+                              moduleId: module.id,
+                              targetTrainingId: copyTargetTrainingId,
+                              targetDayId: copyTargetDayId || null,
+                            });
+                          }}
+                          disabled={duplicateModule.isPending}
+                          className="w-full text-xs bg-brand-600 text-white font-medium py-1.5 rounded-md hover:bg-brand-700 transition-colors disabled:opacity-50"
+                        >
+                          {duplicateModule.isPending ? "Copying..." : "Confirm copy"}
+                        </button>
+                      </div>
+                    </DropdownMenu.SubContent>
+                  </DropdownMenu.Portal>
+                </DropdownMenu.Sub>
+
+                <DropdownMenu.Item
+                  onClick={() => { setExpanded((v) => !v); setMoveOpen(false); setCopyOpen(false); }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-gray-700 hover:bg-gray-50 hover:text-brand-600 cursor-pointer outline-none transition-colors"
+                >
+                  {expanded ? <ChevronUp size={15} className="text-gray-400" /> : <ChevronDown size={15} className="text-gray-400" />}
+                  {expanded ? "Close config" : "Configure module"}
+                </DropdownMenu.Item>
+
+                <DropdownMenu.Separator className="h-[1px] bg-gray-100 my-1" />
+
+                <DropdownMenu.Item
+                  onClick={() => {
+                    if (confirm(`Delete "${module.title}"?`)) deleteModule.mutate();
+                  }}
+                  className="flex items-center gap-2 px-3 py-2 text-sm text-red-600 hover:bg-red-50 cursor-pointer outline-none transition-colors"
+                >
+                  <Trash2 size={15} className="text-red-500 opacity-70" />
+                  Delete module
+                </DropdownMenu.Item>
+              </DropdownMenu.Content>
+            </DropdownMenu.Portal>
+          </DropdownMenu.Root>
         </div>
       </div>
 
-      {moveOpen && (
-        <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/60 space-y-2">
-          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Move to day</p>
-          <div className="flex flex-wrap gap-1.5">
-            <button
-              onClick={() => { assignToDay.mutate({ moduleId: module.id, dayId: null }); setMoveOpen(false); }}
-              disabled={assignToDay.isPending || module.dayId == null}
-              className={cn(
-                "text-xs px-2.5 py-1 rounded-full border font-medium transition-colors disabled:opacity-50",
-                module.dayId == null
-                  ? "bg-brand-50 border-brand-200 text-brand-700"
-                  : "bg-white border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-600",
-              )}
-            >
-              Unassigned
-            </button>
-            {daysList.map((d) => (
-              <button
-                key={d.id}
-                onClick={() => { assignToDay.mutate({ moduleId: module.id, dayId: d.id }); setMoveOpen(false); }}
-                disabled={assignToDay.isPending || module.dayId === d.id}
-                className={cn(
-                  "text-xs px-2.5 py-1 rounded-full border font-medium transition-colors disabled:opacity-50",
-                  module.dayId === d.id
-                    ? "bg-brand-50 border-brand-200 text-brand-700"
-                    : "bg-white border-gray-200 text-gray-600 hover:border-brand-300 hover:text-brand-600",
-                )}
-              >
-                Day {d.dayNumber} · {d.title}
-              </button>
-            ))}
-            {daysList.length === 0 && (
-              <p className="text-xs text-gray-400">No days yet. Create a day first.</p>
-            )}
-          </div>
-        </div>
-      )}
-
-      {copyOpen && (
-        <div className="border-t border-gray-100 px-4 py-3 bg-gray-50/60 space-y-2.5">
-          <p className="text-[11px] font-semibold text-gray-500 uppercase tracking-wide">Copy module</p>
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-            <label className="text-xs text-gray-600 space-y-1">
-              <span className="font-medium">Target training</span>
-              <select
-                value={copyTargetTrainingId}
-                onChange={(e) => { setCopyTargetTrainingId(e.target.value); setCopyTargetDayId(""); }}
-                className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white"
-              >
-                {trainingsList.map((t) => (
-                  <option key={t.id} value={t.id}>
-                    {t.id === trainingId ? `${t.title} (current)` : t.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-            <label className="text-xs text-gray-600 space-y-1">
-              <span className="font-medium">Target day</span>
-              <select
-                value={copyTargetDayId}
-                onChange={(e) => setCopyTargetDayId(e.target.value)}
-                className="w-full text-xs border border-gray-200 rounded-lg px-2 py-1.5 bg-white"
-              >
-                <option value="">Unassigned</option>
-                {(copyTargetTrainingId === trainingId
-                  ? daysList
-                  : (trainingsList.find((t) => t.id === copyTargetTrainingId) as unknown as { days?: TrainingDay[] })?.days ?? []
-                ).map((d) => (
-                  <option key={d.id} value={d.id}>
-                    Day {d.dayNumber} · {d.title}
-                  </option>
-                ))}
-              </select>
-            </label>
-          </div>
-          <button
-            onClick={() => {
-              duplicateModule.mutate(
-                {
-                  moduleId: module.id,
-                  targetTrainingId: copyTargetTrainingId,
-                  targetDayId: copyTargetDayId || null,
-                },
-                { onSuccess: () => setCopyOpen(false) },
-              );
-            }}
-            disabled={duplicateModule.isPending}
-            className="w-full py-1.5 bg-brand-600 text-white rounded-lg text-xs font-semibold hover:bg-brand-700 disabled:opacity-60 transition-colors"
-          >
-            {duplicateModule.isPending ? "Copying…" : "Copy module"}
-          </button>
-        </div>
-      )}
 
       {expanded && (
         <div className="border-t border-gray-100 px-4 pb-4">
@@ -1346,6 +1582,149 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
   );
 }
 
+// ─── Training info panel (editable) ─────────────────────────────────────────
+
+const TRAINING_CATEGORIES: { value: string; label: string }[] = [
+  { value: "atl", label: "ATL" },
+  { value: "maker_space", label: "Maker Space" },
+  { value: "ict_cal", label: "ICT/CAL" },
+];
+
+function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; workspaceId: string }) {
+  const { data: training } = useTraining(workspaceId, trainingId);
+  const updateTraining = useUpdateTraining(workspaceId, trainingId);
+  const [editing, setEditing] = useState(false);
+  const [title, setTitle] = useState("");
+  const [category, setCategory] = useState("");
+  const [description, setDescription] = useState("");
+  const [scheduledAt, setScheduledAt] = useState("");
+
+  const startEditing = () => {
+    if (!training) return;
+    setTitle(training.title);
+    setCategory(training.category);
+    setDescription(training.description ?? "");
+    setScheduledAt(training.scheduledAt ? new Date(training.scheduledAt).toISOString().slice(0, 16) : "");
+    setEditing(true);
+  };
+
+  const save = () => {
+    updateTraining.mutate(
+      {
+        title: title.trim(),
+        category,
+        description: description.trim() || undefined,
+        scheduledAt: scheduledAt || undefined,
+      },
+      { onSuccess: () => setEditing(false) },
+    );
+  };
+
+  if (!training) return null;
+
+  return (
+    <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+      <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <Pencil size={14} className="text-gray-500" />
+          <h2 className="text-sm font-bold text-gray-900">Training Info</h2>
+        </div>
+        {!editing && (
+          <button
+            onClick={startEditing}
+            className="flex items-center gap-1 text-[11px] text-brand-600 hover:text-brand-800 font-semibold"
+          >
+            <Pencil size={11} />
+            Edit
+          </button>
+        )}
+      </div>
+
+      <div className="p-4">
+        {editing ? (
+          <div className="space-y-3">
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-1">Title</label>
+              <input
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-1">Category</label>
+              <select
+                value={category}
+                onChange={(e) => setCategory(e.target.value)}
+                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              >
+                {TRAINING_CATEGORIES.map((c) => (
+                  <option key={c.value} value={c.value}>{c.label}</option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-1">Description</label>
+              <textarea
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+                rows={2}
+                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                placeholder="Optional…"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-1">Scheduled at</label>
+              <input
+                type="datetime-local"
+                value={scheduledAt}
+                onChange={(e) => setScheduledAt(e.target.value)}
+                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+            {updateTraining.isError && (
+              <p className="text-xs text-red-500">Failed to update.</p>
+            )}
+            <div className="flex gap-2">
+              <button
+                onClick={() => setEditing(false)}
+                className="flex-1 py-1.5 border border-gray-200 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-50"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={save}
+                disabled={updateTraining.isPending || !title.trim()}
+                className="flex-1 py-1.5 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 disabled:opacity-60"
+              >
+                {updateTraining.isPending ? "Saving…" : "Save"}
+              </button>
+            </div>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            <p className="text-sm font-semibold text-gray-900">{training.title}</p>
+            <div className="flex flex-wrap gap-1.5">
+              <span className="text-[10px] font-bold bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full border border-brand-100">
+                {training.category}
+              </span>
+              {training.scheduledAt && (
+                <span className="text-[10px] font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 flex items-center gap-1">
+                  <Calendar size={9} />
+                  {new Date(training.scheduledAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                </span>
+              )}
+            </div>
+            {training.description && (
+              <p className="text-xs text-gray-500 leading-relaxed">{training.description}</p>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Session checklist panel ─────────────────────────────────────────────────
 
 function SessionChecklist({ dayCount, moduleCount }: { dayCount: number; moduleCount: number }) {
@@ -1484,6 +1863,7 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
             </div>
           </div>
           <div className="space-y-4">
+            <TrainingInfoPanel trainingId={trainingId} workspaceId={workspaceId} />
             <SessionChecklist dayCount={0} moduleCount={0} />
           </div>
         </div>
@@ -1611,6 +1991,7 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
 
         {/* ── Right: sidebar ── */}
         <div className="space-y-4">
+          <TrainingInfoPanel trainingId={trainingId} workspaceId={workspaceId} />
           <SessionChecklist dayCount={days.length} moduleCount={totalModules} />
           <FacilitatorPanel trainingId={trainingId} workspaceId={workspaceId} />
         </div>

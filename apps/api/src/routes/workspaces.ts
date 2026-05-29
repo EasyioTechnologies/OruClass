@@ -1,7 +1,7 @@
 import { Hono } from "hono";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray, desc } from "drizzle-orm";
 import { db } from "../db/client";
-import { workspaces, workspaceMembers } from "../db/schema";
+import { workspaces, workspaceMembers, trainings, participantResponses } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { CreateWorkspaceSchema, UpdateWorkspaceSchema } from "@oruclass/validators";
@@ -142,4 +142,26 @@ workspacesRouter.post("/:workspaceId/members", workspaceTenantMiddleware, async 
     .returning();
 
   return c.json(member, 201);
+});
+
+// GET /workspaces/:workspaceId/responses — list all responses for the workspace
+workspacesRouter.get("/:workspaceId/responses", workspaceTenantMiddleware, async (c) => {
+  const workspaceId = c.get("workspaceId") as string;
+
+  const workspaceTrainings = await db.select({ id: trainings.id }).from(trainings).where(eq(trainings.workspaceId, workspaceId));
+  const trainingIds = workspaceTrainings.map((t) => t.id);
+
+  if (trainingIds.length === 0) return c.json([]);
+
+  const responses = await db.query.participantResponses.findMany({
+    where: inArray(participantResponses.trainingId, trainingIds),
+    with: {
+      user: true,
+      training: true,
+      module: true,
+    },
+    orderBy: (responses, { desc }) => [desc(responses.submittedAt)]
+  });
+
+  return c.json(responses);
 });
