@@ -1,6 +1,6 @@
 export type TrainingStatus = "draft" | "connecting" | "live" | "paused" | "completed";
 export type TrainingCategory = "atl" | "maker_space" | "ict_cal";
-export type ModuleType = "quiz" | "whiteboard" | "reflection" | "matrix" | "custom" | "attendance" | "poll" | "wordcloud" | "qna" | "timer" | "pulse";
+export type ModuleType = "quiz" | "whiteboard" | "reflection" | "matrix" | "custom" | "attendance" | "poll" | "wordcloud" | "qna" | "timer" | "pulse" | "mapping" | "form" | "embed";
 export type TrainingRole =
   | "lead_trainer"
   | "full_editor"
@@ -60,6 +60,17 @@ export interface AttendanceField {
   required: boolean;
 }
 
+export type FormFieldType = "short_text" | "long_text" | "multiple_choice" | "checkboxes" | "dropdown" | "date" | "time";
+
+export interface FormField {
+  id: string;
+  type: FormFieldType;
+  label: string;
+  required: boolean;
+  options?: string[];
+  description?: string;
+}
+
 export interface ModuleConfig {
   // Quiz
   questions?: QuizQuestion[];
@@ -92,6 +103,16 @@ export interface ModuleConfig {
   // Pulse
   pulsePrompt?: string;
   pulseEmojis?: string[];
+  // Mapping
+  mappingFocusAreas?: { id: string; title: string; numFields: number }[];
+  // Form
+  formTitle?: string;
+  formDescription?: string;
+  formFields?: FormField[];
+  // Embed
+  embedUrl?: string;
+  embedTitle?: string;
+  embedDescription?: string;
 }
 
 export interface QuizQuestion {
@@ -169,7 +190,10 @@ export type ResponseData =
   | { type: "poll"; selected: string[] }
   | { type: "wordcloud"; words: string[] }
   | { type: "qna"; question: string }
-  | { type: "pulse"; emoji: string };
+  | { type: "pulse"; emoji: string }
+  | { type: "mapping"; answers: Record<string, string[]> }
+  | { type: "form"; answers: Record<string, string | string[]> }
+  | { type: "embed"; viewed: boolean };
 
 export interface StrokeData {
   points: { x: number; y: number }[];

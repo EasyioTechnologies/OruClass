@@ -30,7 +30,6 @@ export function EmailAuthForm({
     setError("");
     setLoading(true);
 
-
     try {
       if (isLogin) {
         const { error } = await authClient.signIn.email({
@@ -38,7 +37,15 @@ export function EmailAuthForm({
           password,
         });
         if (error) {
-          setError(error.message || "Failed to sign in. Check your credentials.");
+          const errMsg = error.message || "";
+          const errCode = (error as any).code || "";
+          
+          if (errMsg.toLowerCase().includes("not found") || errCode === "USER_NOT_FOUND") {
+            setIsLogin(false);
+            setError("Account not found. Please sign up instead.");
+          } else {
+            setError(errMsg || "Failed to sign in. Check your credentials.");
+          }
         } else {
           router.push(returnTo);
           router.refresh();
@@ -57,7 +64,14 @@ export function EmailAuthForm({
         });
         
         if (error) {
-          setError(error.message || "Failed to sign up.");
+          const errMsg = error.message || "";
+          const errCode = (error as any).code || "";
+          if (errMsg.toLowerCase().includes("exist") || errCode === "USER_ALREADY_EXISTS") {
+            setIsLogin(true);
+            setError("Account already exists. Please sign in instead.");
+          } else {
+            setError(errMsg || "Failed to sign up.");
+          }
         } else {
           router.push(returnTo);
           router.refresh();
@@ -71,8 +85,8 @@ export function EmailAuthForm({
   };
 
   return (
-    <div className="space-y-4">
-      <form onSubmit={handleSubmit} className="space-y-3">
+    <div className="space-y-6">
+      <form onSubmit={handleSubmit} className="space-y-4">
         {!isLogin && (
           <div>
             <input
@@ -80,7 +94,7 @@ export function EmailAuthForm({
               placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+              className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-gray-200 transition-all"
               required={!isLogin}
             />
           </div>
@@ -91,7 +105,7 @@ export function EmailAuthForm({
             placeholder="Email address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+            className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-gray-200 transition-all"
             required
           />
         </div>
@@ -101,45 +115,50 @@ export function EmailAuthForm({
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-4 py-3 bg-white/50 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-white transition-all"
+            className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-gray-200 transition-all"
             required
             minLength={8}
           />
         </div>
 
-        {error && <p className="text-sm text-red-500 text-center">{error}</p>}
+        {error && <p className="text-[15px] text-red-500 text-center">{error}</p>}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="w-full flex items-center justify-center py-3 bg-emerald-600 text-white rounded-2xl text-sm font-semibold hover:bg-emerald-700 hover:shadow-md transition-all disabled:opacity-50"
-        >
-          {loading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
-        </button>
+        <div className="pt-2">
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full flex items-center justify-center py-4 bg-emerald-600 text-white rounded-2xl text-[16px] font-semibold hover:bg-emerald-700 hover:shadow-md transition-all disabled:opacity-50"
+          >
+            {loading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
+          </button>
+        </div>
       </form>
 
-      <div className="flex items-center justify-between text-sm">
-        {onBack ? (
+      <div className={`flex items-center ${onBack ? 'justify-between' : 'justify-center'} pt-2`}>
+        {onBack && (
           <button
             type="button"
             onClick={onBack}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 hover:text-gray-700 text-[16px]"
           >
             ← Back
           </button>
-        ) : (
-          <span />
         )}
-        <button
-          type="button"
-          onClick={() => {
-            setIsLogin(!isLogin);
-            setError("");
-          }}
-          className="text-emerald-600 font-semibold hover:text-emerald-700 hover:underline transition-colors"
-        >
-          {isLogin ? "Don't have an account? Sign up" : "Already have an account? Sign in"}
-        </button>
+        <div className="text-center w-full">
+          <span className="text-[#8E8E93] text-[15px] mr-2">
+            {isLogin ? "Don't have an account?" : "Already have an account?"}
+          </span>
+          <button
+            type="button"
+            onClick={() => {
+              setIsLogin(!isLogin);
+              setError("");
+            }}
+            className="text-emerald-600 text-[16px] font-semibold hover:text-emerald-700 transition-colors"
+          >
+            {isLogin ? "Sign up" : "Sign in"}
+          </button>
+        </div>
       </div>
     </div>
   );

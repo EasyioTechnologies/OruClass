@@ -20,16 +20,6 @@ export const auth = betterAuth({
   emailAndPassword: {
     enabled: true,
   },
-  socialProviders: {
-    google: {
-      clientId: process.env.GOOGLE_CLIENT_ID as string,
-      clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
-    },
-    github: {
-      clientId: process.env.GITHUB_CLIENT_ID as string,
-      clientSecret: process.env.GITHUB_CLIENT_SECRET as string,
-    }
-  },
   plugins: [
     anonymous(), // for guest/participant logins
   ],
@@ -45,15 +35,9 @@ export const auth = betterAuth({
     expiresIn: 60 * 60 * 24 * 7, // 7 days
     updateAge: 60 * 60 * 24, // refresh session every 24h
     cookieCache: {
-      enabled: false,
+      enabled: true,
       maxAge: 60 * 5, // 5 min client-side cache to reduce session lookups
     },
-  },
-  account: {
-    accountLinking: {
-      enabled: true,
-      trustedProviders: ["google", "github"],
-    }
   },
   rateLimit: {
     window: 60,
@@ -62,7 +46,8 @@ export const auth = betterAuth({
   advanced: {
     generateId: () => randomUUID(),
     crossSubDomainCookies: {
-      enabled: process.env.NODE_ENV === "production"
+      enabled: process.env.NODE_ENV === "production",
+      domain: process.env.NODE_ENV === "production" ? ".dezignbuild.site" : undefined,
     }
   }
 });

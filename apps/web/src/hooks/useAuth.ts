@@ -5,28 +5,29 @@ import { useAuthStore } from "@/store/auth";
 import { authClient } from "@/lib/auth-client";
 
 export function useAuth() {
-  const { data: session, isPending, error } = authClient.useSession();
+  const { data: session, isPending } = authClient.useSession();
   const { user, setUser, clearUser } = useAuthStore();
-  const hasResolved = useRef(false);
+  const hasSynced = useRef(false);
 
   useEffect(() => {
-    if (!isPending) {
-      if (session?.user) {
-        hasResolved.current = true;
-        setUser({
-          id: session.user.id,
-          name: session.user.name,
-          email: session.user.email,
-          avatarUrl: session.user.image,
-          authProvider: (session.user as any).isAnonymous ? "guest" : "google"
-        } as any);
-      } else if (session === null || error) {
-        // Server explicitly returned no session or an error occurred
-        hasResolved.current = true;
-        clearUser();
-      }
+    if (isPending) return;
+
+    if (session?.user) {
+      // Session confirmed — sync latest data to store
+      hasSynced.current = true;
+      setUser({
+        id: session.user.id,
+        name: session.user.name,
+        email: session.user.email,
+        avatarUrl: session.user.image,
+        authProvider: (session.user as any).isAnonymous ? "guest" : "email"
+      } as any);
     }
-  }, [session, isPending, error, setUser, clearUser]);
+    // IMPORTANT: We intentionally do NOT clear the user when session is null.
+    // Session can transiently return null on page refocus, navigation,
+    // network blips, or cookie race conditions. The persisted Zustand store
+    // is the source of truth. User is only cleared on explicit signOut().
+  }, [session, isPending, setUser]);
 
   const handleSignOut = useCallback(async () => {
     await authClient.signOut();
@@ -34,6 +35,5 @@ export function useAuth() {
     window.location.href = "/login";
   }, [clearUser]);
 
-  // isPending from better-auth is the source of truth, not Zustand
   return { user, isAuthenticated: !!user, signOut: handleSignOut, isPending };
 }

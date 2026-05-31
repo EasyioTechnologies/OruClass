@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
@@ -8,28 +8,28 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, isPending } = useAuth();
   const [mounted, setMounted] = useState(false);
-  const redirectTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     setMounted(true);
-    return () => {
-      if (redirectTimer.current) clearTimeout(redirectTimer.current);
-    };
   }, []);
 
   useEffect(() => {
+    // Only redirect when:
+    // 1. Component is mounted (hydrated)
+    // 2. Session check is complete (not pending)
+    // 3. No user in persisted store at all (never logged in / manually logged out)
     if (mounted && !isPending && !user) {
-      // Debounce redirect — give session one tick to resolve after hydration
-      redirectTimer.current = setTimeout(() => {
-        router.replace("/login");
-      }, 100);
-    } else if (user && redirectTimer.current) {
-      clearTimeout(redirectTimer.current);
-      redirectTimer.current = null;
+      router.replace("/login");
     }
   }, [mounted, isPending, user, router]);
 
-  if (!mounted || isPending || !user) {
+  // Show children immediately if we have a persisted user (from Zustand localStorage)
+  if (user) {
+    return <>{children}</>;
+  }
+
+  // Still loading or no user — show spinner (redirect will fire from effect above)
+  if (!mounted || isPending) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
@@ -37,5 +37,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  return <>{children}</>;
+  // No user, not pending — redirect is firing, show spinner while it happens
+  return (
+    <div className="min-h-screen flex items-center justify-center">
+      <div className="w-8 h-8 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin" />
+    </div>
+  );
 }

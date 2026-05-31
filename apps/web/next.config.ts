@@ -5,8 +5,7 @@ const nextConfig: NextConfig = {
   transpilePackages: ["@oruclass/types", "@oruclass/validators", "@oruclass/utils"],
   images: {
     remotePatterns: [
-      { protocol: "https", hostname: "lh3.googleusercontent.com" },
-      { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
+{ protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
     ],
   },
   async rewrites() {

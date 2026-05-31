@@ -4,7 +4,7 @@ import { useEffect, useRef, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/useAuth";
-import { GoogleSignInButton } from "@/components/auth/GoogleSignInButton";
+import { EmailAuthForm } from "@/components/auth/EmailAuthForm";
 import type { Training } from "@oruclass/types";
 
 export default function JoinTokenPage({ params }: { params: Promise<{ token: string }> }) {
@@ -62,7 +62,7 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
             <p className="text-sm text-gray-500 mt-1">Sign in to join this session</p>
           </div>
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
-            <GoogleSignInButton returnTo={`/join/${unwrappedParams.token}`} />
+            <EmailAuthForm returnTo={`/join/${unwrappedParams.token}`} />
           </div>
         </div>
       </div>
