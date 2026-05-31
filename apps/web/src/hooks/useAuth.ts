@@ -1,32 +1,35 @@
 "use client";
 
-import { useCallback, useEffect, useRef } from "react";
+import { useCallback, useEffect } from "react";
 import { useAuthStore } from "@/store/auth";
 import { authClient } from "@/lib/auth-client";
 
 export function useAuth() {
   const { data: session, isPending } = authClient.useSession();
-  const { user, setUser, clearUser } = useAuthStore();
-  const hasSynced = useRef(false);
+  const { user: persistedUser, setUser, clearUser } = useAuthStore();
 
-  useEffect(() => {
-    if (isPending) return;
-
-    if (session?.user) {
-      // Session confirmed — sync latest data to store
-      hasSynced.current = true;
-      setUser({
+  // Derive user synchronously from session when available,
+  // fall back to Zustand persisted store (survives refreshes/navigation).
+  // This eliminates the race where Zustand hasn't updated yet but session resolved.
+  const sessionUser = session?.user
+    ? ({
         id: session.user.id,
         name: session.user.name,
         email: session.user.email,
         avatarUrl: session.user.image,
-        authProvider: (session.user as any).isAnonymous ? "guest" : "email"
-      } as any);
+        authProvider: (session.user as any).isAnonymous ? "guest" : "email",
+      } as any)
+    : null;
+
+  const user = sessionUser ?? persistedUser;
+
+  useEffect(() => {
+    if (isPending) return;
+    if (sessionUser) {
+      // Sync to Zustand for persistence across navigations/refreshes
+      setUser(sessionUser);
     }
-    // IMPORTANT: We intentionally do NOT clear the user when session is null.
-    // Session can transiently return null on page refocus, navigation,
-    // network blips, or cookie race conditions. The persisted Zustand store
-    // is the source of truth. User is only cleared on explicit signOut().
+    // Never auto-clear. Only explicit signOut clears the store.
   }, [session, isPending, setUser]);
 
   const handleSignOut = useCallback(async () => {

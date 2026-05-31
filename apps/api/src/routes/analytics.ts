@@ -56,8 +56,8 @@ analyticsRouter.get(
     if (!job) return c.json({ error: "Job not found" }, 404);
 
     const state = await job.getState();
-    const result = job.returnvalue as { csvUrl?: string } | undefined;
+    const result = job.returnvalue as { excelUrl?: string } | undefined;
 
-    return c.json({ jobId, status: state, csvUrl: result?.csvUrl ?? null });
+    return c.json({ jobId, status: state, excelUrl: result?.excelUrl ?? null });
   }
 );

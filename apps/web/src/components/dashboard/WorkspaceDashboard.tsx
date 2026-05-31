@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useWorkspaces, useDeleteWorkspace, useCreateWorkspace } from "@/hooks/useWorkspace";
+import { useWorkspaces, useCreateWorkspace } from "@/hooks/useWorkspace";
 import { useTrainings } from "@/hooks/useTrainings";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useAuthStore } from "@/store/auth";
@@ -258,7 +258,6 @@ export function WorkspaceDashboard() {
   const { data: workspaces, isLoading } = useWorkspaces();
   const activeId = useWorkspaceStore((s) => s.activeWorkspaceId);
   const { data: trainings, isLoading: trainingsLoading } = useTrainings(activeId ?? "");
-  const { mutate: deleteWorkspace } = useDeleteWorkspace();
   const { mutate: createWorkspace } = useCreateWorkspace();
   const user = useAuthStore((s) => s.user);
   const autoCreating = useRef(false);
@@ -272,16 +271,7 @@ export function WorkspaceDashboard() {
     }
   }, [isLoading, workspaces, user, createWorkspace]);
 
-  const handleDeleteWorkspace = () => {
-    if (!activeId) return;
-    if (confirm("Are you sure you want to delete this workspace and ALL its trainings? This cannot be undone!")) {
-      deleteWorkspace(activeId, {
-        onSuccess: () => {
-          // If deleted, they will fall back to the "No Workspaces" screen
-        }
-      });
-    }
-  };
+
 
   if (isLoading || (!workspaces?.length && user)) {
     return (
@@ -299,18 +289,14 @@ export function WorkspaceDashboard() {
           <p className="text-sm text-gray-500 mt-1">Select a day's session to start instantly.</p>
         </div>
         <div className="flex items-center gap-3">
-          <button
-            onClick={handleDeleteWorkspace}
-            className="px-4 py-2 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors text-sm font-medium flex items-center gap-2"
-          >
-            <Trash2 size={16} /> Delete Workspace
-          </button>
-          <Link
-            href="/trainings/new"
-            className="px-5 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm transition-colors text-sm font-semibold"
-          >
-            + New Training
-          </Link>
+          {trainings && trainings.length > 0 && (
+            <Link
+              href="/trainings/new"
+              className="px-5 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm transition-colors text-sm font-semibold w-full sm:w-auto text-center"
+            >
+              + New Training
+            </Link>
+          )}
         </div>
       </div>
 

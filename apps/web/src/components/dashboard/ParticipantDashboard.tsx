@@ -88,8 +88,8 @@ export function ParticipantDashboard() {
       <div className="mt-12 pt-8 border-t border-gray-200 text-center">
         <p className="text-sm text-gray-500">
           Want to host your own trainings?{" "}
-          <Link href="/workspaces/new" className="text-brand-600 font-medium hover:underline">
-            Create a Workspace
+          <Link href="/login/trainer" className="text-brand-600 font-medium hover:underline">
+            Switch to Trainer
           </Link>
         </p>
       </div>

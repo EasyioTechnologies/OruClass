@@ -1,6 +1,6 @@
 import { Worker, Queue } from "bullmq";
 import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
-import { getTrainingAnalytics, generateCSV, saveAnalyticsSnapshot } from "../services/analytics.service";
+import { getTrainingAnalytics, generateExcel, saveAnalyticsSnapshot } from "../services/analytics.service";
 
 const connection = { host: process.env.REDIS_HOST ?? "127.0.0.1", port: 6379 };
 
@@ -22,22 +22,22 @@ export function startExportWorker() {
       const { trainingId, workspaceId } = job.data as { trainingId: string; workspaceId: string };
 
       const analytics = await getTrainingAnalytics(trainingId);
-      const csv = generateCSV(analytics);
+      const excelBuffer = await generateExcel(analytics);
 
-      const key = `exports/${workspaceId}/${trainingId}/${Date.now()}.csv`;
+      const key = `exports/${workspaceId}/${trainingId}/${Date.now()}.xlsx`;
       await s3.send(
         new PutObjectCommand({
           Bucket: process.env.R2_BUCKET_NAME!,
           Key: key,
-          Body: csv,
-          ContentType: "text/csv",
+          Body: excelBuffer,
+          ContentType: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
         })
       );
 
-      const csvUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
-      await saveAnalyticsSnapshot(trainingId, workspaceId, analytics, csvUrl);
+      const excelUrl = `${process.env.R2_PUBLIC_URL}/${key}`;
+      await saveAnalyticsSnapshot(trainingId, workspaceId, analytics, excelUrl);
 
-      return { csvUrl };
+      return { excelUrl };
     },
     { connection }
   );

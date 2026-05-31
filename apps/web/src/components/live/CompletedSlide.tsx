@@ -1,7 +1,8 @@
 "use client";
 
+import Link from "next/link";
 import { motion } from "framer-motion";
-import { CheckCircle2, Award, CalendarClock } from "lucide-react";
+import { CheckCircle2, Award, CalendarClock, Home } from "lucide-react";
 import type { Training } from "@oruclass/types";
 
 interface CompletedSlideProps {
@@ -34,7 +35,7 @@ export function CompletedSlide({ training, isTrainer }: CompletedSlideProps) {
           <span className="text-[11px] text-gray-400 font-semibold uppercase tracking-wider mb-1">Status</span>
           <span className="text-sm font-medium text-gray-900">Ended</span>
         </div>
-        
+
         {isTrainer && (
           <div className="flex flex-col items-center p-4 bg-gray-50 border border-gray-100 rounded-xl w-32">
             <Award className="w-6 h-6 text-brand-500 mb-2" />
@@ -43,6 +44,14 @@ export function CompletedSlide({ training, isTrainer }: CompletedSlideProps) {
           </div>
         )}
       </div>
+
+      <Link
+        href={isTrainer ? "/dashboard" : "/participant"}
+        className="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white text-sm font-semibold rounded-xl hover:bg-brand-700 transition-colors"
+      >
+        <Home size={16} />
+        Go to Home
+      </Link>
     </div>
   );
 }

@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useWorkspaceStore } from "@/store/workspace";
@@ -35,6 +36,8 @@ export function AnalyticsDashboard({ trainingId }: { trainingId: string }) {
   const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const qc = useQueryClient();
 
+  const [exportJobId, setExportJobId] = React.useState<string | null>(null);
+
   const { data: analytics, isLoading } = useQuery<AnalyticsData>({
     queryKey: ["analytics", trainingId],
     queryFn: async () => {
@@ -47,7 +50,7 @@ export function AnalyticsDashboard({ trainingId }: { trainingId: string }) {
     enabled: !!(workspaceId && trainingId),
   });
 
-  const exportCSV = useMutation({
+  const exportExcel = useMutation({
     mutationFn: async () => {
       const { data } = await apiClient.post<{ jobId: string; status: string }>(
         `/api/workspaces/${workspaceId}/trainings/${trainingId}/analytics/export`,
@@ -56,7 +59,33 @@ export function AnalyticsDashboard({ trainingId }: { trainingId: string }) {
       );
       return data;
     },
+    onSuccess: (data) => {
+      setExportJobId(data.jobId);
+    }
   });
+
+  const { data: jobStatus } = useQuery({
+    queryKey: ["analytics-export-job", exportJobId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ jobId: string; status: string; excelUrl: string | null }>(
+        `/api/workspaces/${workspaceId}/trainings/${trainingId}/analytics/export/${exportJobId}`,
+        { headers: { "X-Workspace-ID": workspaceId } }
+      );
+      return data;
+    },
+    enabled: !!exportJobId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "completed" || status === "failed" ? false : 1500;
+    }
+  });
+
+  React.useEffect(() => {
+    if (jobStatus?.status === "completed" && jobStatus.excelUrl) {
+      window.open(jobStatus.excelUrl, "_blank");
+      setExportJobId(null);
+    }
+  }, [jobStatus]);
 
   if (isLoading) {
     return (
@@ -77,15 +106,15 @@ export function AnalyticsDashboard({ trainingId }: { trainingId: string }) {
       <div className="flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Training Analytics</h1>
         <div className="flex items-center gap-3">
-          {exportCSV.data && (
-            <span className="text-xs text-green-600">Export queued (job {exportCSV.data.jobId})</span>
+          {exportJobId && jobStatus?.status !== "completed" && (
+            <span className="text-xs text-brand-600 animate-pulse">Generating Excel...</span>
           )}
           <button
-            onClick={() => exportCSV.mutate()}
-            disabled={exportCSV.isPending}
+            onClick={() => exportExcel.mutate()}
+            disabled={exportExcel.isPending || !!exportJobId}
             className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60 transition-colors"
           >
-            {exportCSV.isPending ? "Exporting…" : "Export CSV"}
+            {exportExcel.isPending || !!exportJobId ? "Exporting…" : "Export Excel"}
           </button>
         </div>
       </div>

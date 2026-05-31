@@ -68,14 +68,23 @@ daysRouter.post(
           .returning({ id: trainingModules.id });
 
         if (adopted.length === 0) {
+          // Find the first attendance module for this training to copy its config
+          const existingAttendance = await tx.query.trainingModules.findFirst({
+            where: and(
+              eq(trainingModules.trainingId, trainingId),
+              eq(trainingModules.moduleType, "attendance")
+            ),
+            orderBy: [asc(trainingModules.createdAt)]
+          });
+
           await tx.insert(trainingModules).values({
             trainingId,
             dayId: newDay.id,
-            title: "Attendance",
+            title: existingAttendance?.title || "Attendance",
             moduleType: "attendance",
             position: 0,
             isAlwaysOn: true,
-            config: {},
+            config: existingAttendance?.config || {},
           });
         }
 

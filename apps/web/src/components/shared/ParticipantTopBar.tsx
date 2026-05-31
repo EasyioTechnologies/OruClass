@@ -1,14 +1,24 @@
 "use client";
 
-import { LogOut } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
+import { useLayoutStore } from "@/store/layout";
 
 export function ParticipantTopBar() {
   const { user, signOut } = useAuth();
+  const { toggleMobileSidebar } = useLayoutStore();
 
   return (
     <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 flex-shrink-0">
-      <span className="text-[14px] font-bold text-brand-600 tracking-tight">OruClass</span>
+      <div className="flex items-center gap-3">
+        <button
+          onClick={toggleMobileSidebar}
+          className="md:hidden p-1.5 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-lg transition-colors"
+        >
+          <Menu size={20} />
+        </button>
+        <span className="text-[14px] font-bold text-brand-600 tracking-tight md:hidden">OruClass</span>
+      </div>
       {user && (
         <div className="flex items-center gap-3">
           <span className="text-[12px] text-gray-500 hidden sm:block">{user.name}</span>

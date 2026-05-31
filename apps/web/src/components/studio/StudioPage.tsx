@@ -2083,14 +2083,14 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
   if (!daysLoading && days.length === 0 && unassignedModules.length === 0) {
     return (
       <div className="max-w-5xl mx-auto px-1 space-y-6 pb-8">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
             <h1 className="text-xl font-bold text-gray-900">Training Studio</h1>
             <p className="text-sm text-gray-500 mt-0.5">Build and configure activities for your live session</p>
           </div>
           <Link
             href={`/trainings/${trainingId}/live`}
-            className="flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200"
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200 w-full sm:w-auto shrink-0"
           >
             <Radio size={14} />
             Go Live
@@ -2133,14 +2133,14 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
   return (
     <div className="max-w-5xl mx-auto px-1 space-y-5 pb-8">
       {/* Page header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-xl font-bold text-gray-900">Training Studio</h1>
           <p className="text-sm text-gray-500 mt-0.5">Build and configure activities for your live session</p>
         </div>
         <Link
           href={`/trainings/${trainingId}/live`}
-          className="flex items-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200"
+          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200 w-full sm:w-auto shrink-0"
         >
           <Radio size={14} />
           Go Live
