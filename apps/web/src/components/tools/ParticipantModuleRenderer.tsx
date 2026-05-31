@@ -12,6 +12,9 @@ import { ParticipantWordCloud } from "./ParticipantWordCloud";
 import { ParticipantQnA } from "./ParticipantQnA";
 import { ParticipantTimer } from "./ParticipantTimer";
 import { ParticipantPulse } from "./ParticipantPulse";
+import { ParticipantMapping } from "./ParticipantMapping";
+import { ParticipantForm } from "./ParticipantForm";
+import { ParticipantEmbed } from "./ParticipantEmbed";
 
 interface Props {
   module: TrainingModule;
@@ -30,6 +33,9 @@ const moduleComponentMap: Record<string, React.ComponentType<Props>> = {
   qna: ParticipantQnA,
   timer: ParticipantTimer,
   pulse: ParticipantPulse,
+  mapping: ParticipantMapping,
+  form: ParticipantForm,
+  embed: ParticipantEmbed,
 };
 
 export function ParticipantModuleRenderer({ module, trainingId }: Props) {

@@ -12,6 +12,9 @@ import { TrainerWordCloud } from "./TrainerWordCloud";
 import { TrainerQnA } from "./TrainerQnA";
 import { TrainerTimer } from "./TrainerTimer";
 import { TrainerPulse } from "./TrainerPulse";
+import { TrainerMapping } from "./TrainerMapping";
+import { TrainerForm } from "./TrainerForm";
+import { TrainerEmbed } from "./TrainerEmbed";
 
 interface Props {
   module: TrainingModule;
@@ -30,6 +33,9 @@ const moduleComponentMap: Record<string, React.ComponentType<Props>> = {
   qna: TrainerQnA,
   timer: TrainerTimer,
   pulse: TrainerPulse,
+  mapping: TrainerMapping,
+  form: TrainerForm,
+  embed: TrainerEmbed,
 };
 
 export function TrainerModuleRenderer({ module, trainingId }: Props) {

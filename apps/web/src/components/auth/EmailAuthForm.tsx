@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
+import { useAuthStore } from "@/store/auth";
+import { UserCircle2 } from "lucide-react";
 
 export function EmailAuthForm({
   returnTo = "/dashboard",
@@ -13,11 +15,14 @@ export function EmailAuthForm({
   initialMode?: "login" | "signup";
   onBack?: () => void;
 }) {
+  const { user, isSessionExpired, clearUser } = useAuthStore();
   const [isLogin, setIsLogin] = useState(initialMode === "login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const [email, setEmail] = useState("");
+  const isContinueAs = isSessionExpired && user && isLogin;
+
+  const [email, setEmail] = useState(isContinueAs ? user.email : "");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
 
@@ -86,6 +91,13 @@ export function EmailAuthForm({
 
   return (
     <div className="space-y-6">
+      {isContinueAs && (
+        <div className="bg-orange-50 border border-orange-100 p-4 rounded-2xl mb-4 text-center">
+          <p className="text-[14px] text-orange-800 font-medium mb-1">Your session has expired</p>
+          <p className="text-[13px] text-orange-600/80">Please log in again to continue.</p>
+        </div>
+      )}
+
       <form onSubmit={handleSubmit} className="space-y-4">
         {!isLogin && (
           <div>
@@ -99,16 +111,43 @@ export function EmailAuthForm({
             />
           </div>
         )}
-        <div>
-          <input
-            type="email"
-            placeholder="Email address"
-            value={email}
-            onChange={(e) => setEmail(e.target.value)}
-            className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-gray-200 transition-all"
-            required
-          />
-        </div>
+        
+        {isContinueAs ? (
+          <div className="flex items-center justify-between px-5 py-4 bg-gray-100 rounded-2xl border border-gray-200">
+            <div className="flex items-center gap-3">
+              {user.avatarUrl ? (
+                <img src={user.avatarUrl} alt="Avatar" className="w-10 h-10 rounded-full" />
+              ) : (
+                <UserCircle2 className="w-10 h-10 text-gray-400" />
+              )}
+              <div className="text-left">
+                <p className="text-sm font-semibold text-gray-900">{user.name}</p>
+                <p className="text-xs text-gray-500">{user.email}</p>
+              </div>
+            </div>
+            <button
+              type="button"
+              onClick={() => {
+                clearUser();
+                setEmail("");
+              }}
+              className="text-xs font-medium text-emerald-600 hover:text-emerald-700"
+            >
+              Not you?
+            </button>
+          </div>
+        ) : (
+          <div>
+            <input
+              type="email"
+              placeholder="Email address"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-gray-200 transition-all"
+              required
+            />
+          </div>
+        )}
         <div>
           <input
             type="password"

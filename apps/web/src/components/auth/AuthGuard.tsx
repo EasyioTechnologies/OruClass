@@ -6,7 +6,7 @@ import { useAuth } from "@/hooks/useAuth";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const { user, isPending } = useAuth();
+  const { user, isPending, isAuthenticated } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -17,14 +17,14 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     // Only redirect when:
     // 1. Component is mounted (hydrated)
     // 2. Session check is complete (not pending)
-    // 3. No user in persisted store at all (never logged in / manually logged out)
-    if (mounted && !isPending && !user) {
+    // 3. User is not authenticated (either no user or session expired)
+    if (mounted && !isPending && !isAuthenticated) {
       router.replace("/login");
     }
-  }, [mounted, isPending, user, router]);
+  }, [mounted, isPending, isAuthenticated, router]);
 
-  // Show children immediately if we have a persisted user (from Zustand localStorage)
-  if (user) {
+  // Show children immediately if we are authenticated (from Zustand localStorage or active session)
+  if (isAuthenticated && user) {
     return <>{children}</>;
   }
 

@@ -5,8 +5,10 @@ import type { PublicUser } from "@oruclass/types";
 interface AuthState {
   user: PublicUser | null;
   isAuthenticated: boolean;
-  setUser: (user: PublicUser | null) => void;
+  isSessionExpired: boolean;
+  setUser: (user: PublicUser | null, isAuthenticated?: boolean) => void;
   clearUser: () => void;
+  setSessionExpired: (expired: boolean) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -14,8 +16,10 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       user: null,
       isAuthenticated: false,
-      setUser: (user) => set({ user, isAuthenticated: user !== null }),
-      clearUser: () => set({ user: null, isAuthenticated: false }),
+      isSessionExpired: false,
+      setUser: (user, isAuthenticated = true) => set({ user, isAuthenticated: user !== null && isAuthenticated, isSessionExpired: false }),
+      clearUser: () => set({ user: null, isAuthenticated: false, isSessionExpired: false }),
+      setSessionExpired: (expired) => set((state) => ({ isSessionExpired: expired, isAuthenticated: expired ? false : state.isAuthenticated })),
     }),
     { name: "oruclass-auth" },
   ),
