@@ -42,6 +42,12 @@ export const auth = betterAuth({
   rateLimit: {
     window: 60,
     max: 1000,
+    customRules: [
+      {
+        path: "/get-session",
+        max: 5000, // Significantly higher limit for get-session to prevent HMR 429s
+      }
+    ]
   },
   advanced: {
     generateId: () => randomUUID(),

@@ -1,27 +1,11 @@
 {
   "permissions": {
     "allow": [
-      "Bash(bun add:*)",
-      "Bash(xargs grep:*)",
-      "Bash(ls F:/OruClass/apps/web/src/app/trainings/[id]/)",
       "Bash(xargs ls:*)",
-      "Bash(ls -1 apps/api/src/routes/sessions.ts apps/web/src/hooks/useSessions.ts apps/web/src/components/live/SessionDashboard.tsx apps/web/src/app/trainings/*/sessions/page.tsx)",
-      "Read(//tmp/**)",
-      "Bash(ls F:/OruClass/apps/web/src/app/trainings/[id]/sessions/)",
-      "Bash(bun run:*)",
-      "Bash(docker exec oruclass-postgres-1:*)",
-      "Bash(python3 -c \"import json,sys; j=json.load\\(sys.stdin\\); [print\\(e['tag']\\) for e in j['entries']]\")",
-      "Bash(docker exec:*)",
-      "Bash(bun -e ':*)",
-      "Bash(node:*)",
-      "Bash(ls F:/OruClass/bun.lock*)",
-      "Bash(docker build:*)",
-      "Bash(docker system:*)",
-      "Bash(docker info:*)",
-      "Bash(find /f/OruClass/apps/web/src -type f \\\\\\( -name \"*.ts\" -o -name \"*.tsx\" \\\\\\) -exec grep -l \"token\\\\|refresh\\\\|expir\" {} \\\\;)",
-      "Bash(npx next:*)",
-      "Bash(find:*)",
-      "Bash(npx --package=typescript tsc --noEmit)"
-    ]
+      "Bash(xargs -I{} bash -c \"echo '=== {} ===' && find {} -maxdepth 1 -type f -name '*.tsx' | head -5\")",
+      "Bash(xargs -I {} sh -c 'echo \"=== $\\(basename {}\\) ===\" && find {} -maxdepth 1 -type f -name \"*.tsx\" | wc -l && echo')",
+      "Bash(npx next:*)"
+    ],
+    "mode": "bypass"
   }
 }

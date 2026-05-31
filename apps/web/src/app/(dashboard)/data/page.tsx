@@ -3,13 +3,55 @@
 import React, { useState } from "react";
 import { useWorkspaceResponses } from "@/hooks/useWorkspaceResponses";
 import { format } from "date-fns";
-import { Search, Loader2, ChevronLeft, Calendar, Users, ChevronDown, ChevronRight } from "lucide-react";
+import { Search, Loader2, ChevronLeft, Calendar, Users, ChevronDown, ChevronRight, Download } from "lucide-react";
+import { useQuery, useMutation } from "@tanstack/react-query";
+import { apiClient } from "@/lib/api-client";
+import { useWorkspaceStore } from "@/store/workspace";
 
 export default function DataPage() {
   const { data: responses, isLoading, isError } = useWorkspaceResponses();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTrainingId, setActiveTrainingId] = useState<string | null>(null);
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
+  const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
+  const [exportJobId, setExportJobId] = React.useState<string | null>(null);
+
+  const exportExcel = useMutation({
+    mutationFn: async (trainingId: string) => {
+      const { data } = await apiClient.post<{ jobId: string; status: string }>(
+        `/api/workspaces/${workspaceId}/trainings/${trainingId}/analytics/export`,
+        {},
+        { headers: { "X-Workspace-ID": workspaceId } },
+      );
+      return data;
+    },
+    onSuccess: (data) => {
+      setExportJobId(data.jobId);
+    }
+  });
+
+  const { data: jobStatus } = useQuery({
+    queryKey: ["analytics-export-job", exportJobId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{ jobId: string; status: string; excelUrl: string | null }>(
+        `/api/workspaces/${workspaceId}/trainings/${activeTrainingId}/analytics/export/${exportJobId}`,
+        { headers: { "X-Workspace-ID": workspaceId } }
+      );
+      return data;
+    },
+    enabled: !!exportJobId && !!activeTrainingId,
+    refetchInterval: (query) => {
+      const status = query.state.data?.status;
+      return status === "completed" || status === "failed" ? false : 1500;
+    }
+  });
+
+  React.useEffect(() => {
+    if (jobStatus?.status === "completed" && jobStatus.excelUrl) {
+      window.open(jobStatus.excelUrl, "_blank");
+      setExportJobId(null);
+    }
+  }, [jobStatus]);
 
   const toggleDate = (date: string) => {
     setExpandedDates(prev => ({ ...prev, [date]: !prev[date] }));
@@ -77,7 +119,7 @@ export default function DataPage() {
           >
             <ChevronLeft className="w-5 h-5 text-gray-600" />
           </button>
-          <div>
+          <div className="flex-1">
             <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
               {activeGroup.training?.title || "Unknown Training"}
             </h1>
@@ -85,6 +127,23 @@ export default function DataPage() {
               <Users className="w-4 h-4" /> 
               {activeGroup.responses.length} Total Responses
             </p>
+          </div>
+          <div className="flex items-center gap-3">
+            {exportJobId && jobStatus?.status !== "completed" && (
+              <span className="text-xs text-brand-600 animate-pulse font-medium">Generating Excel...</span>
+            )}
+            <button
+              onClick={() => exportExcel.mutate(activeTrainingId)}
+              disabled={exportExcel.isPending || !!exportJobId}
+              className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors flex items-center gap-2 shadow-sm"
+            >
+              {exportExcel.isPending || !!exportJobId ? (
+                <Loader2 className="w-4 h-4 animate-spin" />
+              ) : (
+                <Download className="w-4 h-4" />
+              )}
+              {exportExcel.isPending || !!exportJobId ? "Exporting…" : "Export Excel"}
+            </button>
           </div>
         </div>
 

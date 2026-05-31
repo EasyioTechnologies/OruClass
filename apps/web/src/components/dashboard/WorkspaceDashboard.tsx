@@ -5,12 +5,15 @@ import { useWorkspaces, useCreateWorkspace } from "@/hooks/useWorkspace";
 import { useTrainings } from "@/hooks/useTrainings";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useAuthStore } from "@/store/auth";
+import { useSubscriptionStore } from "@/store/subscription";
 import { formatDate } from "@oruclass/utils";
+import { cn } from "@oruclass/utils";
 
 import { useRouter } from "next/navigation";
 
-import { ChevronDown, ChevronUp, Trash2, CalendarDays, Play, ArrowRight, LayoutGrid, Pencil, X } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2, CalendarDays, Play, ArrowRight, LayoutGrid, Pencil, X, Crown, Sparkles, Zap, Shield, Check } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
+import { getPlan } from "@/config/plans";
 import type { Training } from "@oruclass/types";
 import { useDeleteTraining, useUpdateTraining } from "@/hooks/useTrainings";
 
@@ -281,12 +284,86 @@ export function WorkspaceDashboard() {
     );
   }
 
+  const { planId: subPlanId, status: subStatus } = useSubscriptionStore();
+  const isPro = subStatus === "active";
+  const currentPlan = subPlanId ? getPlan(subPlanId) : null;
+
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-12">
+      {/* Subscription Banner */}
+      {isPro && currentPlan ? (
+        /* PRO user welcome — premium feel */
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/50 p-5">
+          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-amber-200/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/4" />
+          <div className="absolute bottom-0 left-16 w-32 h-32 bg-gradient-to-tr from-orange-200/15 to-transparent rounded-full translate-y-1/2" />
+          <div className="relative flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md shadow-amber-300/30">
+                <Crown size={20} className="text-white" strokeWidth={2} />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-[15px] font-800 text-gray-900">
+                    {currentPlan.name} Plan
+                  </h2>
+                  <span className="bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[9px] font-700 px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                    Active
+                  </span>
+                </div>
+                <p className="text-[12.5px] text-amber-700/70 font-500 mt-0.5">
+                  All premium features unlocked — you&apos;re getting the full OruClassrooms experience
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/subscription/billing"
+              className="hidden sm:flex items-center gap-1.5 bg-white/80 border border-amber-200 text-amber-700 px-3.5 py-2 rounded-xl text-[12px] font-600 hover:bg-white transition-all flex-shrink-0"
+            >
+              <Shield size={13} />
+              Manage Plan
+            </Link>
+          </div>
+        </div>
+      ) : (
+        /* Free user — upgrade nudge */
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 p-5">
+          <div className="absolute top-0 right-0 w-56 h-56 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
+          <div className="absolute bottom-0 left-8 w-36 h-36 bg-white/5 rounded-full translate-y-1/2" />
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+            <div className="flex items-center gap-3.5">
+              <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
+                <Sparkles size={20} className="text-white" />
+              </div>
+              <div>
+                <h2 className="text-[15px] font-800 text-white">
+                  Unlock the full potential
+                </h2>
+                <p className="text-[12.5px] text-white/70 font-400 mt-0.5">
+                  Get unlimited participants, advanced analytics, custom branding & more
+                </p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <div className="hidden md:flex items-center gap-4 text-[11px] text-white/60 mr-2">
+                <span className="flex items-center gap-1"><Check size={11} strokeWidth={2.5} /> 7-day trial</span>
+                <span className="flex items-center gap-1"><Check size={11} strokeWidth={2.5} /> Cancel anytime</span>
+              </div>
+              <Link
+                href="/subscription"
+                className="bg-white text-brand-600 px-4 py-2.5 rounded-xl text-[13px] font-700 hover:bg-white/90 transition-all flex items-center gap-1.5 shadow-sm flex-shrink-0"
+              >
+                View Plans
+                <ArrowRight size={14} />
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Day-wise Trainings</h1>
-          <p className="text-sm text-gray-500 mt-1">Select a day's session to start instantly.</p>
+          <p className="text-sm text-gray-500 mt-1">Select a day&apos;s session to start instantly.</p>
         </div>
         <div className="flex items-center gap-3">
           {trainings && trainings.length > 0 && (
