@@ -1,0 +1,42 @@
+import { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Contact Us | OruClassrooms",
+  description: "Get in touch with the OruLabs team for support, inquiries, or feedback regarding OruClassrooms.",
+};
+
+export default function ContactPage() {
+  return (
+    <div className="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
+      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
+        <div className="text-center mb-10">
+          <h1 className="text-3xl font-extrabold text-gray-900">Contact Us</h1>
+          <p className="mt-4 text-lg text-gray-500">We'd love to hear from you!</p>
+        </div>
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          <div className="bg-emerald-50 rounded-xl p-6 border border-emerald-100">
+            <h3 className="text-lg font-semibold text-emerald-900 mb-2">Support</h3>
+            <p className="text-emerald-700 mb-4">Need help with your account or joining a class?</p>
+            <a href="mailto:support@orulabs.in" className="text-emerald-600 font-medium hover:underline">
+              support@orulabs.in
+            </a>
+          </div>
+          
+          <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
+            <h3 className="text-lg font-semibold text-blue-900 mb-2">Sales & Inquiries</h3>
+            <p className="text-blue-700 mb-4">Interested in using OruClassrooms for your organization?</p>
+            <a href="mailto:sales@orulabs.in" className="text-blue-600 font-medium hover:underline">
+              sales@orulabs.in
+            </a>
+          </div>
+        </div>
+        
+        <div className="mt-12 text-center text-gray-500 text-sm">
+          <p>OruLabs Inc.</p>
+          <p>Bringing education to the modern age.</p>
+        </div>
+      </div>
+    </div>
+  );
+}

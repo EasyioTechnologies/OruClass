@@ -26,8 +26,8 @@ export const auth = betterAuth({
   trustedOrigins: [
     process.env.WEB_URL ?? "http://localhost:3000",
     "http://localhost:3000",
-    "https://www.dezignbuild.site",
-    "https://dezignbuild.site"
+    "https://www.orulabs.in",
+    "https://orulabs.in"
   ],
   secret: process.env.BETTER_AUTH_SECRET,
   baseURL: process.env.BETTER_AUTH_URL ?? "http://localhost:3001",
@@ -53,7 +53,7 @@ export const auth = betterAuth({
     generateId: () => randomUUID(),
     crossSubDomainCookies: {
       enabled: process.env.NODE_ENV === "production",
-      domain: process.env.NODE_ENV === "production" ? ".dezignbuild.site" : undefined,
+      domain: process.env.NODE_ENV === "production" ? ".orulabs.in" : undefined,
     }
   }
 });

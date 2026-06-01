@@ -14,8 +14,8 @@ If you have created new Google Cloud Console credentials, you need to configure 
 Add the following URLs to allow requests from your frontend:
 
 **For Production:**
-- `https://dezignbuild.site`
-- `https://api.dezignbuild.site`
+- `https://orulabs.in`
+- `https://api.orulabs.in`
 
 **For Local Development:**
 - `http://localhost:3000`
@@ -25,7 +25,7 @@ Add the following URLs to allow requests from your frontend:
 Add the following URLs to allow Better Auth to securely handle the OAuth callback:
 
 **For Production:**
-- `https://api.dezignbuild.site/api/auth/callback/google`
+- `https://api.orulabs.in/api/auth/callback/google`
 
 **For Local Development:**
 - `http://localhost:3001/api/auth/callback/google`
@@ -60,7 +60,7 @@ If you are using Cloudflare R2 for file uploads and have a CORS policy enabled o
   {
     "AllowedOrigins": [
       "http://localhost:3000",
-      "https://dezignbuild.site"
+      "https://orulabs.in"
     ],
     "AllowedMethods": ["GET", "PUT", "POST", "DELETE", "HEAD"],
     "AllowedHeaders": ["*"]
@@ -71,5 +71,5 @@ If you are using Cloudflare R2 for file uploads and have a CORS policy enabled o
 ## Resend (Email Deliverability)
 When you are ready to send production emails (like Welcome Emails or Magic Links):
 1. Go to your [Resend Dashboard](https://resend.com/).
-2. Add the domain `dezignbuild.site`.
+2. Add the domain `orulabs.in`.
 3. Copy the provided TXT and MX records into your DNS provider (where you added the A records). This prevents your system emails from landing in users' spam folders.

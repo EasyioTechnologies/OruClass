@@ -45,7 +45,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.oruclass-api.entrypoints=websecure"
-      - "traefik.http.routers.oruclass-api.rule=Host(`api.dezignbuild.site`)"
+      - "traefik.http.routers.oruclass-api.rule=Host(`api.orulabs.in`)"
       - "traefik.http.routers.oruclass-api.tls.certresolver=letsencrypt"
       - "traefik.http.services.oruclass-api.loadbalancer.server.url=http://127.0.0.1:5011"
     healthcheck:
@@ -76,7 +76,7 @@ services:
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.oruclass-web.entrypoints=websecure"
-      - "traefik.http.routers.oruclass-web.rule=Host(`dezignbuild.site`) || Host(`www.dezignbuild.site`)"
+      - "traefik.http.routers.oruclass-web.rule=Host(`orulabs.in`) || Host(`www.orulabs.in`)"
       - "traefik.http.routers.oruclass-web.tls.certresolver=letsencrypt"
       - "traefik.http.services.oruclass-web.loadbalancer.server.url=http://127.0.0.1:5010"
 
