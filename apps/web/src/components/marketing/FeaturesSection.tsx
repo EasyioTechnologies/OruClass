@@ -29,7 +29,7 @@ export function FeaturesSection() {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: "easeOut" }}
       viewport={{ once: false, amount: 0.1 }}
-      className="h-screen w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-white"
+      className="min-h-screen w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-white py-16 md:py-0"
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 w-full">
         <motion.div
@@ -37,7 +37,7 @@ export function FeaturesSection() {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: false, margin: "-10%" }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-20"
+          className="text-center mb-10 md:mb-20"
         >
           <motion.div 
             whileHover={{ scale: 1.1, rotate: 5 , transition: { duration: 0.2 }} }
@@ -45,13 +45,13 @@ export function FeaturesSection() {
           >
             <CheckCircle className="w-6 h-6 text-brand-600" />
           </motion.div>
-          <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1] max-w-3xl mx-auto">
+          <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1] max-w-3xl mx-auto">
             Why choose this platform? <br className="hidden md:block" />
             <span className="text-gray-400 transition-colors duration-500 hover:text-gray-600">Because it simply works.</span>
           </h2>
         </motion.div>
 
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
           {features.map((feature, index) => (
             <motion.div
               key={index}
@@ -60,13 +60,13 @@ export function FeaturesSection() {
               viewport={{ once: false, margin: "-10%" }}
               transition={{ duration: 0.8, delay: index * 0.15, ease: [0.16, 1, 0.3, 1] }}
               whileHover={{ y: -10, scale: 1.02 , transition: { duration: 0.2 }} }
-              className="group relative p-8 rounded-3xl bg-white/50 backdrop-blur-xl border border-gray-100 shadow-sm hover:shadow-[0_30px_60px_rgba(0,0,0,0.05)] transition-all duration-500"
+              className="group relative p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-white/50 backdrop-blur-xl border border-gray-100 shadow-sm hover:shadow-[0_30px_60px_rgba(0,0,0,0.05)] transition-all duration-500"
             >
-              <div className="w-14 h-14 rounded-2xl bg-gray-50 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-500 border border-gray-100">
+              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gray-50 flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-500 border border-gray-100">
                 {feature.icon}
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-3">{feature.title}</h3>
-              <p className="text-gray-600 leading-relaxed">{feature.description}</p>
+              <h3 className="text-base sm:text-xl font-bold text-gray-900 mb-1.5 sm:mb-3">{feature.title}</h3>
+              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{feature.description}</p>
             </motion.div>
           ))}
         </div>
