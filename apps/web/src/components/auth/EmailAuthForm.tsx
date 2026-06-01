@@ -45,9 +45,8 @@ export function EmailAuthForm({
           const errMsg = error.message || "";
           const errCode = (error as any).code || "";
           
-          if (errMsg.toLowerCase().includes("not found") || errCode === "USER_NOT_FOUND") {
-            setIsLogin(false);
-            setError("Account not found. Please sign up instead.");
+          if (errMsg.toLowerCase().includes("not found") || errCode === "USER_NOT_FOUND" || errMsg.toLowerCase().includes("invalid")) {
+            setError("Invalid email or password.");
           } else {
             setError(errMsg || "Failed to sign in. Check your credentials.");
           }
@@ -72,7 +71,6 @@ export function EmailAuthForm({
           const errMsg = error.message || "";
           const errCode = (error as any).code || "";
           if (errMsg.toLowerCase().includes("exist") || errCode === "USER_ALREADY_EXISTS") {
-            setIsLogin(true);
             setError("Account already exists. Please sign in instead.");
           } else {
             setError(errMsg || "Failed to sign up.");
