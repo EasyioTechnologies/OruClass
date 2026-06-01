@@ -51,8 +51,7 @@ export function EmailAuthForm({
             setError(errMsg || "Failed to sign in. Check your credentials.");
           }
         } else {
-          router.push(returnTo);
-          router.refresh();
+          window.location.href = returnTo;
         }
       } else {
         if (!name.trim()) {
@@ -76,8 +75,7 @@ export function EmailAuthForm({
             setError(errMsg || "Failed to sign up.");
           }
         } else {
-          router.push(returnTo);
-          router.refresh();
+          window.location.href = returnTo;
         }
       }
     } catch (err: any) {
