@@ -12,7 +12,7 @@ export default function PrivacyPage() {
         <h1 className="text-3xl font-extrabold text-gray-900 mb-6">Privacy Policy</h1>
         <p className="text-gray-500 text-sm">Last updated: {new Date().toLocaleDateString()}</p>
         
-        <div className="prose prose-emerald max-w-none text-gray-600">
+        <div className="prose prose-blue max-w-none text-gray-600">
           <h2>1. Information We Collect</h2>
           <p>We collect information you provide directly to us, such as when you create or modify your account, participate in live classes, or communicate with us. This includes your name, email address, and any video/audio data streamed during sessions.</p>
           

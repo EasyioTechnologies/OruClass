@@ -15,10 +15,10 @@ export default function ContactPage() {
         </div>
         
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-emerald-50 rounded-xl p-6 border border-emerald-100">
-            <h3 className="text-lg font-semibold text-emerald-900 mb-2">Support</h3>
-            <p className="text-emerald-700 mb-4">Need help with your account or joining a class?</p>
-            <a href="mailto:support@orulabs.in" className="text-emerald-600 font-medium hover:underline">
+          <div className="bg-brand-50 rounded-xl p-6 border border-brand-100">
+            <h3 className="text-lg font-semibold text-brand-900 mb-2">Support</h3>
+            <p className="text-brand-700 mb-4">Need help with your account or joining a class?</p>
+            <a href="mailto:support@orulabs.in" className="text-brand-600 font-medium hover:underline">
               support@orulabs.in
             </a>
           </div>

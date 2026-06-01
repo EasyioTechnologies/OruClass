@@ -30,13 +30,13 @@ export function MarketingNavbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-10">
-          <Link href="#features" className={`text-sm font-medium transition-colors hover:text-black ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
+          <Link href="#features" className={`text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
             Features
           </Link>
-          <Link href="#platform" className={`text-sm font-medium transition-colors hover:text-black ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
+          <Link href="#platform" className={`text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
             Platform
           </Link>
-          <Link href="#solutions" className={`text-sm font-medium transition-colors hover:text-black ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
+          <Link href="#solutions" className={`text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
             Solutions
           </Link>
         </nav>
@@ -44,13 +44,13 @@ export function MarketingNavbar() {
         <div className="flex items-center gap-6">
           <Link
             href="/login"
-            className={`hidden sm:block text-sm font-medium transition-colors hover:text-black ${isScrolled ? "text-gray-600" : "text-gray-700"}`}
+            className={`hidden sm:block text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-600" : "text-gray-700"}`}
           >
             Sign In
           </Link>
           <Link
             href="/login"
-            className="px-6 py-2.5 rounded-full bg-black text-white text-sm font-medium hover:bg-gray-900 hover:scale-105 transition-all duration-300 shadow-sm"
+            className="px-6 py-2.5 rounded-full bg-brand-600 text-white text-sm font-medium hover:bg-brand-700 hover:scale-105 transition-all duration-300 shadow-sm"
           >
             Get Started
           </Link>

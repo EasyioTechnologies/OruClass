@@ -76,7 +76,7 @@ export function HowItWorksSection() {
             whileHover={{ scale: 1.05 , transition: { duration: 0.2 }} }
             className="inline-flex items-center justify-center p-3 mb-6 rounded-2xl bg-white border border-gray-100 shadow-sm cursor-default"
           >
-            <MessageSquare className="w-6 h-6 text-black" />
+            <MessageSquare className="w-6 h-6 text-brand-600" />
           </motion.div>
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight text-gray-900 leading-[1.1]">
             Don't just take our word for it. <br className="hidden md:block" />

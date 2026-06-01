@@ -24,7 +24,7 @@ export function FinalCTASection() {
             whileHover={{ scale: 1.05 , transition: { duration: 0.2 }} }
             className="inline-flex items-center justify-center p-4 mb-8 rounded-full bg-white border border-gray-100 shadow-sm cursor-default"
           >
-            <Rocket className="w-8 h-8 text-black" />
+            <Rocket className="w-8 h-8 text-brand-600" />
           </motion.div>
           
           <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 leading-[1.05] mb-6">
@@ -40,7 +40,7 @@ export function FinalCTASection() {
             <motion.a
               whileHover={{ scale: 1.05 , transition: { duration: 0.2 }} }
               whileTap={{ scale: 0.95 }}
-              className="inline-flex px-10 py-5 rounded-full bg-black text-white font-medium items-center justify-center gap-3 group shadow-xl"
+              className="inline-flex px-10 py-5 rounded-full bg-brand-600 text-white font-medium items-center justify-center gap-3 group shadow-xl hover:bg-brand-700 transition-colors"
             >
               Get Started Now
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />

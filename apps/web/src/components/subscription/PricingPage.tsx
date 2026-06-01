@@ -99,7 +99,7 @@ export function PricingPage() {
                         : `₹${formatPrice(plan.price)} billed yearly`}
                   </span>
                   {plan.savings && (
-                    <span className="text-[11px] font-600 text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">
+                    <span className="text-[11px] font-600 text-brand-600 bg-brand-50 px-2 py-0.5 rounded-full">
                       Save {plan.savings}%
                     </span>
                   )}
@@ -146,15 +146,15 @@ export function PricingPage() {
       <div className="mt-10 text-center">
         <div className="inline-flex items-center gap-6 text-[12.5px] text-gray-400">
           <span className="flex items-center gap-1.5">
-            <Check size={13} className="text-emerald-500" strokeWidth={2.5} />
+            <Check size={13} className="text-brand-500" strokeWidth={2.5} />
             No credit card required
           </span>
           <span className="flex items-center gap-1.5">
-            <Check size={13} className="text-emerald-500" strokeWidth={2.5} />
+            <Check size={13} className="text-brand-500" strokeWidth={2.5} />
             Cancel anytime
           </span>
           <span className="flex items-center gap-1.5">
-            <Check size={13} className="text-emerald-500" strokeWidth={2.5} />
+            <Check size={13} className="text-brand-500" strokeWidth={2.5} />
             7-day free trial
           </span>
         </div>

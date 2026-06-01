@@ -60,7 +60,7 @@ export function HeroSection() {
               <motion.a
                 whileHover={{ scale: 1.05 , transition: { duration: 0.2 }} }
                 whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-8 py-4 rounded-full bg-black text-white font-medium flex items-center justify-center gap-2 group shadow-lg"
+                className="w-full sm:w-auto px-8 py-4 rounded-full bg-brand-600 text-white font-medium flex items-center justify-center gap-2 group shadow-lg hover:bg-brand-700 transition-colors"
               >
                 Start Teaching
                 <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

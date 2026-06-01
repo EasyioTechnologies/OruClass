@@ -79,7 +79,7 @@ export function DashboardPreview() {
                   initial={{ width: "0%" }}
                   whileInView={{ width: "65%" }}
                   transition={{ duration: 1.5, delay: 0.8, ease: "easeOut" }}
-                  className="h-full bg-black rounded-full" 
+                  className="h-full bg-brand-600 rounded-full" 
                 />
               </div>
             </div>
@@ -96,7 +96,7 @@ export function DashboardPreview() {
             <div className="bg-white/70 backdrop-blur-xl border border-white/40 shadow-xl rounded-2xl p-5 w-64">
                <p className="text-sm font-medium text-gray-900 mb-1">Upcoming Live Session</p>
                <p className="text-xs text-gray-500 mb-3">Starts in 15 minutes</p>
-               <button className="w-full py-2 bg-black text-white text-xs font-medium rounded-lg hover:bg-gray-800 transition-colors">Join Now</button>
+               <button className="w-full py-2 bg-brand-600 text-white text-xs font-medium rounded-lg hover:bg-brand-700 transition-colors">Join Now</button>
             </div>
           </motion.div>
         </motion.div>

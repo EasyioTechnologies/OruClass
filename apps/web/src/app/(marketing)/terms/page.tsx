@@ -12,7 +12,7 @@ export default function TermsPage() {
         <h1 className="text-3xl font-extrabold text-gray-900 mb-6">Terms of Service</h1>
         <p className="text-gray-500 text-sm">Last updated: {new Date().toLocaleDateString()}</p>
         
-        <div className="prose prose-emerald max-w-none text-gray-600">
+        <div className="prose prose-blue max-w-none text-gray-600">
           <h2>1. Acceptance of Terms</h2>
           <p>By accessing and using OruClassrooms, you agree to be bound by these Terms of Service and all applicable laws and regulations.</p>
           

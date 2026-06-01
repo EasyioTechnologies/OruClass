@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import {
   CreditCard,
@@ -31,9 +31,13 @@ export function BillingPage() {
   const { planId: subPlanId, status: subStatus, subscribedAt, expiresAt, transactionId, cancel } = useSubscriptionStore();
   const isPro = subStatus === "active";
 
-  // If not subscribed, redirect to pricing
+  useEffect(() => {
+    if (!isPro || !subPlanId) {
+      router.push("/subscription");
+    }
+  }, [isPro, subPlanId, router]);
+
   if (!isPro || !subPlanId) {
-    if (typeof window !== "undefined") router.push("/subscription");
     return null;
   }
 

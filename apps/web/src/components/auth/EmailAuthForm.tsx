@@ -102,7 +102,7 @@ export function EmailAuthForm({
               placeholder="Full Name"
               value={name}
               onChange={(e) => setName(e.target.value)}
-              className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-gray-200 transition-all"
+              className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-gray-200 transition-all"
               required={!isLogin}
             />
           </div>
@@ -127,7 +127,7 @@ export function EmailAuthForm({
                 clearUser();
                 setEmail("");
               }}
-              className="text-xs font-medium text-emerald-600 hover:text-emerald-700"
+              className="text-xs font-medium text-brand-600 hover:text-brand-700"
             >
               Not you?
             </button>
@@ -139,7 +139,7 @@ export function EmailAuthForm({
               placeholder="Email address"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-gray-200 transition-all"
+              className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-gray-200 transition-all"
               required
             />
           </div>
@@ -150,7 +150,7 @@ export function EmailAuthForm({
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:bg-gray-200 transition-all"
+            className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-gray-200 transition-all"
             required
             minLength={8}
           />
@@ -162,7 +162,7 @@ export function EmailAuthForm({
           <button
             type="submit"
             disabled={loading}
-            className="w-full flex items-center justify-center py-4 bg-emerald-600 text-white rounded-2xl text-[16px] font-semibold hover:bg-emerald-700 hover:shadow-md transition-all disabled:opacity-50"
+            className="w-full flex items-center justify-center py-4 bg-brand-600 text-white rounded-2xl text-[16px] font-semibold hover:bg-brand-700 hover:shadow-md transition-all disabled:opacity-50"
           >
             {loading ? "Please wait..." : isLogin ? "Sign In" : "Sign Up"}
           </button>
@@ -189,7 +189,7 @@ export function EmailAuthForm({
               setIsLogin(!isLogin);
               setError("");
             }}
-            className="text-emerald-600 text-[16px] font-semibold hover:text-emerald-700 transition-colors"
+            className="text-brand-600 text-[16px] font-semibold hover:text-brand-700 transition-colors"
           >
             {isLogin ? "Sign up" : "Sign in"}
           </button>

@@ -7,17 +7,17 @@ const features = [
   {
     title: "Real-time Engagement",
     description: "Keep everyone on the same page. When you change a slide or ask a question, it updates instantly for all students.",
-    icon: <Users className="w-6 h-6 text-black" />,
+    icon: <Users className="w-6 h-6 text-brand-600" />,
   },
   {
     title: "Works Everywhere",
     description: "Students can join from any phone, tablet, or laptop. No apps to download, no complicated setups.",
-    icon: <Smartphone className="w-6 h-6 text-black" />,
+    icon: <Smartphone className="w-6 h-6 text-brand-600" />,
   },
   {
     title: "Private & Secure",
     description: "Your course materials and student data are kept completely private and secure at all times.",
-    icon: <Lock className="w-6 h-6 text-black" />,
+    icon: <Lock className="w-6 h-6 text-brand-600" />,
   },
 ];
 
@@ -43,7 +43,7 @@ export function FeaturesSection() {
             whileHover={{ scale: 1.1, rotate: 5 , transition: { duration: 0.2 }} }
             className="inline-flex items-center justify-center p-3 mb-6 rounded-2xl bg-gray-50 border border-gray-100 cursor-default"
           >
-            <CheckCircle className="w-6 h-6 text-black" />
+            <CheckCircle className="w-6 h-6 text-brand-600" />
           </motion.div>
           <h2 className="text-4xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1] max-w-3xl mx-auto">
             Why choose this platform? <br className="hidden md:block" />

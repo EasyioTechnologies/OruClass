@@ -265,6 +265,10 @@ export function WorkspaceDashboard() {
   const user = useAuthStore((s) => s.user);
   const autoCreating = useRef(false);
 
+  const { planId: subPlanId, status: subStatus } = useSubscriptionStore();
+  const isPro = subStatus === "active";
+  const currentPlan = subPlanId ? getPlan(subPlanId) : null;
+
   // Auto-create workspace for new trainers
   useEffect(() => {
     if (!isLoading && (!workspaces || workspaces.length === 0) && user && !autoCreating.current) {
@@ -283,10 +287,6 @@ export function WorkspaceDashboard() {
       </div>
     );
   }
-
-  const { planId: subPlanId, status: subStatus } = useSubscriptionStore();
-  const isPro = subStatus === "active";
-  const currentPlan = subPlanId ? getPlan(subPlanId) : null;
 
   return (
     <div className="space-y-8 max-w-6xl mx-auto pb-12">
