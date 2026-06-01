@@ -1,6 +1,7 @@
 import { z } from "zod";
 
-export const TrainingCategorySchema = z.enum(["atl", "maker_space", "ict_cal"]);
+
+export const TrainingTypeSchema = z.enum(["in_person", "online", "hybrid"]);
 export const ModuleTypeSchema = z.enum(["quiz", "whiteboard", "reflection", "matrix", "custom", "attendance", "poll", "wordcloud", "qna", "timer", "pulse", "mapping", "form", "embed"]);
 export const TrainingRoleSchema = z.enum([
   "lead_trainer",
@@ -11,9 +12,15 @@ export const TrainingRoleSchema = z.enum([
 
 export const CreateTrainingSchema = z.object({
   title: z.string().min(3).max(200),
-  category: TrainingCategorySchema,
+  labels: z.preprocess(
+    (v) => (typeof v === "string" ? v.split(",").map(s => s.trim()).filter(Boolean) : v),
+    z.array(z.string()).default([])
+  ),
+  type: TrainingTypeSchema.default("in_person"),
   description: z.string().max(1000).optional(),
   scheduledAt: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
+  startDate: z.preprocess((v) => (v === "" ? undefined : v), z.string().datetime({ offset: true }).optional()),
+  endDate: z.preprocess((v) => (v === "" ? undefined : v), z.string().datetime({ offset: true }).optional()),
 });
 
 export const UpdateTrainingSchema = CreateTrainingSchema.partial();

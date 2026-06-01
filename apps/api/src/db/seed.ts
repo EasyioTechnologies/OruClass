@@ -87,7 +87,7 @@ async function seed() {
       .values({
         workspaceId,
         title: "Sample ATL Training",
-        category: "atl",
+        labels: ["atl", "sample"],
         description: "A pre-seeded sample training for development.",
         joinToken,
         createdBy: trainer.id,

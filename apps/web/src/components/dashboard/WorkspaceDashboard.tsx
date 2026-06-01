@@ -63,28 +63,40 @@ function DeleteTrainingModal({ isOpen, onClose, training, onDelete }: { isOpen: 
   );
 }
 
-const CATEGORIES: { value: string; label: string }[] = [
-  { value: "atl", label: "ATL" },
-  { value: "maker_space", label: "Maker Space" },
-  { value: "ict_cal", label: "ICT/CAL" },
+
+
+const TYPES: { value: string; label: string }[] = [
+  { value: "in_person", label: "In-Person" },
+  { value: "online", label: "Online" },
+  { value: "hybrid", label: "Hybrid" },
 ];
 
 function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onClose: () => void; training: Training }) {
   const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const updateTraining = useUpdateTraining(workspaceId, training.id);
   const [title, setTitle] = useState(training.title);
-  const [category, setCategory] = useState(training.category);
+  const [labels, setLabels] = useState(training.labels?.join(", ") ?? "");
+  const [type, setType] = useState(training.type || "in_person");
   const [description, setDescription] = useState(training.description ?? "");
   const [scheduledAt, setScheduledAt] = useState(
-    training.scheduledAt ? new Date(training.scheduledAt).toISOString().slice(0, 16) : ""
+    training.scheduledAt ? new Date(training.scheduledAt).toISOString().split("T")[0] : ""
+  );
+  const [startDate, setStartDate] = useState(
+    training.startDate ? new Date(training.startDate).toISOString().split("T")[0] : ""
+  );
+  const [endDate, setEndDate] = useState(
+    training.endDate ? new Date(training.endDate).toISOString().split("T")[0] : ""
   );
 
   useEffect(() => {
     if (isOpen) {
       setTitle(training.title);
-      setCategory(training.category);
+      setLabels(training.labels?.join(", ") ?? "");
+      setType(training.type || "in_person");
       setDescription(training.description ?? "");
-      setScheduledAt(training.scheduledAt ? new Date(training.scheduledAt).toISOString().slice(0, 16) : "");
+      setScheduledAt(training.scheduledAt ? new Date(training.scheduledAt).toISOString().split("T")[0] : "");
+      setStartDate(training.startDate ? new Date(training.startDate).toISOString().split("T")[0] : "");
+      setEndDate(training.endDate ? new Date(training.endDate).toISOString().split("T")[0] : "");
     }
   }, [isOpen, training]);
 
@@ -92,7 +104,15 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
 
   const handleSave = () => {
     updateTraining.mutate(
-      { title: title.trim(), category, description: description.trim() || undefined, scheduledAt: scheduledAt || undefined },
+      { 
+        title: title.trim(), 
+        labels: labels, // this is passed as string, backend validator parses it
+        type: type as "in_person" | "online" | "hybrid",
+        description: description.trim() || undefined, 
+        scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        startDate: startDate ? new Date(startDate).toISOString() : undefined,
+        endDate: endDate ? new Date(endDate).toISOString() : undefined
+      },
       { onSuccess: () => onClose() },
     );
   };
@@ -112,17 +132,28 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-          <select
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-          >
-            {CATEGORIES.map((c) => (
-              <option key={c.value} value={c.value}>{c.label}</option>
-            ))}
-          </select>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Labels (comma separated)</label>
+            <input
+              value={labels}
+              onChange={(e) => setLabels(e.target.value)}
+              placeholder="e.g. tech, leadership"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+            <select
+              value={type}
+              onChange={(e) => setType(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            >
+              {TYPES.map((t) => (
+                <option key={t.value} value={t.value}>{t.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
@@ -134,10 +165,30 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
             placeholder="Optional description…"
           />
         </div>
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+            <input
+              type="date"
+              value={startDate}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+            <input
+              type="date"
+              value={endDate}
+              onChange={(e) => setEndDate(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+        </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled at</label>
           <input
-            type="datetime-local"
+            type="date"
             value={scheduledAt}
             onChange={(e) => setScheduledAt(e.target.value)}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
@@ -191,9 +242,11 @@ function TrainingCard({ t }: { t: Training }) {
       <div className="p-6 bg-gradient-to-br from-brand-50/80 via-white to-blue-50/50 flex-1">
         <div className="flex items-start justify-between gap-4 mb-4">
           <div className="flex flex-wrap items-center gap-2">
-            <span className="px-3 py-1 bg-white text-brand-600 text-xs font-bold rounded-xl shadow-sm border border-brand-100/50 tracking-wide">
-              {t.category}
-            </span>
+            {t.labels?.map((label, idx) => (
+              <span key={idx} className="px-3 py-1 bg-white text-brand-600 text-xs font-bold rounded-xl shadow-sm border border-brand-100/50 tracking-wide">
+                {label}
+              </span>
+            ))}
             <span className="text-xs font-bold text-slate-500 bg-white/60 px-3 py-1 rounded-xl flex items-center gap-1.5">
               <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></span>
               {t.sessionStatus}

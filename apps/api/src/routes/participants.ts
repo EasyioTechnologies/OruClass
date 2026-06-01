@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db/client";
-import { trainingParticipants, trainings } from "../db/schema";
+import { trainingParticipants, trainings, participantResponses, trainingFacilitators } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { joinTokenToCode } from "@oruclass/utils";
@@ -159,6 +159,54 @@ participantsRouter.get("/:trainingId/participants/me/scratchpad", async (c) => {
   }
 
   return c.json(participation);
+});
+
+// GET /participant/trainings/:id/review — read-only review of a completed training
+participantsRouter.get("/participant/trainings/:id/review", async (c) => {
+  const userId = c.get("userId") as string;
+  const { id } = c.req.param();
+
+  // Verify participation
+  const participation = await db.query.trainingParticipants.findFirst({
+    where: and(eq(trainingParticipants.userId, userId), eq(trainingParticipants.trainingId, id)),
+    columns: { personalNotes: true, personalWhiteboard: true, joinedAt: true },
+  });
+
+  if (!participation) return c.json({ error: "Not found or not participating" }, 404);
+
+  // Fetch training with modules and facilitators
+  const training = await db.query.trainings.findFirst({
+    where: eq(trainings.id, id),
+    with: {
+      creator: { columns: { id: true, name: true, email: true } },
+      modules: { orderBy: (m, { asc }) => [asc(m.position)] },
+      facilitators: {
+        with: { user: { columns: { id: true, name: true, email: true } } },
+      },
+      days: { orderBy: (d, { asc }) => [asc(d.dayNumber)] },
+    },
+  });
+
+  if (!training) return c.json({ error: "Training not found" }, 404);
+  if (training.sessionStatus !== "completed") {
+    return c.json({ error: "Training is still active" }, 400);
+  }
+
+  // Fetch participant's own responses
+  const responses = await db.query.participantResponses.findMany({
+    where: and(
+      eq(participantResponses.trainingId, id),
+      eq(participantResponses.userId, userId),
+    ),
+  });
+
+  return c.json({
+    training,
+    responses,
+    personalNotes: participation.personalNotes,
+    personalWhiteboard: participation.personalWhiteboard,
+    joinedAt: participation.joinedAt,
+  });
 });
 
 // PUT /:trainingId/participants/me/scratchpad

@@ -53,9 +53,12 @@ trainingsRouter.post("/", async (c) => {
     .values({
       workspaceId,
       title: body.title,
-      category: body.category,
+      labels: body.labels,
+      type: body.type,
       description: body.description,
       scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : new Date(),
+      startDate: body.startDate ? new Date(body.startDate) : null,
+      endDate: body.endDate ? new Date(body.endDate) : null,
       joinToken: generateJoinToken(),
       createdBy: userId,
     })
@@ -122,6 +125,8 @@ trainingsRouter.patch(
       .set({
         ...body,
         scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,
+        startDate: body.startDate ? new Date(body.startDate) : undefined,
+        endDate: body.endDate ? new Date(body.endDate) : undefined,
         updatedAt: new Date(),
       })
       .where(and(eq(trainings.id, id), eq(trainings.workspaceId, workspaceId)))

@@ -62,9 +62,12 @@ export const trainings = pgTable(
       .notNull()
       .references(() => workspaces.id, { onDelete: "cascade" }),
     title: text("title").notNull(),
-    category: text("category").$type<"atl" | "maker_space" | "ict_cal">().notNull(),
+    labels: text("labels").array().notNull().default([]),
+    type: text("type").$type<"in_person" | "online" | "hybrid">().notNull().default("in_person"),
     description: text("description"),
     scheduledAt: timestamp("scheduled_at"),
+    startDate: timestamp("start_date"),
+    endDate: timestamp("end_date"),
     currentActiveModuleId: uuid("current_active_module_id"),
     sessionStatus: text("session_status")
       .$type<"draft" | "connecting" | "live" | "paused" | "completed">()

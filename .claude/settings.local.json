@@ -8,7 +8,10 @@
       "Bash(xargs grep:*)",
       "Bash(grep -oE \"\\(bg|text|border|focus:ring|hover\\)-\\(brand|emerald|slate|gray|red|orange|green|blue|yellow|amber|white|black\\)-[0-9]{1,3}\")",
       "Bash(npx turbo:*)",
-      "Bash(npx --package typescript tsc --noEmit)"
+      "Bash(npx --package typescript tsc --noEmit)",
+      "Bash(grep -E \"\\\\.\\(ts|sql\\)$\")",
+      "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
+      "Bash(ls:*)"
     ],
     "mode": "bypass"
   }

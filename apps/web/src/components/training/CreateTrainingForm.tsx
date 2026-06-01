@@ -10,19 +10,24 @@ import type { z } from "zod";
 
 type FormData = {
   title: string;
-  category: "atl" | "maker_space" | "ict_cal";
+  labels?: string;
+  type: "in_person" | "online" | "hybrid";
   description?: string;
   scheduledAt?: string;
+  startDate?: string;
+  endDate?: string;
 };
 
 interface Props {
   onSuccess?: (id: string) => void;
 }
 
-const CATEGORIES: { value: string; label: string }[] = [
-  { value: "atl", label: "ATL" },
-  { value: "maker_space", label: "Maker Space" },
-  { value: "ict_cal", label: "ICT/CAL" },
+
+
+const TYPES: { value: string; label: string }[] = [
+  { value: "in_person", label: "In-Person" },
+  { value: "online", label: "Online" },
+  { value: "hybrid", label: "Hybrid" },
 ];
 
 export function CreateTrainingForm({ onSuccess }: Props = {}) {
@@ -37,13 +42,23 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
   } = useForm<FormData>({ 
     resolver: zodResolver(CreateTrainingSchema) as any,
     defaultValues: {
-      scheduledAt: new Date().toISOString().slice(0, 16),
+      scheduledAt: new Date().toISOString().split("T")[0],
+      type: "in_person",
     }
   });
 
   const onSubmit = async (data: FormData) => {
     console.log("Submitting CreateTraining form data:", data);
-    const { data: training } = await createTraining.mutateAsync(data);
+    
+    // Add date formatting to convert datetime-local (e.g. 2026-06-01T12:00) 
+    // to ISO string (e.g. 2026-06-01T12:00:00Z) expected by datetime validator
+    const payload = {
+      ...data,
+      startDate: data.startDate ? new Date(data.startDate).toISOString() : undefined,
+      endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
+    };
+    
+    const { data: training } = await createTraining.mutateAsync(payload);
     router.push(`/trainings/${training.id}/studio`);
   };
 
@@ -59,17 +74,29 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
         {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
-        <select
-          {...register("category")}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-        >
-          {CATEGORIES.map((c) => (
-            <option key={c.value} value={c.value}>{c.label}</option>
-          ))}
-        </select>
-        {errors.category && <p className="text-xs text-red-500 mt-1">{errors.category.message}</p>}
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Labels (comma separated)</label>
+          <input
+            {...register("labels")}
+            placeholder="e.g. leadership, tech, optional"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+          {errors.labels && <p className="text-xs text-red-500 mt-1">{errors.labels.message as string}</p>}
+        </div>
+
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
+          <select
+            {...register("type")}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          >
+            {TYPES.map((t) => (
+              <option key={t.value} value={t.value}>{t.label}</option>
+            ))}
+          </select>
+          {errors.type && <p className="text-xs text-red-500 mt-1">{errors.type.message}</p>}
+        </div>
       </div>
 
       <div>
@@ -82,11 +109,30 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
         />
       </div>
 
+      <div className="grid grid-cols-2 gap-4">
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <input
+            {...register("startDate")}
+            type="date"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+          <input
+            {...register("endDate")}
+            type="date"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          />
+        </div>
+      </div>
+
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled at</label>
         <input
           {...register("scheduledAt")}
-          type="datetime-local"
+          type="date"
           className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
         />
       </div>
@@ -105,3 +151,4 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
     </form>
   );
 }
+

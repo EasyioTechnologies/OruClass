@@ -47,7 +47,7 @@ export function ParticipantPreviousSessions() {
               
                 <div className="mt-auto pt-3">
                   <Link
-                    href={`/join/${t.joinToken}`}
+                    href={`/participant/training/${t.id}`}
                     className="block w-full text-center py-2 rounded-lg text-sm font-medium transition-colors bg-gray-100 text-gray-600 hover:bg-gray-200"
                   >
                     View Session
