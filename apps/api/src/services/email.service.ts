@@ -36,10 +36,12 @@ function muted(text: string) {
 }
 
 async function send(to: string, subject: string, html: string) {
+  console.log(`[email] Attempting to send "${subject}" to ${to} from ${FROM}`);
   try {
-    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
-    if (error) {
-      console.error("[email] send failed:", error);
+    const response = await resend.emails.send({ from: FROM, to, subject, html });
+    console.log(`[email] Resend response:`, JSON.stringify(response));
+    if (response.error) {
+      console.error("[email] send failed:", response.error);
       return false;
     }
     return true;
