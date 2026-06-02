@@ -11,7 +11,7 @@ import { cn } from "@oruclass/utils";
 
 import { useRouter } from "next/navigation";
 
-import { ChevronDown, ChevronUp, Trash2, CalendarDays, Play, ArrowRight, LayoutGrid, Pencil, X, Crown, Sparkles, Zap, Shield, Check } from "lucide-react";
+import { ChevronDown, ChevronUp, Trash2, CalendarDays, Play, ArrowRight, LayoutGrid, Pencil, X, Check } from "lucide-react";
 import { useState, useEffect, useRef } from "react";
 import { getPlan } from "@/config/plans";
 import type { Training } from "@oruclass/types";
@@ -361,65 +361,65 @@ export function WorkspaceDashboard() {
     <div className="space-y-8 max-w-6xl mx-auto pb-12">
       {/* Subscription Banner */}
       {isPro && currentPlan ? (
-        /* PRO user welcome — premium feel */
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-amber-50 via-orange-50 to-yellow-50 border border-amber-200/50 p-5">
-          <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-bl from-amber-200/20 to-transparent rounded-full -translate-y-1/2 translate-x-1/4" />
-          <div className="absolute bottom-0 left-16 w-32 h-32 bg-gradient-to-tr from-orange-200/15 to-transparent rounded-full translate-y-1/2" />
-          <div className="relative flex items-center justify-between gap-4">
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-emerald-600 to-teal-500 p-5 md:p-6">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_20%,rgba(255,255,255,0.08)_0%,transparent_60%)]" />
+          <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-amber-400 to-orange-500 flex items-center justify-center shadow-md shadow-amber-300/30">
-                <Crown size={20} className="text-white" strokeWidth={2} />
+              <div className="w-10 h-10 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
+                </svg>
               </div>
-              <div>
-                <div className="flex items-center gap-2">
-                  <h2 className="text-[15px] font-800 text-gray-900">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 flex-wrap">
+                  <h2 className="text-[15px] font-800 text-white">
                     {currentPlan.name} Plan
                   </h2>
-                  <span className="bg-gradient-to-r from-amber-400 to-orange-400 text-white text-[9px] font-700 px-2 py-0.5 rounded-full uppercase tracking-wider shadow-sm">
+                  <span className="bg-white/20 text-white text-[9px] font-700 px-2 py-0.5 rounded-full uppercase tracking-wider backdrop-blur-sm">
                     Active
                   </span>
                 </div>
-                <p className="text-[12.5px] text-amber-700/70 font-500 mt-0.5">
-                  All premium features unlocked — you&apos;re getting the full OruClassrooms experience
+                <p className="text-[12.5px] text-white/70 font-400 mt-0.5">
+                  All premium features unlocked
                 </p>
               </div>
             </div>
             <Link
               href="/subscription/billing"
-              className="hidden sm:flex items-center gap-1.5 bg-white/80 border border-amber-200 text-amber-700 px-3.5 py-2 rounded-xl text-[12px] font-600 hover:bg-white transition-all flex-shrink-0"
+              className="flex items-center justify-center gap-1.5 bg-white/15 border border-white/20 text-white px-4 py-2 rounded-xl text-[12.5px] font-600 hover:bg-white/25 transition-all flex-shrink-0 backdrop-blur-sm sm:w-auto w-full"
             >
-              <Shield size={13} />
               Manage Plan
+              <ArrowRight size={13} />
             </Link>
           </div>
         </div>
       ) : (
-        /* Free user — upgrade nudge */
-        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-500 to-brand-600 p-5">
-          <div className="absolute top-0 right-0 w-56 h-56 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/3" />
-          <div className="absolute bottom-0 left-8 w-36 h-36 bg-white/5 rounded-full translate-y-1/2" />
+        <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-gray-900 to-gray-800 p-5 md:p-6">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_30%,rgba(16,185,129,0.12)_0%,transparent_50%)]" />
           <div className="relative flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3.5">
-              <div className="w-11 h-11 rounded-xl bg-white/15 flex items-center justify-center backdrop-blur-sm">
-                <Sparkles size={20} className="text-white" />
+              <div className="w-10 h-10 rounded-xl bg-emerald-500/15 flex items-center justify-center flex-shrink-0">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#34d399" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M12 2v4M12 18v4M4.93 4.93l2.83 2.83M16.24 16.24l2.83 2.83M2 12h4M18 12h4M4.93 19.07l2.83-2.83M16.24 7.76l2.83-2.83" />
+                </svg>
               </div>
-              <div>
+              <div className="min-w-0">
                 <h2 className="text-[15px] font-800 text-white">
                   Unlock the full potential
                 </h2>
-                <p className="text-[12.5px] text-white/70 font-400 mt-0.5">
-                  Get unlimited participants, advanced analytics, custom branding & more
+                <p className="text-[12.5px] text-gray-400 font-400 mt-0.5">
+                  Unlimited participants, analytics, custom branding & more
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2.5">
-              <div className="hidden md:flex items-center gap-4 text-[11px] text-white/60 mr-2">
-                <span className="flex items-center gap-1"><Check size={11} strokeWidth={2.5} /> 7-day trial</span>
-                <span className="flex items-center gap-1"><Check size={11} strokeWidth={2.5} /> Cancel anytime</span>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+              <div className="hidden lg:flex items-center gap-4 text-[11px] text-gray-500 mr-1">
+                <span className="flex items-center gap-1"><Check size={11} strokeWidth={2.5} className="text-emerald-500" /> 7-day trial</span>
+                <span className="flex items-center gap-1"><Check size={11} strokeWidth={2.5} className="text-emerald-500" /> Cancel anytime</span>
               </div>
               <Link
                 href="/subscription"
-                className="bg-white text-brand-600 px-4 py-2.5 rounded-xl text-[13px] font-700 hover:bg-white/90 transition-all flex items-center gap-1.5 shadow-sm flex-shrink-0"
+                className="bg-gradient-to-r from-emerald-500 to-teal-500 text-white px-4 py-2.5 rounded-xl text-[13px] font-700 hover:from-emerald-400 hover:to-teal-400 transition-all flex items-center justify-center gap-1.5 shadow-[0_2px_12px_-2px_rgba(16,185,129,0.4)] flex-shrink-0"
               >
                 View Plans
                 <ArrowRight size={14} />

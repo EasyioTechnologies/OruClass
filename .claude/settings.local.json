@@ -1,6 +1,7 @@
 {
   "permissions": {
     "allow": [
+      "*",
       "Bash(xargs ls:*)",
       "Bash(xargs -I{} bash -c \"echo '=== {} ===' && find {} -maxdepth 1 -type f -name '*.tsx' | head -5\")",
       "Bash(xargs -I {} sh -c 'echo \"=== $\\(basename {}\\) ===\" && find {} -maxdepth 1 -type f -name \"*.tsx\" | wc -l && echo')",
@@ -12,7 +13,11 @@
       "Bash(grep -E \"\\\\.\\(ts|sql\\)$\")",
       "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
       "Bash(ls:*)",
-      "Bash(npx drizzle-kit:*)"
+      "Bash(npx drizzle-kit:*)",
+      "Bash(bun run:*)",
+      "Bash(docker exec:*)",
+      "Bash(curl -s -c - http://localhost:3001/api/auth/get-session)",
+      "Bash(curl -s -o /dev/null -w \"%{http_code}\" http://localhost:3001/api/workspaces/c64cbb97-6ee1-48db-8727-a2f6a5f8844f/responses -H \"Cookie: $\\(curl -s -c - http://localhost:3001/api/auth/get-session)"
     ],
     "mode": "bypass"
   }
