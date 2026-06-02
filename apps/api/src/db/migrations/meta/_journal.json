@@ -8,6 +8,20 @@
       "when": 1780022516825,
       "tag": "0000_fine_major_mapleleaf",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1780364167858,
+      "tag": "0001_freezing_tomas",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1780364181114,
+      "tag": "0002_gigantic_runaways",
+      "breakpoints": true
     }
   ]
 }
