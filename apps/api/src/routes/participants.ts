@@ -246,3 +246,21 @@ participantsRouter.put("/:trainingId/participants/me/scratchpad", async (c) => {
 
   return c.json({ success: true });
 });
+
+// DELETE /account — delete current user's account
+// TODO: cascade delete workspace memberships, facilitator roles, anonymize participant data,
+//       add confirmation step (re-enter password), soft-delete with 30-day grace period
+participantsRouter.delete("/account", async (c) => {
+  const userId = c.get("userId") as string;
+
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (!user) return c.json({ error: "User not found" }, 404);
+
+  await db.delete(users).where(eq(users.id, userId));
+
+  if (user.email && user.name) {
+    sendAccountDeletedEmail({ to: user.email, name: user.name }).catch(() => {});
+  }
+
+  return c.json({ success: true });
+});

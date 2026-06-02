@@ -25,11 +25,15 @@ export const auth = betterAuth({
     enabled: true,
     requireEmailVerification: true,
     sendResetPassword: async ({ user, url }) => {
-      await sendResetPasswordEmail({
-        to: user.email,
-        name: user.name,
-        url,
-      });
+      try {
+        await sendResetPasswordEmail({
+          to: user.email,
+          name: user.name,
+          url,
+        });
+      } catch (err) {
+        console.error("[email] reset password email failed:", err);
+      }
     },
     resetPasswordTokenExpiresIn: 3600, // 1 hour
     autoSignIn: false, // don't auto-sign-in after signup until verified
@@ -43,11 +47,15 @@ export const auth = betterAuth({
     sendOnSignUp: true,
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
-      await sendVerificationEmail({
-        to: user.email,
-        name: user.name,
-        url,
-      });
+      try {
+        await sendVerificationEmail({
+          to: user.email,
+          name: user.name,
+          url,
+        });
+      } catch (err) {
+        console.error("[email] verification email failed:", err);
+      }
     },
     expiresIn: 86400, // 24 hours
   },
