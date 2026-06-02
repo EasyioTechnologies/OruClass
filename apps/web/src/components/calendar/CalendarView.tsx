@@ -118,7 +118,7 @@ export function CalendarView() {
 
       <div className="flex gap-4 flex-1 min-h-0 flex-col lg:flex-row">
         {/* Calendar grid */}
-        <div className="flex-1 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col min-h-[320px]">
+        <div className="flex-1 min-w-0 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col min-h-[320px]">
           {/* Day headers */}
           <div className="grid grid-cols-7 border-b border-gray-100">
             {DAYS_FULL.map((d, i) => (
@@ -153,7 +153,7 @@ export function CalendarView() {
                     }
                   }}
                   className={cn(
-                    "border-b border-r border-gray-100 p-1 sm:p-1.5 min-h-[44px] sm:min-h-[80px] overflow-hidden text-left transition-colors",
+                    "border-b border-r border-gray-100 p-1 sm:p-1.5 min-h-[44px] sm:min-h-[80px] overflow-hidden text-left transition-colors min-w-0",
                     !isCurrentMonth && "bg-gray-50/50",
                     isCurrentMonth && events.length > 0 && "cursor-pointer hover:bg-brand-50/40",
                     isSelectedDay && "bg-brand-50 ring-1 ring-brand-200",
@@ -179,10 +179,10 @@ export function CalendarView() {
                           <div
                             key={t.id}
                             onClick={(e) => { e.stopPropagation(); setSelected(t); }}
-                            className="w-full text-left truncate text-[10px] font-medium rounded px-1.5 py-0.5 flex items-center gap-1 hover:opacity-80 transition-opacity bg-brand-50 text-brand-700 border border-brand-100 cursor-pointer"
+                            className="w-full text-left text-[10px] font-medium rounded px-1.5 py-0.5 flex items-center gap-1 hover:opacity-80 transition-opacity bg-brand-50 text-brand-700 border border-brand-100 cursor-pointer min-w-0"
                           >
                             <span className={cn("w-1.5 h-1.5 rounded-full shrink-0", STATUS_COLORS[t.sessionStatus] ?? "bg-gray-400")} />
-                            <span className="truncate">{t.title}</span>
+                            <span className="truncate flex-1">{t.title}</span>
                           </div>
                         ))}
                         {events.length > 3 && (
