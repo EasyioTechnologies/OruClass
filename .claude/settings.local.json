@@ -25,7 +25,10 @@
       "Bash(npx kill-port:*)",
       "Bash(curl -s -X POST http://localhost:3001/api/auth/sign-up/email -H 'Content-Type: application/json' -d '{\"name\":\"Test User\",\"email\":\"test@test.com\",\"password\":\"TestPass123\"}')",
       "Bash(pnpm --filter api exec tsc --noEmit)",
-      "Bash(bunx tsc:*)"
+      "Bash(bunx tsc:*)",
+      "Bash(grep -rn \"RESEND_FROM\" apps/api/.env*)",
+      "Bash(grep -rn \"RESEND_FROM\" .env*)",
+      "Bash(npx tsx:*)"
     ],
     "mode": "bypass"
   }
