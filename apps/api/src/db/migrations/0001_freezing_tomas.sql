@@ -1,4 +1,4 @@
-ALTER TABLE "trainings" ALTER COLUMN "category" SET DEFAULT 'general';--> statement-breakpoint
+
 ALTER TABLE "trainings" ADD COLUMN "labels" text[] DEFAULT '{}' NOT NULL;--> statement-breakpoint
 ALTER TABLE "trainings" ADD COLUMN "type" text DEFAULT 'in_person' NOT NULL;--> statement-breakpoint
 ALTER TABLE "trainings" ADD COLUMN "venue" text;--> statement-breakpoint

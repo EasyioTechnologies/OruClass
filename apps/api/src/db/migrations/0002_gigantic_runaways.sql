@@ -1,2 +1,2 @@
-ALTER TABLE "trainings" DROP COLUMN "category";--> statement-breakpoint
-ALTER TABLE "trainings" DROP COLUMN "scheduled_at";
+ALTER TABLE "trainings" DROP COLUMN IF EXISTS "category";--> statement-breakpoint
+ALTER TABLE "trainings" DROP COLUMN IF EXISTS "scheduled_at";
