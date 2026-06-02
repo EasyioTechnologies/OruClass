@@ -106,5 +106,9 @@ export const auth = betterAuth({
       enabled: process.env.NODE_ENV === "production",
       domain: process.env.NODE_ENV === "production" ? ".orulabs.in" : undefined,
     },
+    defaultCookieAttributes: {
+      sameSite: "none",
+      secure: true,
+    }
   },
 });

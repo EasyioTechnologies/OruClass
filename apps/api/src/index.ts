@@ -35,6 +35,11 @@ app.use(
   cors({
     origin: (origin) => {
       if (!origin || process.env.NODE_ENV !== "production") return origin || "http://localhost:3000";
+      const allowedOrigins = [
+        "https://orulabs.in",
+        "https://www.orulabs.in"
+      ];
+      if (allowedOrigins.includes(origin)) return origin;
       return ALLOWED_ORIGIN;
     },
     credentials: true,
@@ -118,6 +123,11 @@ export const io = new SocketIOServer<
   cors: { 
     origin: (origin, callback) => {
       if (!origin || process.env.NODE_ENV !== "production") return callback(null, true);
+      const allowedOrigins = [
+        "https://orulabs.in",
+        "https://www.orulabs.in"
+      ];
+      if (allowedOrigins.includes(origin)) return callback(null, origin);
       callback(null, ALLOWED_ORIGIN);
     },
     credentials: true 
