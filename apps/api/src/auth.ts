@@ -6,7 +6,7 @@ import { anonymous } from "better-auth/plugins";
 import * as schema from "./db/schema";
 import {
   sendWelcomeEmail,
-  sendVerificationEmail,
+  sendVerificationEmail as sendVerificationEmailFn,
   sendResetPasswordEmail,
   sendPasswordChangedEmail,
 } from "./services/email.service";
@@ -48,7 +48,7 @@ export const auth = betterAuth({
     autoSignInAfterVerification: true,
     sendVerificationEmail: async ({ user, url }) => {
       try {
-        await sendVerificationEmail({
+        await sendVerificationEmailFn({
           to: user.email,
           name: user.name,
           url,

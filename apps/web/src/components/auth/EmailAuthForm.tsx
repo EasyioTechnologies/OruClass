@@ -4,7 +4,7 @@ import { useState } from "react";
 import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
-import { UserCircle2 } from "lucide-react";
+import { UserCircle2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
 export function EmailAuthForm({
@@ -26,6 +26,7 @@ export function EmailAuthForm({
   const [email, setEmail] = useState(isContinueAs ? user.email : "");
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
 
@@ -47,10 +48,12 @@ export function EmailAuthForm({
           if (errMsg.toLowerCase().includes("verify") || errCode === "EMAIL_NOT_VERIFIED") {
             router.push(`/verify-email?email=${encodeURIComponent(email)}`);
             return;
-          } else if (errMsg.toLowerCase().includes("not found") || errCode === "USER_NOT_FOUND" || errMsg.toLowerCase().includes("invalid")) {
-            setError("Invalid email or password.");
+          } else if (errCode === "INVALID_EMAIL_OR_PASSWORD" || errMsg.toLowerCase().includes("invalid") || errMsg.toLowerCase().includes("not found") || errCode === "USER_NOT_FOUND") {
+            setError("No account found with this email, or incorrect password. Please check your details or sign up.");
+          } else if (errCode === "TOO_MANY_REQUESTS" || errMsg.toLowerCase().includes("rate")) {
+            setError("Too many attempts. Please wait a moment and try again.");
           } else {
-            setError(errMsg || "Failed to sign in. Check your credentials.");
+            setError(errMsg || "Failed to sign in. Please try again.");
           }
         } else {
           window.location.href = returnTo;
@@ -72,9 +75,13 @@ export function EmailAuthForm({
           const errMsg = error.message || "";
           const errCode = (error as any).code || "";
           if (errMsg.toLowerCase().includes("exist") || errCode === "USER_ALREADY_EXISTS") {
-            setError("Account already exists. Please sign in instead.");
+            setError("An account with this email already exists. Please sign in instead.");
+          } else if (errMsg.toLowerCase().includes("password") || errCode === "WEAK_PASSWORD") {
+            setError("Password is too weak. Use at least 8 characters with uppercase, lowercase, and a number.");
+          } else if (errCode === "TOO_MANY_REQUESTS" || errMsg.toLowerCase().includes("rate")) {
+            setError("Too many attempts. Please wait a moment and try again.");
           } else {
-            setError(errMsg || "Failed to sign up.");
+            setError(errMsg || "Failed to create account. Please try again.");
           }
         } else {
           // Redirect to verify email page after signup
@@ -147,16 +154,23 @@ export function EmailAuthForm({
             />
           </div>
         )}
-        <div>
+        <div className="relative">
           <input
-            type="password"
+            type={showPassword ? "text" : "password"}
             placeholder="Password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-gray-200 transition-all"
+            className="w-full px-5 py-4 pr-12 bg-gray-200/70 border-none rounded-2xl text-base text-gray-900 placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-gray-200 transition-all"
             required
             minLength={8}
           />
+          <button
+            type="button"
+            onClick={() => setShowPassword(!showPassword)}
+            className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+          >
+            {showPassword ? <EyeOff className="w-5 h-5" /> : <Eye className="w-5 h-5" />}
+          </button>
         </div>
 
         {isLogin && (
