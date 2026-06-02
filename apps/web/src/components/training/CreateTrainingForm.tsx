@@ -57,9 +57,7 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
     // to ISO string (e.g. 2026-06-01T12:00:00Z) expected by datetime validator
     const payload = {
       ...data,
-      labels: data.labels ? data.labels.split(",").map(s => s.trim()).filter(Boolean) : undefined,
-      startDate: data.startDate ? new Date(data.startDate).toISOString() : undefined,
-      endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
+      labels: Array.isArray(data.labels) ? data.labels : data.labels ? String(data.labels).split(",").map(s => s.trim()).filter(Boolean) : undefined,
     };
     
     const { data: training } = await createTraining.mutateAsync(payload);

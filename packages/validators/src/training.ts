@@ -20,8 +20,14 @@ export const CreateTrainingSchema = z.object({
   description: z.string().max(1000).optional(),
   venue: z.preprocess((v) => (v === "" ? undefined : v), z.string().max(500).optional()),
   meetingLink: z.preprocess((v) => (v === "" ? undefined : v), z.string().url().max(1000).optional()),
-  startDate: z.preprocess((v) => (v === "" ? undefined : v), z.string().datetime({ offset: true }).optional()),
-  endDate: z.preprocess((v) => (v === "" ? undefined : v), z.string().datetime({ offset: true }).optional()),
+  startDate: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v}T00:00:00.000Z` : v),
+    z.string().datetime({ offset: true }).optional(),
+  ),
+  endDate: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v}T00:00:00.000Z` : v),
+    z.string().datetime({ offset: true }).optional(),
+  ),
 });
 
 export const UpdateTrainingSchema = CreateTrainingSchema.partial();
@@ -29,7 +35,10 @@ export const UpdateTrainingSchema = CreateTrainingSchema.partial();
 export const CreateDaySchema = z.object({
   dayNumber: z.number().int().min(1),
   title: z.string().min(1).max(200),
-  date: z.preprocess((v) => (v === "" ? undefined : v), z.string().datetime({ offset: true }).optional()),
+  date: z.preprocess(
+    (v) => (v === "" || v == null ? undefined : typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v}T00:00:00.000Z` : v),
+    z.string().datetime({ offset: true }).optional(),
+  ),
   description: z.string().max(1000).optional(),
 });
 
