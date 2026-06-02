@@ -7,8 +7,8 @@ const client = createAuthClient({
     credentials: "include" as RequestCredentials,
   },
   plugins: [
-    anonymousClient()
-  ]
+    anonymousClient(),
+  ],
 });
 
 export const authClient = client as any;

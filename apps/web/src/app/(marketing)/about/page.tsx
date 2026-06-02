@@ -1,11 +1,11 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "About Us | OruClassrooms",
-  description: "Learn more about OruLabs and our mission to revolutionize teacher professional development with OruClassrooms.",
+  title: "About Us | OruLabs",
+  description: "Learn more about OruLabs and our mission to revolutionize teacher professional development with OruLabs.",
   openGraph: {
-    title: "About Us | OruClassrooms",
-    description: "Learn more about OruLabs and our mission to revolutionize teacher professional development with OruClassrooms.",
+    title: "About Us | OruLabs",
+    description: "Learn more about OruLabs and our mission to revolutionize teacher professional development with OruLabs.",
   },
 };
 
@@ -19,19 +19,19 @@ export default function AboutPage() {
             Empowering educators through real-time, interactive learning.
           </p>
         </div>
-        
+
         <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
           <section>
             <h2 className="text-2xl font-bold text-gray-900 mb-4">Our Mission</h2>
             <p className="text-gray-600 leading-relaxed">
-              At OruLabs, we believe that teacher professional development should be as engaging and dynamic as the classrooms they teach in. OruClassrooms was built to bridge the gap between theory and practice by offering a seamless live training environment specifically tailored for educators.
+              At OruLabs, we believe that teacher professional development should be as engaging and dynamic as the classrooms they teach in. OruLabs was built to bridge the gap between theory and practice by offering a seamless live training environment specifically tailored for educators.
             </p>
           </section>
 
           <section>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">What is OruClassrooms?</h2>
+            <h2 className="text-2xl font-bold text-gray-900 mb-4">What is OruLabs?</h2>
             <p className="text-gray-600 leading-relaxed">
-              OruClassrooms is our flagship platform designed to facilitate high-quality virtual sessions. It features interactive tools, real-time feedback mechanisms, and comprehensive analytics to ensure every training session is impactful.
+              OruLabs is our flagship platform designed to facilitate high-quality virtual sessions. It features interactive tools, real-time feedback mechanisms, and comprehensive analytics to ensure every training session is impactful.
             </p>
           </section>
         </div>

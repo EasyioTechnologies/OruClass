@@ -11,20 +11,20 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_WEB_URL || "https://orulabs.in"),
-  title: { default: "OruClassrooms by OruLabs", template: "%s | OruClassrooms" },
+  title: { default: "OruLabs by OruLabs", template: "%s | OruLabs" },
   description: "Real-time live training platform for teacher professional development and interactive learning.",
-  keywords: ["EdTech", "Live Training", "Teacher Development", "Virtual Classrooms", "OruLabs", "OruClassrooms"],
+  keywords: ["EdTech", "Live Training", "Teacher Development", "Virtual Classrooms", "OruLabs", "OruLabs"],
   openGraph: {
-    title: "OruClassrooms by OruLabs",
+    title: "OruLabs by OruLabs",
     description: "Real-time live training platform for teacher professional development and interactive learning.",
     url: "https://orulabs.in",
-    siteName: "OruClassrooms",
+    siteName: "OruLabs",
     locale: "en_US",
     type: "website",
   },
   twitter: {
     card: "summary_large_image",
-    title: "OruClassrooms by OruLabs",
+    title: "OruLabs by OruLabs",
     description: "Real-time live training platform for teacher professional development and interactive learning.",
   },
   robots: {
@@ -47,7 +47,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     "name": "OruLabs",
     "url": "https://orulabs.in",
     "logo": "https://orulabs.in/logo.png",
-    "description": "OruLabs provides OruClassrooms, a real-time live training platform for teacher professional development.",
+    "description": "OruLabs provides OruLabs, a real-time live training platform for teacher professional development.",
     "sameAs": [
       "https://twitter.com/orulabs",
       "https://linkedin.com/company/orulabs"

@@ -5,6 +5,7 @@ import { authClient } from "@/lib/auth-client";
 import { useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { UserCircle2 } from "lucide-react";
+import Link from "next/link";
 
 export function EmailAuthForm({
   returnTo = "/dashboard",
@@ -28,8 +29,6 @@ export function EmailAuthForm({
 
   const router = useRouter();
 
-
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -44,8 +43,11 @@ export function EmailAuthForm({
         if (error) {
           const errMsg = error.message || "";
           const errCode = (error as any).code || "";
-          
-          if (errMsg.toLowerCase().includes("not found") || errCode === "USER_NOT_FOUND" || errMsg.toLowerCase().includes("invalid")) {
+
+          if (errMsg.toLowerCase().includes("verify") || errCode === "EMAIL_NOT_VERIFIED") {
+            router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+            return;
+          } else if (errMsg.toLowerCase().includes("not found") || errCode === "USER_NOT_FOUND" || errMsg.toLowerCase().includes("invalid")) {
             setError("Invalid email or password.");
           } else {
             setError(errMsg || "Failed to sign in. Check your credentials.");
@@ -59,13 +61,13 @@ export function EmailAuthForm({
           setLoading(false);
           return;
         }
-        
+
         const { error } = await authClient.signUp.email({
           email,
           password,
           name,
         });
-        
+
         if (error) {
           const errMsg = error.message || "";
           const errCode = (error as any).code || "";
@@ -75,7 +77,8 @@ export function EmailAuthForm({
             setError(errMsg || "Failed to sign up.");
           }
         } else {
-          window.location.href = returnTo;
+          // Redirect to verify email page after signup
+          router.push(`/verify-email?email=${encodeURIComponent(email)}`);
         }
       }
     } catch (err: any) {
@@ -107,7 +110,7 @@ export function EmailAuthForm({
             />
           </div>
         )}
-        
+
         {isContinueAs ? (
           <div className="flex items-center justify-between px-5 py-4 bg-gray-100 rounded-2xl border border-gray-200">
             <div className="flex items-center gap-3">
@@ -156,6 +159,17 @@ export function EmailAuthForm({
           />
         </div>
 
+        {isLogin && (
+          <div className="text-right">
+            <Link
+              href="/forgot-password"
+              className="text-sm text-brand-600 font-medium hover:text-brand-700 transition-colors"
+            >
+              Forgot password?
+            </Link>
+          </div>
+        )}
+
         {error && <p className="text-[15px] text-red-500 text-center">{error}</p>}
 
         <div className="pt-2">
@@ -169,7 +183,7 @@ export function EmailAuthForm({
         </div>
       </form>
 
-      <div className={`flex items-center ${onBack ? 'justify-between' : 'justify-center'} pt-2`}>
+      <div className={`flex items-center ${onBack ? "justify-between" : "justify-center"} pt-2`}>
         {onBack && (
           <button
             type="button"

@@ -32,7 +32,7 @@ export function Header() {
           <Menu size={20} />
         </button>
         <h1 className="text-sm font-semibold text-gray-800">
-          {active?.name ?? "OruClassrooms"}
+          {active?.name ?? "OruLabs"}
         </h1>
       </div>
 

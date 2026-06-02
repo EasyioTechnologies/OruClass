@@ -109,7 +109,7 @@ export function Sidebar() {
             </div>
             <div className="flex flex-col">
               <span className="text-[14px] font-700 text-gray-900 tracking-[-0.01em] leading-tight">
-                OruClassrooms
+                OruLabs
               </span>
               {isPro && currentPlan && (
                 <span className="text-[9.5px] font-700 text-amber-600 uppercase tracking-[0.1em] leading-tight">

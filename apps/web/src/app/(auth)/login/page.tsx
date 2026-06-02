@@ -2,14 +2,14 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { Presentation, GraduationCap, ChevronRight } from "lucide-react";
 
-export const metadata: Metadata = { title: "Sign In | OruClassrooms" };
+export const metadata: Metadata = { title: "Sign In | OruLabs" };
 
 export default function LoginPage() {
   return (
     <div className="w-full max-w-lg mx-auto p-6 sm:p-12 relative z-10">
       <div className="text-center space-y-2 sm:space-y-3 mb-8 sm:mb-10">
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-gray-900">
-          Welcome to <span className="text-brand-600">OruClassrooms</span>
+          Welcome to <span className="text-brand-600">OruLabs</span>
         </h1>
         <p className="text-sm sm:text-base text-gray-500">How would you like to continue?</p>
       </div>

@@ -16,16 +16,15 @@ export function MarketingNavbar() {
 
   return (
     <motion.header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${
-        isScrolled
+      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled
           ? "bg-white/70 backdrop-blur-xl shadow-[0_1px_2px_rgba(0,0,0,0.05)] py-4"
           : "bg-transparent py-6"
-      }`}
+        }`}
     >
       <div className="max-w-7xl mx-auto px-6 md:px-12 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2">
           <span className={`text-xl font-bold tracking-tight transition-colors duration-300 ${isScrolled ? "text-gray-900" : "text-gray-900"}`}>
-            OruClassrooms
+            OruLabs
           </span>
         </Link>
 

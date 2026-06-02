@@ -1,4 +1,4 @@
-# OruClassrooms: Production-Ready Tech Stack & Implementation Blueprint
+# OruLabs: Production-Ready Tech Stack & Implementation Blueprint
 
 ## Part 1: The Winning Tech Stack
 
@@ -130,7 +130,7 @@ TrainingAnalytics
 ## Part 2: Directory Structure & Project Layout
 
 ```
-OruClassrooms/
+OruLabs/
 ├── monorepo.json                    # Workspace configuration
 ├── .env.local                       # Local secrets (gitignored)
 ├── .env.example                     # Template for secrets
@@ -571,9 +571,9 @@ services:
   postgres:
     image: postgres:16
     environment:
-      POSTGRES_USER: OruClassrooms
+      POSTGRES_USER: OruLabs
       POSTGRES_PASSWORD: localdev123
-      POSTGRES_DB: OruClassrooms
+      POSTGRES_DB: OruLabs
     volumes:
       - postgres_data:/var/lib/postgresql/data
     ports:
@@ -589,7 +589,7 @@ services:
       context: ./apps/api
       dockerfile: Dockerfile
     environment:
-      DATABASE_URL: postgresql://OruClassrooms:localdev123@postgres:5432/OruClassrooms
+      DATABASE_URL: postgresql://OruLabs:localdev123@postgres:5432/OruLabs
       REDIS_URL: redis://redis:6379
       GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
       GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
@@ -616,7 +616,7 @@ services:
 ```bash
 # 1. Clone and install
 git clone <repo>
-cd OruClassrooms
+cd OruLabs
 bun install
 
 # 2. Setup environment
@@ -643,29 +643,29 @@ bun run dev
 # Hostinger VPS Setup
 
 # 1. Create app user
-sudo adduser OruClassrooms
-sudo usermod -aG docker OruClassrooms
+sudo adduser OruLabs
+sudo usermod -aG docker OruLabs
 
 # 2. Clone repo
 cd /opt
-sudo git clone <repo> OruClassrooms
-cd OruClassrooms
+sudo git clone <repo> OruLabs
+cd OruLabs
 
 # 3. Setup environment
 sudo nano .env.prod
-# DATABASE_URL=postgresql://user:pass@postgres:5432/OruClassrooms
+# DATABASE_URL=postgresql://user:pass@postgres:5432/OruLabs
 # REDIS_URL=redis://redis:6379
 # GOOGLE_CLIENT_ID=...
 # GOOGLE_CLIENT_SECRET=...
-# API_URL=https://api.OruClassrooms.com
-# NEXT_PUBLIC_API_URL=https://api.OruClassrooms.com
+# API_URL=https://api.OruLabs.com
+# NEXT_PUBLIC_API_URL=https://api.OruLabs.com
 
 # 4. Build and start
 docker-compose -f docker-compose.prod.yml up -d
 
 # 5. Setup SSL with Let's Encrypt
 sudo apt install certbot python3-certbot-nginx
-sudo certbot certonly --standalone -d api.OruClassrooms.com -d app.OruClassrooms.com
+sudo certbot certonly --standalone -d api.OruLabs.com -d app.OruLabs.com
 
 # 6. Configure Nginx reverse proxy (included in docker-compose.prod.yml)
 ```

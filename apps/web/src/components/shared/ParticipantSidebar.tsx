@@ -47,7 +47,7 @@ export function ParticipantSidebar() {
               <GraduationCap size={16} className="text-white" strokeWidth={2} />
             </div>
             <span className="text-[14px] font-700 text-gray-900 tracking-[-0.01em]">
-              OruClassrooms
+              OruLabs
             </span>
           </div>
         </div>

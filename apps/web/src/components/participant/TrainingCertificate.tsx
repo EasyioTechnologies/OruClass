@@ -89,7 +89,7 @@ export function TrainingCertificate({ data, userName }: Props) {
         )}
 
         <p className="mt-8 text-[10px] text-gray-300">
-          Issued by OruClassrooms • orulabs.in
+          Issued by OruLabs • orulabs.in
         </p>
       </div>
     </div>

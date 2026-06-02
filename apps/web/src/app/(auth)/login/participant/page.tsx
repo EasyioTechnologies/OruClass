@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { AuthPanel } from "@/components/auth/AuthPanel";
 
-export const metadata: Metadata = { title: "Participant Sign In | OruClassrooms" };
+export const metadata: Metadata = { title: "Participant Sign In | OruLabs" };
 
 export default function ParticipantLoginPage() {
   return (

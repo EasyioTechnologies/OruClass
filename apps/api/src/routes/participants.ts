@@ -1,13 +1,14 @@
 import { Hono } from "hono";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db/client";
-import { trainingParticipants, trainings, participantResponses, trainingFacilitators } from "../db/schema";
+import { trainingParticipants, trainings, participantResponses, trainingFacilitators, users } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { joinTokenToCode } from "@oruclass/utils";
 import { ScratchpadUpdateSchema, JoinCodeSchema } from "@oruclass/validators";
 import { parseBody } from "../utils/validators";
 import { trainingInWorkspace } from "../utils/workspaceAssets";
+import { sendParticipantJoinedEmail, sendAccountDeletedEmail } from "../services/email.service";
 
 export const participantsRouter = new Hono();
 
@@ -116,6 +117,20 @@ participantsRouter.post("/join/:joinToken", async (c) => {
       target: [trainingParticipants.trainingId, trainingParticipants.userId],
       set: { connectionStatus: "online", lastHeartbeat: new Date() },
     });
+
+  // Send join confirmation email (fire-and-forget)
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (user?.email && user.name) {
+    const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
+    const joinCode = joinTokenToCode(joinToken);
+    sendParticipantJoinedEmail({
+      to: user.email,
+      participantName: user.name,
+      trainingTitle: training.title,
+      joinCode,
+      joinUrl: `${webUrl}/join/${joinToken}`,
+    }).catch((err) => console.error("[email] participant join email failed:", err));
+  }
 
   return c.json({ training });
 });

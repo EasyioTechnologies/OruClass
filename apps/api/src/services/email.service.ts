@@ -1,7 +1,108 @@
 import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM = "OruClassrooms <no-reply@OruClassrooms.com>";
+
+const FROM = process.env.RESEND_FROM_EMAIL ?? "OruClass <onboarding@resend.dev>";
+const WEB = process.env.WEB_URL ?? "http://localhost:3000";
+
+// ─── Shared template ────────────────────────────────────────────────
+
+function wrap(title: string, body: string) {
+  return `<!DOCTYPE html>
+<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
+<div style="max-width:560px;margin:40px auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
+  <div style="padding:32px 32px 0">
+    <div style="margin-bottom:20px">
+      <span style="font-size:18px;font-weight:800;color:#111827;letter-spacing:-0.02em">Oru</span><span style="font-size:18px;font-weight:800;color:#10b981;letter-spacing:-0.02em">Labs</span>
+    </div>
+    <h1 style="margin:0 0 4px;font-size:20px;font-weight:700;color:#111827">${title}</h1>
+    <div style="width:40px;height:3px;background:#10b981;border-radius:2px;margin:12px 0 24px"></div>
+  </div>
+  <div style="padding:0 32px 32px;font-size:15px;line-height:1.6;color:#374151">${body}</div>
+  <div style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;text-align:center">
+    <span style="font-size:12px;color:#9ca3af">OruLabs &middot; orulabs.in</span>
+  </div>
+</div>
+</body></html>`;
+}
+
+function btn(text: string, url: string, color = "#111827") {
+  return `<a href="${url}" style="display:inline-block;background:${color};color:#fff;padding:12px 28px;border-radius:8px;text-decoration:none;font-weight:600;font-size:14px;margin:16px 0">${text}</a>`;
+}
+
+function muted(text: string) {
+  return `<p style="margin-top:20px;font-size:13px;color:#9ca3af">${text}</p>`;
+}
+
+async function send(to: string, subject: string, html: string) {
+  try {
+    const { error } = await resend.emails.send({ from: FROM, to, subject, html });
+    if (error) {
+      console.error("[email] send failed:", error);
+      return false;
+    }
+    return true;
+  } catch (err) {
+    console.error("[email] send error:", err);
+    return false;
+  }
+}
+
+// ─── Auth emails ────────────────────────────────────────────────────
+
+export async function sendVerificationEmail(opts: { to: string; name: string; url: string }) {
+  return send(
+    opts.to,
+    "Verify your email address",
+    wrap("Verify your email", `
+      <p>Hi ${opts.name},</p>
+      <p>Please verify your email address to complete your OruLabs account setup.</p>
+      ${btn("Verify Email", opts.url, "#10b981")}
+      ${muted("This link expires in 24 hours. If you didn't create an account, ignore this email.")}
+    `),
+  );
+}
+
+export async function sendResetPasswordEmail(opts: { to: string; name: string; url: string }) {
+  return send(
+    opts.to,
+    "Reset your password",
+    wrap("Reset your password", `
+      <p>Hi ${opts.name},</p>
+      <p>We received a request to reset the password for your OruLabs account. Click the button below to set a new password.</p>
+      ${btn("Reset Password", opts.url)}
+      ${muted("This link expires in 1 hour. If you didn't request this, you can safely ignore this email — your password won't change.")}
+    `),
+  );
+}
+
+export async function sendPasswordChangedEmail(opts: { to: string; name: string }) {
+  return send(
+    opts.to,
+    "Your password has been changed",
+    wrap("Password changed", `
+      <p>Hi ${opts.name},</p>
+      <p>Your OruLabs account password was successfully changed.</p>
+      <p>If you didn't make this change, please reset your password immediately or contact us.</p>
+      ${btn("Go to OruLabs", WEB)}
+    `),
+  );
+}
+
+export async function sendWelcomeEmail(opts: { to: string; name: string; loginUrl: string }) {
+  return send(
+    opts.to,
+    "Welcome to OruLabs",
+    wrap("Welcome, " + opts.name + "!", `
+      <p>Your account is ready. Start creating interactive training sessions in minutes.</p>
+      ${btn("Go to Dashboard", opts.loginUrl, "#10b981")}
+      ${muted("Need help getting started? Reply to this email — we read every message.")}
+    `),
+  );
+}
+
+// ─── Workspace & Team emails ────────────────────────────────────────
 
 export async function sendInvitationEmail(opts: {
   to: string;
@@ -9,18 +110,36 @@ export async function sendInvitationEmail(opts: {
   workspaceName: string;
   joinUrl: string;
 }) {
-  await resend.emails.send({
-    from: FROM,
-    to: opts.to,
-    subject: `${opts.inviterName} invited you to ${opts.workspaceName}`,
-    html: `
-      <p>Hi,</p>
-      <p><strong>${opts.inviterName}</strong> has invited you to join the workspace <strong>${opts.workspaceName}</strong> on OruClassrooms.</p>
-      <p><a href="${opts.joinUrl}" style="background:#2563eb;color:#fff;padding:10px 20px;border-radius:6px;text-decoration:none">Accept Invitation</a></p>
-      <p>This link expires in 7 days.</p>
-    `,
-  });
+  return send(
+    opts.to,
+    `${opts.inviterName} invited you to ${opts.workspaceName}`,
+    wrap("You've been invited", `
+      <p><strong>${opts.inviterName}</strong> invited you to join <strong>${opts.workspaceName}</strong> on OruLabs.</p>
+      ${btn("Accept Invitation", opts.joinUrl, "#10b981")}
+      ${muted("This link expires in 7 days.")}
+    `),
+  );
 }
+
+export async function sendFacilitatorInviteEmail(opts: {
+  to: string;
+  inviterName: string;
+  trainingTitle: string;
+  role: string;
+  joinUrl: string;
+}) {
+  const roleLabel = opts.role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return send(
+    opts.to,
+    `You're invited to facilitate: ${opts.trainingTitle}`,
+    wrap("Facilitator Invitation", `
+      <p><strong>${opts.inviterName}</strong> invited you as <strong>${roleLabel}</strong> for the training <strong>${opts.trainingTitle}</strong>.</p>
+      ${btn("Accept & Join", opts.joinUrl, "#10b981")}
+    `),
+  );
+}
+
+// ─── Training & Session emails ──────────────────────────────────────
 
 export async function sendSessionDigestEmail(opts: {
   to: string;
@@ -30,20 +149,19 @@ export async function sendSessionDigestEmail(opts: {
   completedAt: string;
   analyticsUrl: string;
 }) {
-  await resend.emails.send({
-    from: FROM,
-    to: opts.to,
-    subject: `Session complete: ${opts.trainingTitle}`,
-    html: `
+  return send(
+    opts.to,
+    `Session complete: ${opts.trainingTitle}`,
+    wrap("Session Complete", `
       <p>Your training session <strong>${opts.trainingTitle}</strong> has ended.</p>
-      <ul>
-        <li>Participants: ${opts.participantCount}</li>
-        <li>Modules completed: ${opts.moduleCount}</li>
-        <li>Ended: ${opts.completedAt}</li>
-      </ul>
-      <p><a href="${opts.analyticsUrl}">View full analytics →</a></p>
-    `,
-  });
+      <table style="width:100%;border-collapse:collapse;margin:16px 0">
+        <tr><td style="padding:8px 12px;background:#f3f4f6;border-radius:6px 0 0 0;font-size:13px;color:#6b7280">Participants</td><td style="padding:8px 12px;background:#f3f4f6;border-radius:0 6px 0 0;font-weight:600;color:#111827">${opts.participantCount}</td></tr>
+        <tr><td style="padding:8px 12px;font-size:13px;color:#6b7280">Modules</td><td style="padding:8px 12px;font-weight:600;color:#111827">${opts.moduleCount}</td></tr>
+        <tr><td style="padding:8px 12px;background:#f3f4f6;border-radius:0 0 0 6px;font-size:13px;color:#6b7280">Ended</td><td style="padding:8px 12px;background:#f3f4f6;border-radius:0 0 6px 0;font-weight:600;color:#111827">${opts.completedAt}</td></tr>
+      </table>
+      ${btn("View Analytics", opts.analyticsUrl)}
+    `),
+  );
 }
 
 export async function sendJoinReminderEmail(opts: {
@@ -52,13 +170,95 @@ export async function sendJoinReminderEmail(opts: {
   scheduledAt: string;
   joinUrl: string;
 }) {
-  await resend.emails.send({
-    from: FROM,
-    to: opts.to,
-    subject: `Reminder: ${opts.trainingTitle} starts soon`,
-    html: `
-      <p>This is a reminder that <strong>${opts.trainingTitle}</strong> starts at <strong>${opts.scheduledAt}</strong>.</p>
-      <p><a href="${opts.joinUrl}">Join session →</a></p>
-    `,
-  });
+  return send(
+    opts.to,
+    `Reminder: ${opts.trainingTitle} starts soon`,
+    wrap("Session Reminder", `
+      <p><strong>${opts.trainingTitle}</strong> starts at <strong>${opts.scheduledAt}</strong>.</p>
+      ${btn("Join Session", opts.joinUrl, "#10b981")}
+    `),
+  );
+}
+
+// ─── Participant emails ─────────────────────────────────────────────
+
+export async function sendParticipantJoinedEmail(opts: {
+  to: string;
+  participantName: string;
+  trainingTitle: string;
+  joinCode: string;
+  joinUrl: string;
+}) {
+  return send(
+    opts.to,
+    `You've joined: ${opts.trainingTitle}`,
+    wrap("You're in!", `
+      <p>Hi ${opts.participantName},</p>
+      <p>You've successfully joined <strong>${opts.trainingTitle}</strong>.</p>
+      <div style="text-align:center;margin:20px 0">
+        <p style="font-size:13px;color:#6b7280;margin-bottom:8px">Your join code</p>
+        <div style="display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:12px 24px;font-size:28px;font-weight:800;letter-spacing:0.15em;color:#111827">${opts.joinCode}</div>
+      </div>
+      ${btn("Open Training", opts.joinUrl, "#10b981")}
+      ${muted("Keep this email handy — you may need the join code to re-enter the session.")}
+    `),
+  );
+}
+
+export async function sendParticipantCertificateEmail(opts: {
+  to: string;
+  participantName: string;
+  trainingTitle: string;
+  certificateUrl: string;
+}) {
+  return send(
+    opts.to,
+    `Your certificate: ${opts.trainingTitle}`,
+    wrap("Congratulations!", `
+      <p>Hi ${opts.participantName},</p>
+      <p>You've completed <strong>${opts.trainingTitle}</strong>. Your certificate of completion is ready.</p>
+      ${btn("Download Certificate", opts.certificateUrl, "#10b981")}
+    `),
+  );
+}
+
+export async function sendTrainingInviteEmail(opts: {
+  to: string;
+  trainerName: string;
+  trainingTitle: string;
+  joinCode: string;
+  joinUrl: string;
+  scheduledAt?: string;
+}) {
+  const scheduleInfo = opts.scheduledAt
+    ? `<p>Scheduled for: <strong>${opts.scheduledAt}</strong></p>`
+    : "";
+  return send(
+    opts.to,
+    `${opts.trainerName} invited you to a training`,
+    wrap("Training Invitation", `
+      <p><strong>${opts.trainerName}</strong> has invited you to join <strong>${opts.trainingTitle}</strong>.</p>
+      ${scheduleInfo}
+      <div style="text-align:center;margin:20px 0">
+        <p style="font-size:13px;color:#6b7280;margin-bottom:8px">Join code</p>
+        <div style="display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:12px 24px;font-size:28px;font-weight:800;letter-spacing:0.15em;color:#111827">${opts.joinCode}</div>
+      </div>
+      ${btn("Join Training", opts.joinUrl, "#10b981")}
+    `),
+  );
+}
+
+// ─── Account emails ─────────────────────────────────────────────────
+
+export async function sendAccountDeletedEmail(opts: { to: string; name: string }) {
+  return send(
+    opts.to,
+    "Your OruLabs account has been deleted",
+    wrap("Account deleted", `
+      <p>Hi ${opts.name},</p>
+      <p>Your OruLabs account and all associated data have been permanently deleted as requested.</p>
+      <p>We're sorry to see you go. If this was a mistake or you'd like to come back, you can always create a new account.</p>
+      ${muted("If you didn't request this, please contact us immediately.")}
+    `),
+  );
 }

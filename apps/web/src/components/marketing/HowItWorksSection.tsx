@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { MessageSquare } from "lucide-react";
 const testimonials = [
   {
-    quote: "OruClassrooms completely changed how I deliver my workshops. The engagement level is off the charts.",
+    quote: "OruLabs completely changed how I deliver my workshops. The engagement level is off the charts.",
     author: "Sarah Jenkins",
     role: "Corporate Trainer",
   },
@@ -24,7 +24,7 @@ const testimonials = [
     role: "University Professor",
   },
   {
-    quote: "I've tried every platform out there. Nothing comes close to the elegance and reliability of OruClassrooms.",
+    quote: "I've tried every platform out there. Nothing comes close to the elegance and reliability of OruLabs.",
     author: "Elena Rodriguez",
     role: "Learning & Development Manager",
   },
@@ -57,7 +57,7 @@ const testimonials = [
 
 export function HowItWorksSection() {
   return (
-    <motion.section 
+    <motion.section
       initial={{ opacity: 0 }}
       whileInView={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: "easeOut" }}
@@ -72,8 +72,8 @@ export function HowItWorksSection() {
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
           className="mb-12 md:mb-16 text-center px-6 md:px-12"
         >
-          <motion.div 
-            whileHover={{ scale: 1.05 , transition: { duration: 0.2 }} }
+          <motion.div
+            whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
             className="inline-flex items-center justify-center p-3 mb-6 rounded-2xl bg-white border border-gray-100 shadow-sm cursor-default"
           >
             <MessageSquare className="w-6 h-6 text-brand-600" />
@@ -94,7 +94,7 @@ export function HowItWorksSection() {
                 whileInView={{ opacity: 1, scale: 1, x: 0 }}
                 viewport={{ once: false, margin: "-10%" }}
                 transition={{ duration: 0.8, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
-                whileHover={{ scale: 1.02, y: -5 , transition: { duration: 0.2 }} }
+                whileHover={{ scale: 1.02, y: -5, transition: { duration: 0.2 } }}
                 className="snap-center shrink-0 w-[85vw] sm:w-[400px] md:w-[500px] flex flex-col justify-between p-8 md:p-10 rounded-[2rem] bg-white border border-gray-100 shadow-sm hover:shadow-md transition-shadow"
               >
                 <p className="text-lg md:text-xl text-gray-800 font-light leading-relaxed mb-8">

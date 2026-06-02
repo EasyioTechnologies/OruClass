@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Contact Us | OruClassrooms",
-  description: "Get in touch with the OruLabs team for support, inquiries, or feedback regarding OruClassrooms.",
+  title: "Contact Us | OruLabs",
+  description: "Get in touch with the OruLabs team for support, inquiries, or feedback regarding OruLabs.",
 };
 
 export default function ContactPage() {
@@ -13,7 +13,7 @@ export default function ContactPage() {
           <h1 className="text-3xl font-extrabold text-gray-900">Contact Us</h1>
           <p className="mt-4 text-lg text-gray-500">We'd love to hear from you!</p>
         </div>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div className="bg-brand-50 rounded-xl p-6 border border-brand-100">
             <h3 className="text-lg font-semibold text-brand-900 mb-2">Support</h3>
@@ -22,16 +22,16 @@ export default function ContactPage() {
               support@orulabs.in
             </a>
           </div>
-          
+
           <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
             <h3 className="text-lg font-semibold text-blue-900 mb-2">Sales & Inquiries</h3>
-            <p className="text-blue-700 mb-4">Interested in using OruClassrooms for your organization?</p>
+            <p className="text-blue-700 mb-4">Interested in using OruLabs for your organization?</p>
             <a href="mailto:sales@orulabs.in" className="text-blue-600 font-medium hover:underline">
               sales@orulabs.in
             </a>
           </div>
         </div>
-        
+
         <div className="mt-12 text-center text-gray-500 text-sm">
           <p>OruLabs Inc.</p>
           <p>Bringing education to the modern age.</p>

@@ -17,7 +17,7 @@ export function ParticipantHeader() {
           <Menu size={20} />
         </button>
         <h1 className="text-sm font-bold tracking-tight text-brand-600">
-          <Link href="/participant">OruClassrooms</Link>
+          <Link href="/participant">OruLabs</Link>
         </h1>
       </div>
       <div className="flex items-center gap-4">

@@ -44,7 +44,7 @@ export function SuccessPage() {
           You&apos;re all set!
         </h1>
         <p className="text-[14px] text-gray-500">
-          Welcome to OruClassrooms <span className="font-600 text-brand-600">{plan.name}</span>
+          Welcome to OruLabs <span className="font-600 text-brand-600">{plan.name}</span>
         </p>
       </div>
 

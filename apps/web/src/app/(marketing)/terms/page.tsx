@@ -1,8 +1,8 @@
 import { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Terms of Service | OruClassrooms",
-  description: "Terms of Service and User Agreement for OruClassrooms and OruLabs platforms.",
+  title: "Terms of Service | OruLabs",
+  description: "Terms of Service and User Agreement for OruLabs and OruLabs platforms.",
 };
 
 export default function TermsPage() {
@@ -11,14 +11,14 @@ export default function TermsPage() {
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
         <h1 className="text-3xl font-extrabold text-gray-900 mb-6">Terms of Service</h1>
         <p className="text-gray-500 text-sm">Last updated: {new Date().toLocaleDateString()}</p>
-        
+
         <div className="prose prose-blue max-w-none text-gray-600">
           <h2>1. Acceptance of Terms</h2>
-          <p>By accessing and using OruClassrooms, you agree to be bound by these Terms of Service and all applicable laws and regulations.</p>
-          
+          <p>By accessing and using OruLabs, you agree to be bound by these Terms of Service and all applicable laws and regulations.</p>
+
           <h2>2. Use License</h2>
           <p>Permission is granted to temporarily download one copy of the materials (information or software) on OruLabs's website for personal, non-commercial transitory viewing only.</p>
-          
+
           <h2>3. User Conduct</h2>
           <p>As a user of the platform, whether as a trainer or participant, you agree to maintain a respectful environment and adhere to all community guidelines during live sessions.</p>
 

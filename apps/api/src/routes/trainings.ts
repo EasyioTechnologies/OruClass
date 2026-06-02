@@ -12,9 +12,15 @@ import {
   FacilitatorInviteSchema,
   SessionStatusSchema,
 } from "@oruclass/validators";
+import {
+  sendTrainingInviteEmail,
+  sendParticipantCertificateEmail,
+  sendJoinReminderEmail,
+} from "../services/email.service";
 import { parseBody } from "../utils/validators";
 import { randomBytes } from "crypto";
 import { getIO } from "../socket/io-instance";
+import { digestQueue } from "../jobs/sendSessionDigest.job";
 
 export const trainingsRouter = new Hono();
 
@@ -234,6 +240,23 @@ trainingsRouter.post(
       .returning();
 
     invalidateRoleCache(user.id, trainingId);
+
+    // Send facilitator invite email
+    const inviterId = c.get("userId") as string;
+    const inviter = await db.query.users.findFirst({ where: eq(users.id, inviterId) });
+    const training = await db.query.trainings.findFirst({ where: eq(trainings.id, trainingId) });
+    if (training) {
+      const { sendFacilitatorInviteEmail } = await import("../services/email.service");
+      const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
+      sendFacilitatorInviteEmail({
+        to: body.email,
+        inviterName: inviter?.name ?? "A teammate",
+        trainingTitle: training.title,
+        role: body.role,
+        joinUrl: `${webUrl}/trainings/${trainingId}/studio`,
+      }).catch((err) => console.error("[email] facilitator invite failed:", err));
+    }
+
     return c.json(created, 201);
   },
 );
@@ -308,6 +331,23 @@ trainingsRouter.patch(
           .where(and(eq(liveSessions.trainingId, id), eq(liveSessions.status, "active")));
         bustLiveSessionCache(id);
         getIO().to(`training:${id}`).emit("session:ended");
+
+        // Queue digest email to trainer
+        const { trainingParticipants } = await import("../db/schema");
+        const trainer = await db.query.users.findFirst({ where: eq(users.id, userId) });
+        const participantRows = await db.select().from(trainingParticipants).where(eq(trainingParticipants.trainingId, id));
+        const moduleRows = await db.select().from(trainingModules).where(eq(trainingModules.trainingId, id));
+        if (trainer?.email) {
+          const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
+          digestQueue.add("digest", {
+            to: trainer.email,
+            trainingTitle: updated.title,
+            participantCount: participantRows.length,
+            moduleCount: moduleRows.length,
+            completedAt: new Date().toISOString(),
+            analyticsUrl: `${webUrl}/trainings/${id}/analytics`,
+          }).catch((err) => console.error("[digest] queue failed:", err));
+        }
       }
     }
 
@@ -358,5 +398,88 @@ trainingsRouter.post(
     }
 
     return c.json(updated);
+  },
+);
+
+// POST /trainings/:id/invite-participant — invite participant by email
+// TODO: bulk invite, save invites to DB for tracking, rate limit per training
+trainingsRouter.post(
+  "/:id/invite-participant",
+  requireTrainingPermission("invite_participants"),
+  async (c) => {
+    const { id: trainingId } = c.req.param();
+    const { email } = await c.req.json<{ email: string }>();
+    if (!email) return c.json({ error: "email required" }, 400);
+
+    const training = await db.query.trainings.findFirst({ where: eq(trainings.id, trainingId) });
+    if (!training) return c.json({ error: "Training not found" }, 404);
+
+    const inviterId = c.get("userId") as string;
+    const inviter = await db.query.users.findFirst({ where: eq(users.id, inviterId) });
+    const { joinTokenToCode } = await import("@oruclass/utils");
+    const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
+
+    await sendTrainingInviteEmail({
+      to: email,
+      trainerName: inviter?.name ?? "A trainer",
+      trainingTitle: training.title,
+      joinCode: joinTokenToCode(training.joinToken),
+      joinUrl: `${webUrl}/join/${training.joinToken}`,
+      scheduledAt: training.startDate ? new Date(training.startDate).toLocaleDateString("en-IN", { dateStyle: "medium" }) : undefined,
+    });
+
+    return c.json({ success: true });
+  },
+);
+
+// POST /trainings/:id/send-reminder — send join reminder to a participant email
+// TODO: cron-based auto-reminders before session start, batch to all participants
+trainingsRouter.post(
+  "/:id/send-reminder",
+  requireTrainingPermission("invite_participants"),
+  async (c) => {
+    const { id: trainingId } = c.req.param();
+    const { email } = await c.req.json<{ email: string }>();
+    if (!email) return c.json({ error: "email required" }, 400);
+
+    const training = await db.query.trainings.findFirst({ where: eq(trainings.id, trainingId) });
+    if (!training) return c.json({ error: "Training not found" }, 404);
+
+    const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
+
+    await sendJoinReminderEmail({
+      to: email,
+      trainingTitle: training.title,
+      scheduledAt: training.startDate ? new Date(training.startDate).toLocaleString("en-IN", { dateStyle: "medium", timeStyle: "short" }) : "TBD",
+      joinUrl: `${webUrl}/join/${training.joinToken}`,
+    });
+
+    return c.json({ success: true });
+  },
+);
+
+// POST /trainings/:id/send-certificate — send certificate email to participant
+// TODO: generate PDF certificate, store in S3, link to download, batch send to all participants
+trainingsRouter.post(
+  "/:id/send-certificate",
+  requireTrainingPermission("edit_agenda"),
+  async (c) => {
+    const { id: trainingId } = c.req.param();
+    const { email, participantName } = await c.req.json<{ email: string; participantName: string }>();
+    if (!email || !participantName) return c.json({ error: "email and participantName required" }, 400);
+
+    const training = await db.query.trainings.findFirst({ where: eq(trainings.id, trainingId) });
+    if (!training) return c.json({ error: "Training not found" }, 404);
+
+    const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
+
+    await sendParticipantCertificateEmail({
+      to: email,
+      participantName,
+      trainingTitle: training.title,
+      certificateUrl: `${webUrl}/participant/training/${trainingId}/certificate`,
+    });
+
+    return c.json({ success: true });
   },
 );

@@ -11,7 +11,7 @@ export function Footer() {
           <div className="col-span-1 md:col-span-2">
             <Link href="/" className="inline-block mb-4">
               <span className="text-xl font-bold tracking-tight text-gray-900">
-                OruClassrooms
+                OruLabs
               </span>
             </Link>
             <p className="text-gray-500 max-w-sm mb-6">
@@ -29,7 +29,7 @@ export function Footer() {
               </a>
             </div>
           </div>
-          
+
           <div>
             <h4 className="font-semibold text-gray-900 mb-4">Platform</h4>
             <ul className="space-y-3">
@@ -39,7 +39,7 @@ export function Footer() {
               <li><Link href="#solutions" className="text-gray-500 hover:text-brand-600 transition-colors">Analytics</Link></li>
             </ul>
           </div>
-          
+
           <div>
             <h4 className="font-semibold text-gray-900 mb-4">Company</h4>
             <ul className="space-y-3">
@@ -50,10 +50,10 @@ export function Footer() {
             </ul>
           </div>
         </div>
-        
+
         <div className="pt-8 border-t border-gray-200 flex flex-col md:flex-row items-center justify-between gap-4">
           <p className="text-sm text-gray-400">
-            © {new Date().getFullYear()} OruClassrooms. All rights reserved.
+            © {new Date().getFullYear()} OruLabs. All rights reserved.
           </p>
           <div className="flex gap-6 text-sm text-gray-400">
             <span>Built for Educators</span>
