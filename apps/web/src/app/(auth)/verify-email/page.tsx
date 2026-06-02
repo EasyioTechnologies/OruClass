@@ -24,7 +24,7 @@ function VerifyEmailContent() {
     try {
       const { error } = await authClient.sendVerificationEmail({
         email,
-        callbackURL: returnTo,
+        callbackURL: returnTo.startsWith("http") ? returnTo : `${window.location.origin}${returnTo.startsWith('/') ? '' : '/'}${returnTo}`,
       });
       if (error) {
         setError(error.message || "Failed to resend.");

@@ -83,6 +83,7 @@ function EmailAuthFormInner({
           email,
           password,
           name,
+          callbackURL: effectiveReturnTo.startsWith("http") ? effectiveReturnTo : `${window.location.origin}${effectiveReturnTo.startsWith('/') ? '' : '/'}${effectiveReturnTo}`,
         });
 
         if (error) {
