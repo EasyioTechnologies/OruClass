@@ -47,8 +47,11 @@ export default function DataPage() {
   });
 
   React.useEffect(() => {
-    if (jobStatus?.status === "completed" && jobStatus.excelUrl) {
+    if (!jobStatus) return;
+    if (jobStatus.status === "completed" && jobStatus.excelUrl) {
       window.open(jobStatus.excelUrl, "_blank");
+      setExportJobId(null);
+    } else if (jobStatus.status === "failed") {
       setExportJobId(null);
     }
   }, [jobStatus]);

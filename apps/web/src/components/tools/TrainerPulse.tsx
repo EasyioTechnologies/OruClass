@@ -20,7 +20,7 @@ export function TrainerPulse({ module, trainingId }: Props) {
     const counts: Record<string, number> = {};
     emojis.forEach((e) => (counts[e] = 0));
     responses?.forEach((r) => {
-      const emoji = r.responseData.emoji;
+      const emoji = (r.responseData as any).emoji;
       if (emoji && emoji in counts) counts[emoji]++;
     });
     return counts;

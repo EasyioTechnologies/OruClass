@@ -15,7 +15,7 @@ export function TrainerWordCloud({ module, trainingId }: Props) {
   const wordFreq = useMemo(() => {
     const freq: Record<string, number> = {};
     responses?.forEach((r) => {
-      const words: string[] = r.responseData.words ?? [];
+      const words: string[] = (r.responseData as any).words ?? [];
       words.forEach((w) => {
         const key = w.toLowerCase().trim();
         if (key) freq[key] = (freq[key] ?? 0) + 1;

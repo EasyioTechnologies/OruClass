@@ -28,7 +28,7 @@ export function TrainerQnA({ module, trainingId }: Props) {
           </div>
         ) : (
           responses?.map((r) => {
-            const question = r.responseData.question ?? "";
+            const question = (r.responseData as any).question ?? "";
             const when = r.createdAt ?? r.submittedAt;
             return (
               <div key={r.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-start gap-3">

@@ -56,7 +56,8 @@ trainingsRouter.post("/", async (c) => {
       labels: body.labels,
       type: body.type,
       description: body.description,
-      scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : new Date(),
+      venue: body.venue,
+      meetingLink: body.meetingLink,
       startDate: body.startDate ? new Date(body.startDate) : null,
       endDate: body.endDate ? new Date(body.endDate) : null,
       joinToken: generateJoinToken(),
@@ -76,7 +77,7 @@ trainingsRouter.post("/", async (c) => {
     trainingId: training.id,
     dayNumber: 1,
     title: "Day 1",
-    date: training.scheduledAt,
+    date: training.startDate,
   }).returning();
 
   // Every training gets a default Attendance module — editable/deletable
@@ -124,7 +125,8 @@ trainingsRouter.patch(
       .update(trainings)
       .set({
         ...body,
-        scheduledAt: body.scheduledAt ? new Date(body.scheduledAt) : undefined,
+        venue: body.venue,
+        meetingLink: body.meetingLink,
         startDate: body.startDate ? new Date(body.startDate) : undefined,
         endDate: body.endDate ? new Date(body.endDate) : undefined,
         updatedAt: new Date(),

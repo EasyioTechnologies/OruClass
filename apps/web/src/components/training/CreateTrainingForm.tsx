@@ -13,7 +13,8 @@ type FormData = {
   labels?: string;
   type: "in_person" | "online" | "hybrid";
   description?: string;
-  scheduledAt?: string;
+  venue?: string;
+  meetingLink?: string;
   startDate?: string;
   endDate?: string;
 };
@@ -38,14 +39,16 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
   const {
     register,
     handleSubmit,
+    watch,
     formState: { errors },
   } = useForm<FormData>({ 
     resolver: zodResolver(CreateTrainingSchema) as any,
     defaultValues: {
-      scheduledAt: new Date().toISOString().split("T")[0],
       type: "in_person",
     }
   });
+
+  const selectedType = watch("type");
 
   const onSubmit = async (data: FormData) => {
     console.log("Submitting CreateTraining form data:", data);
@@ -54,6 +57,7 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
     // to ISO string (e.g. 2026-06-01T12:00:00Z) expected by datetime validator
     const payload = {
       ...data,
+      labels: data.labels ? data.labels.split(",").map(s => s.trim()).filter(Boolean) : undefined,
       startDate: data.startDate ? new Date(data.startDate).toISOString() : undefined,
       endDate: data.endDate ? new Date(data.endDate).toISOString() : undefined,
     };
@@ -74,7 +78,7 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
         {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Labels (comma separated)</label>
           <input
@@ -109,7 +113,7 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
         />
       </div>
 
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
           <input
@@ -128,14 +132,28 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
         </div>
       </div>
 
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled at</label>
-        <input
-          {...register("scheduledAt")}
-          type="date"
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-        />
-      </div>
+      {selectedType === "in_person" || selectedType === "hybrid" ? (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Venue Location</label>
+          <input
+            {...register("venue")}
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            placeholder="e.g. Conference Room A"
+          />
+        </div>
+      ) : null}
+
+      {selectedType === "online" || selectedType === "hybrid" ? (
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-1">Virtual Meeting Link</label>
+          <input
+            {...register("meetingLink")}
+            type="url"
+            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            placeholder="e.g. https://zoom.us/j/123456789"
+          />
+        </div>
+      ) : null}
 
       {createTraining.isError && (
         <p className="text-sm text-red-500">Failed to create training. Try again.</p>

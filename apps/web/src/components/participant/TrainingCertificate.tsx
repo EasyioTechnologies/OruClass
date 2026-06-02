@@ -17,7 +17,7 @@ export function TrainingCertificate({ data, userName }: Props) {
   };
 
   const { training, joinedAt } = data;
-  const startDate = training.startDate || training.scheduledAt || joinedAt;
+  const startDate = training.startDate || joinedAt;
   const endDate = training.endDate || training.updatedAt;
 
   return (

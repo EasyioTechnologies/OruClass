@@ -12,9 +12,13 @@ export interface Training {
   id: string;
   workspaceId: string;
   title: string;
-  category: TrainingCategory;
+  labels?: string[];
+  type?: string;
   description: string | null;
-  scheduledAt: Date | null;
+  venue?: string;
+  meetingLink?: string;
+  startDate?: string;
+  endDate?: string;
   currentActiveModuleId: string | null;
   sessionStatus: TrainingStatus;
   joinToken: string;

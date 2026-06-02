@@ -24,8 +24,7 @@ export interface ReviewTraining extends Omit<Training, "facilitators" | "modules
   modules: TrainingModule[];
   labels?: string[];
   type?: string;
-  startDate?: string | null;
-  endDate?: string | null;
+
   creator?: { id: string; name: string; email: string };
   facilitators?: Array<{ role: string; user: { id: string; name: string; email: string } }>;
   days?: Array<{ id: string; dayNumber: number; title: string; date: string | null; description: string | null }>;

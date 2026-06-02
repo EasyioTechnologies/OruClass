@@ -39,7 +39,7 @@ export function useCreateTraining(workspaceId: string) {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { title: string; labels?: string[]; description?: string; scheduledAt?: string }) =>
+    mutationFn: (data: { title: string; labels?: string[]; type?: string; description?: string; venue?: string; meetingLink?: string; startDate?: string; endDate?: string }) =>
       apiClient.post<Training>(
         `/api/workspaces/${workspaceId}/trainings`,
         data,
@@ -53,7 +53,7 @@ export function useUpdateTraining(workspaceId: string, trainingId: string) {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { title?: string; labels?: string[]; description?: string; scheduledAt?: string }) =>
+    mutationFn: (data: { title?: string; labels?: string[]; type?: string; description?: string; venue?: string; meetingLink?: string; startDate?: string; endDate?: string }) =>
       apiClient.patch<Training>(
         `/api/workspaces/${workspaceId}/trainings/${trainingId}`,
         data,

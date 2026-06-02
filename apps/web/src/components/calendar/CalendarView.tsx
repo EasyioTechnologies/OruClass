@@ -60,8 +60,8 @@ export function CalendarView() {
   const byDay = useMemo(() => {
     const map = new Map<string, Training[]>();
     trainings.forEach((t) => {
-      if (!t.scheduledAt) return;
-      const d = new Date(t.scheduledAt);
+      if (!t.startDate) return;
+      const d = new Date(t.startDate);
       const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
       const list = map.get(key) ?? [];
       list.push(t);
@@ -84,7 +84,7 @@ export function CalendarView() {
   };
   const goToday = () => { setViewYear(today.getFullYear()); setViewMonth(today.getMonth()); };
 
-  const unscheduled = trainings.filter((t) => !t.scheduledAt);
+  const unscheduled = trainings.filter((t) => !t.startDate);
 
   // Events for selected day (mobile day-tap)
   const selectedDayEvents = selectedDay ? byDay.get(selectedDay) ?? [] : [];
@@ -234,11 +234,10 @@ export function CalendarView() {
               </div>
               {selected?.id === t.id && (
                 <div className="mt-2 pt-2 border-t border-gray-100 space-y-2">
-                  {t.scheduledAt && (
+                  {t.startDate && (
                     <p className="text-xs text-gray-500">
-                      {new Date(t.scheduledAt).toLocaleString(undefined, {
+                      {new Date(t.startDate).toLocaleString(undefined, {
                         weekday: "short", month: "short", day: "numeric",
-                        hour: "2-digit", minute: "2-digit",
                       })}
                     </p>
                   )}
@@ -289,11 +288,10 @@ function TrainingDetail({ training, onClose }: { training: Training | null; onCl
           <X size={14} />
         </button>
       </div>
-      {training.scheduledAt && (
+      {training.startDate && (
         <p className="text-xs text-gray-500">
-          {new Date(training.scheduledAt).toLocaleString(undefined, {
+          {new Date(training.startDate).toLocaleString(undefined, {
             weekday: "short", month: "short", day: "numeric",
-            hour: "2-digit", minute: "2-digit",
           })}
         </p>
       )}

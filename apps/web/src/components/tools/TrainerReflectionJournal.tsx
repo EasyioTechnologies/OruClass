@@ -31,7 +31,7 @@ export function TrainerReflectionJournal({ module, trainingId }: Props) {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {responses?.map((r) => {
-              const text = r.responseData.text ?? "";
+              const text = (r.responseData as any).text ?? "";
               const when = r.createdAt ?? r.submittedAt;
               return (
                 <div key={r.id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex flex-col">

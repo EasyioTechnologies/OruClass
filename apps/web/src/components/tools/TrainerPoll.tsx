@@ -17,7 +17,7 @@ export function TrainerPoll({ module, trainingId }: Props) {
   for (const opt of options) tally[opt] = 0;
   const totalVoters = responses?.length ?? 0;
   responses?.forEach((r) => {
-    const selected: string[] = r.responseData.selected ?? [];
+    const selected: string[] = (r.responseData as any).selected ?? [];
     selected.forEach((s) => {
       if (s in tally) tally[s]++;
     });

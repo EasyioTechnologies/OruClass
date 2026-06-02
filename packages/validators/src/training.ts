@@ -18,7 +18,8 @@ export const CreateTrainingSchema = z.object({
   ),
   type: TrainingTypeSchema.default("in_person"),
   description: z.string().max(1000).optional(),
-  scheduledAt: z.preprocess((v) => (v === "" ? undefined : v), z.string().optional()),
+  venue: z.preprocess((v) => (v === "" ? undefined : v), z.string().max(500).optional()),
+  meetingLink: z.preprocess((v) => (v === "" ? undefined : v), z.string().url().max(1000).optional()),
   startDate: z.preprocess((v) => (v === "" ? undefined : v), z.string().datetime({ offset: true }).optional()),
   endDate: z.preprocess((v) => (v === "" ? undefined : v), z.string().datetime({ offset: true }).optional()),
 });

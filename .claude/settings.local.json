@@ -11,7 +11,8 @@
       "Bash(npx --package typescript tsc --noEmit)",
       "Bash(grep -E \"\\\\.\\(ts|sql\\)$\")",
       "Bash(grep -E \"\\\\.\\(ts|js\\)$\")",
-      "Bash(ls:*)"
+      "Bash(ls:*)",
+      "Bash(npx drizzle-kit:*)"
     ],
     "mode": "bypass"
   }

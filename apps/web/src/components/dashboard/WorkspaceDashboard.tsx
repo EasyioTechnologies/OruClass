@@ -78,9 +78,8 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
   const [labels, setLabels] = useState(training.labels?.join(", ") ?? "");
   const [type, setType] = useState(training.type || "in_person");
   const [description, setDescription] = useState(training.description ?? "");
-  const [scheduledAt, setScheduledAt] = useState(
-    training.scheduledAt ? new Date(training.scheduledAt).toISOString().split("T")[0] : ""
-  );
+  const [venue, setVenue] = useState(training.venue ?? "");
+  const [meetingLink, setMeetingLink] = useState(training.meetingLink ?? "");
   const [startDate, setStartDate] = useState(
     training.startDate ? new Date(training.startDate).toISOString().split("T")[0] : ""
   );
@@ -94,7 +93,8 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
       setLabels(training.labels?.join(", ") ?? "");
       setType(training.type || "in_person");
       setDescription(training.description ?? "");
-      setScheduledAt(training.scheduledAt ? new Date(training.scheduledAt).toISOString().split("T")[0] : "");
+      setVenue(training.venue ?? "");
+      setMeetingLink(training.meetingLink ?? "");
       setStartDate(training.startDate ? new Date(training.startDate).toISOString().split("T")[0] : "");
       setEndDate(training.endDate ? new Date(training.endDate).toISOString().split("T")[0] : "");
     }
@@ -106,10 +106,11 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
     updateTraining.mutate(
       { 
         title: title.trim(), 
-        labels: labels, // this is passed as string, backend validator parses it
+        labels: labels ? labels.split(",").map(s => s.trim()).filter(Boolean) : undefined,
         type: type as "in_person" | "online" | "hybrid",
         description: description.trim() || undefined, 
-        scheduledAt: scheduledAt ? new Date(scheduledAt).toISOString() : undefined,
+        venue: venue.trim() || undefined,
+        meetingLink: meetingLink.trim() || undefined,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
         endDate: endDate ? new Date(endDate).toISOString() : undefined
       },
@@ -132,7 +133,7 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Labels (comma separated)</label>
             <input
@@ -165,7 +166,7 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
             placeholder="Optional description…"
           />
         </div>
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
             <input
@@ -185,15 +186,30 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
             />
           </div>
         </div>
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Scheduled at</label>
-          <input
-            type="date"
-            value={scheduledAt}
-            onChange={(e) => setScheduledAt(e.target.value)}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-          />
-        </div>
+        {type === "in_person" || type === "hybrid" ? (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Venue Location</label>
+            <input
+              type="text"
+              value={venue}
+              onChange={(e) => setVenue(e.target.value)}
+              placeholder="e.g. Conference Room A"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+        ) : null}
+        {type === "online" || type === "hybrid" ? (
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Virtual Meeting Link</label>
+            <input
+              type="url"
+              value={meetingLink}
+              onChange={(e) => setMeetingLink(e.target.value)}
+              placeholder="e.g. https://zoom.us/j/123456789"
+              className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            />
+          </div>
+        ) : null}
         {updateTraining.isError && (
           <p className="text-sm text-red-500">Failed to update training. Try again.</p>
         )}

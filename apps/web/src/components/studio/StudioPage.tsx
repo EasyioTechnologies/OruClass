@@ -1854,16 +1854,20 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
   const updateTraining = useUpdateTraining(workspaceId, trainingId);
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
-  const [category, setCategory] = useState("");
+  const [labels, setLabels] = useState("");
+  const [type, setType] = useState("in_person");
   const [description, setDescription] = useState("");
-  const [scheduledAt, setScheduledAt] = useState("");
+  const [venue, setVenue] = useState("");
+  const [meetingLink, setMeetingLink] = useState("");
 
   const startEditing = () => {
     if (!training) return;
     setTitle(training.title);
-    setCategory(training.category);
+    setLabels(training.labels?.join(", ") ?? "");
+    setType(training.type || "in_person");
     setDescription(training.description ?? "");
-    setScheduledAt(training.scheduledAt ? new Date(training.scheduledAt).toISOString().slice(0, 16) : "");
+    setVenue(training.venue ?? "");
+    setMeetingLink(training.meetingLink ?? "");
     setEditing(true);
   };
 
@@ -1871,9 +1875,11 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
     updateTraining.mutate(
       {
         title: title.trim(),
-        category,
+        labels: labels ? labels.split(",").map(s => s.trim()).filter(Boolean) : undefined,
+        type,
         description: description.trim() || undefined,
-        scheduledAt: scheduledAt || undefined,
+        venue: venue.trim() || undefined,
+        meetingLink: meetingLink.trim() || undefined,
       },
       { onSuccess: () => setEditing(false) },
     );
@@ -1911,15 +1917,23 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
               />
             </div>
             <div>
-              <label className="text-xs font-semibold text-gray-700 block mb-1">Category</label>
+              <label className="text-xs font-semibold text-gray-700 block mb-1">Labels (comma separated)</label>
+              <input
+                value={labels}
+                onChange={(e) => setLabels(e.target.value)}
+                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+            </div>
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-1">Type</label>
               <select
-                value={category}
-                onChange={(e) => setCategory(e.target.value)}
+                value={type}
+                onChange={(e) => setType(e.target.value)}
                 className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
               >
-                {TRAINING_CATEGORIES.map((c) => (
-                  <option key={c.value} value={c.value}>{c.label}</option>
-                ))}
+                <option value="in_person">In-Person</option>
+                <option value="online">Online</option>
+                <option value="hybrid">Hybrid</option>
               </select>
             </div>
             <div>
@@ -1932,15 +1946,28 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
                 placeholder="Optional…"
               />
             </div>
-            <div>
-              <label className="text-xs font-semibold text-gray-700 block mb-1">Scheduled at</label>
-              <input
-                type="datetime-local"
-                value={scheduledAt}
-                onChange={(e) => setScheduledAt(e.target.value)}
-                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-              />
-            </div>
+            {type === "in_person" || type === "hybrid" ? (
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Venue</label>
+                <input
+                  type="text"
+                  value={venue}
+                  onChange={(e) => setVenue(e.target.value)}
+                  className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+              </div>
+            ) : null}
+            {type === "online" || type === "hybrid" ? (
+              <div>
+                <label className="text-xs font-semibold text-gray-700 block mb-1">Meeting Link</label>
+                <input
+                  type="url"
+                  value={meetingLink}
+                  onChange={(e) => setMeetingLink(e.target.value)}
+                  className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                />
+              </div>
+            ) : null}
             {updateTraining.isError && (
               <p className="text-xs text-red-500">Failed to update.</p>
             )}
@@ -1964,13 +1991,14 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
           <div className="space-y-2">
             <p className="text-sm font-semibold text-gray-900">{training.title}</p>
             <div className="flex flex-wrap gap-1.5">
-              <span className="text-[10px] font-bold bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full border border-brand-100">
-                {training.category}
-              </span>
-              {training.scheduledAt && (
+              {training.labels?.map((label: string, idx: number) => (
+                <span key={idx} className="text-[10px] font-bold bg-brand-50 text-brand-700 px-2 py-0.5 rounded-full border border-brand-100">
+                  {label}
+                </span>
+              ))}
+              {training.venue && (
                 <span className="text-[10px] font-medium text-gray-500 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100 flex items-center gap-1">
-                  <Calendar size={9} />
-                  {new Date(training.scheduledAt).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" })}
+                  {training.venue}
                 </span>
               )}
             </div>

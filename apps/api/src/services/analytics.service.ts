@@ -4,8 +4,9 @@ import {
   participantResponses,
   trainingParticipants,
   trainingAnalytics,
+  users,
 } from "../db/schema";
-import { eq, and } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import ExcelJS from "exceljs";
 
 export async function getTrainingAnalytics(trainingId: string) {
@@ -71,27 +72,40 @@ export async function generateExcel(data: Awaited<ReturnType<typeof getTrainingA
     db.select().from(trainingParticipants).where(eq(trainingParticipants.trainingId, data.trainingId)),
     db.select().from(participantResponses).where(eq(participantResponses.trainingId, data.trainingId))
   ]);
-  
+
+  // Resolve user emails for participants
+  const participantUserIds = participants.map(p => p.userId);
+  const responseUserIds = responses.map(r => r.userId);
+  const allUserIds = [...new Set([...participantUserIds, ...responseUserIds])];
+  const userRows = allUserIds.length > 0
+    ? await db.select({ id: users.id, name: users.name, email: users.email }).from(users).where(inArray(users.id, allUserIds))
+    : [];
+  const userMap = new Map(userRows.map(u => [u.id, u]));
+
   // Sheet 2: Participants
   const participantSheet = workbook.addWorksheet("Participants");
   participantSheet.columns = [
+    { header: "Name", key: "name", width: 25 },
     { header: "Email", key: "email", width: 30 },
     { header: "Joined At", key: "joined", width: 20 },
-    { header: "Device", key: "device", width: 15 },
+    { header: "Status", key: "status", width: 15 },
   ];
   participantSheet.getRow(1).font = { bold: true };
-  
+
   participants.forEach(p => {
+    const user = userMap.get(p.userId);
     participantSheet.addRow({
-      email: p.email,
+      name: user?.name || "Unknown",
+      email: user?.email || "Unknown",
       joined: p.joinedAt?.toISOString() || "",
-      device: p.deviceType || "unknown"
+      status: p.connectionStatus || "offline",
     });
   });
 
   // Sheet 3: Responses
   const responseSheet = workbook.addWorksheet("Detailed Responses");
   responseSheet.columns = [
+    { header: "Participant Name", key: "name", width: 25 },
     { header: "Participant Email", key: "email", width: 30 },
     { header: "Module", key: "module", width: 30 },
     { header: "Module Type", key: "type", width: 15 },
@@ -99,20 +113,20 @@ export async function generateExcel(data: Awaited<ReturnType<typeof getTrainingA
     { header: "Submitted At", key: "submittedAt", width: 20 },
   ];
   responseSheet.getRow(1).font = { bold: true };
-  
+
   const moduleMap = new Map(data.modules.map(m => [m.moduleId, m]));
-  const participantMap = new Map(participants.map(p => [p.id, p]));
-  
+
   responses.forEach(r => {
     const mod = moduleMap.get(r.moduleId);
-    const par = participantMap.get(r.participantId);
-    
+    const user = userMap.get(r.userId);
+
     responseSheet.addRow({
-      email: par?.email || "Unknown",
+      name: user?.name || "Unknown",
+      email: user?.email || "Unknown",
       module: mod?.title || "Unknown",
       type: mod?.moduleType || "Unknown",
       data: typeof r.responseData === "object" ? JSON.stringify(r.responseData) : r.responseData,
-      submittedAt: r.createdAt?.toISOString() || ""
+      submittedAt: r.submittedAt?.toISOString() || ""
     });
   });
 
