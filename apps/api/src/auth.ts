@@ -23,7 +23,7 @@ export const auth = betterAuth({
   }),
   emailAndPassword: {
     enabled: true,
-    requireEmailVerification: true,
+    requireEmailVerification: false,
     sendResetPassword: async ({ user, url }) => {
       try {
         await sendResetPasswordEmail({
@@ -36,7 +36,7 @@ export const auth = betterAuth({
       }
     },
     resetPasswordTokenExpiresIn: 3600, // 1 hour
-    autoSignIn: false, // don't auto-sign-in after signup until verified
+    autoSignIn: true, // auto-sign-in after signup since verification is skipped
     onPasswordReset: async ({ user }: { user: any }) => {
       if (user.email) {
         sendPasswordChangedEmail({ to: user.email, name: user.name }).catch(() => {});

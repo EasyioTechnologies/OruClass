@@ -99,7 +99,7 @@ function EmailAuthFormInner({
             setError(errMsg || "Failed to create account. Please try again.");
           }
         } else {
-          router.push(`/verify-email?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(effectiveReturnTo)}`);
+          router.push(effectiveReturnTo);
         }
       }
     } catch (err: any) {
