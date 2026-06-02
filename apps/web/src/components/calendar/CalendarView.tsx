@@ -118,7 +118,7 @@ export function CalendarView() {
 
       <div className="flex gap-4 flex-1 min-h-0 flex-col lg:flex-row">
         {/* Calendar grid */}
-        <div className="flex-1 min-w-0 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col min-h-[320px]">
+        <div className="sm:flex-1 min-w-0 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col sm:min-h-[320px]">
           {/* Day headers */}
           <div className="grid grid-cols-7 border-b border-gray-100">
             {DAYS_FULL.map((d, i) => (
@@ -153,7 +153,7 @@ export function CalendarView() {
                     }
                   }}
                   className={cn(
-                    "border-b border-r border-gray-100 p-1 sm:p-1.5 min-h-[44px] sm:min-h-[80px] overflow-hidden text-left transition-colors min-w-0",
+                    "border-b border-r border-gray-100 p-1 sm:p-1.5 min-h-[40px] sm:min-h-[80px] overflow-hidden text-left transition-colors min-w-0",
                     !isCurrentMonth && "bg-gray-50/50",
                     isCurrentMonth && events.length > 0 && "cursor-pointer hover:bg-brand-50/40",
                     isSelectedDay && "bg-brand-50 ring-1 ring-brand-200",

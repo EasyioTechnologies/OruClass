@@ -115,30 +115,32 @@ export default function DataPage() {
 
     return (
       <div className="flex flex-col h-full space-y-6">
-        <div className="flex items-center gap-4">
-          <button 
-            onClick={() => setActiveTrainingId(null)}
-            className="p-2 hover:bg-gray-100 rounded-full transition-colors"
-          >
-            <ChevronLeft className="w-5 h-5 text-gray-600" />
-          </button>
-          <div className="flex-1">
-            <h1 className="text-2xl font-bold text-gray-900 tracking-tight">
-              {activeGroup.training?.title || "Unknown Training"}
-            </h1>
-            <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
-              <Users className="w-4 h-4" /> 
-              {activeGroup.responses.length} Total Responses
-            </p>
+        <div className="flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="flex items-center gap-2 flex-1 w-full">
+            <button 
+              onClick={() => setActiveTrainingId(null)}
+              className="p-2 hover:bg-gray-100 rounded-full transition-colors shrink-0"
+            >
+              <ChevronLeft className="w-5 h-5 text-gray-600" />
+            </button>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight truncate">
+                {activeGroup.training?.title || "Unknown Training"}
+              </h1>
+              <p className="text-sm text-gray-500 mt-1 flex items-center gap-2">
+                <Users className="w-4 h-4" /> 
+                {activeGroup.responses.length} Total Responses
+              </p>
+            </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 w-full sm:w-auto">
             {exportJobId && jobStatus?.status !== "completed" && (
               <span className="text-xs text-brand-600 animate-pulse font-medium">Generating Excel...</span>
             )}
             <button
               onClick={() => exportExcel.mutate(activeTrainingId)}
               disabled={exportExcel.isPending || !!exportJobId}
-              className="px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors flex items-center gap-2 shadow-sm"
+              className="w-full sm:w-auto justify-center px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors flex items-center gap-2 shadow-sm"
             >
               {exportExcel.isPending || !!exportJobId ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
@@ -233,19 +235,19 @@ export default function DataPage() {
 
   return (
     <div className="flex flex-col h-full space-y-6">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl font-bold text-gray-900 tracking-tight">Data & Responses</h1>
           <p className="text-sm text-gray-500 mt-1">
             Manage and view all participant responses across your trainings.
           </p>
         </div>
-        <div className="relative">
+        <div className="relative w-full sm:w-auto">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
           <input
             type="text"
             placeholder="Search by participant, training..."
-            className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-64 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+            className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
