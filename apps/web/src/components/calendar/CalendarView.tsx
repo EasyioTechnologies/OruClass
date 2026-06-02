@@ -57,6 +57,10 @@ export function CalendarView() {
   const [selected, setSelected] = useState<Training | null>(null);
   const [selectedDay, setSelectedDay] = useState<string | null>(null);
 
+  // Swipe state
+  const [touchStart, setTouchStart] = useState<number | null>(null);
+  const [touchEnd, setTouchEnd] = useState<number | null>(null);
+
   const byDay = useMemo(() => {
     const map = new Map<string, Training[]>();
     trainings.forEach((t) => {
@@ -83,6 +87,29 @@ export function CalendarView() {
     else setViewMonth((m) => m + 1);
   };
   const goToday = () => { setViewYear(today.getFullYear()); setViewMonth(today.getMonth()); };
+
+  // Handle swipe logic
+  const minSwipeDistance = 50;
+  const onTouchStart = (e: React.TouchEvent) => {
+    setTouchEnd(null);
+    setTouchStart(e.targetTouches[0].clientX);
+  };
+  const onTouchMove = (e: React.TouchEvent) => {
+    setTouchEnd(e.targetTouches[0].clientX);
+  };
+  const onTouchEndHandler = () => {
+    if (!touchStart || !touchEnd) return;
+    const distance = touchStart - touchEnd;
+    const isLeftSwipe = distance > minSwipeDistance;
+    const isRightSwipe = distance < -minSwipeDistance;
+    
+    if (isLeftSwipe) {
+      nextMonth();
+    }
+    if (isRightSwipe) {
+      prevMonth();
+    }
+  };
 
   const unscheduled = trainings.filter((t) => !t.startDate);
 
@@ -116,9 +143,14 @@ export function CalendarView() {
         </div>
       </div>
 
-      <div className="flex gap-4 flex-1 min-h-0 flex-col lg:flex-row">
+      <div className="flex gap-4 flex-none sm:flex-1 min-h-0 flex-col lg:flex-row">
         {/* Calendar grid */}
-        <div className="sm:flex-1 min-w-0 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col sm:min-h-[320px]">
+        <div 
+          className="sm:flex-1 min-w-0 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col sm:min-h-[320px] touch-pan-y"
+          onTouchStart={onTouchStart}
+          onTouchMove={onTouchMove}
+          onTouchEnd={onTouchEndHandler}
+        >
           {/* Day headers */}
           <div className="grid grid-cols-7 border-b border-gray-100">
             {DAYS_FULL.map((d, i) => (
