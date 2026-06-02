@@ -85,12 +85,20 @@ function ResetPasswordForm() {
           <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Password reset</h1>
           <p className="text-sm text-gray-500">Your password has been successfully reset. You can now sign in with your new password.</p>
         </div>
-        <button
-          onClick={() => router.push("/login")}
-          className="w-full py-4 bg-brand-600 text-white rounded-2xl text-base font-semibold hover:bg-brand-700 transition-all"
-        >
-          Sign In
-        </button>
+        <div className="space-y-3">
+          <Link
+            href="/login/trainer"
+            className="block w-full py-4 bg-brand-600 text-white rounded-2xl text-base font-semibold hover:bg-brand-700 transition-all text-center"
+          >
+            Sign in as Trainer
+          </Link>
+          <Link
+            href="/login/participant"
+            className="block w-full py-4 bg-white border border-gray-200 text-gray-700 rounded-2xl text-base font-semibold hover:bg-gray-50 transition-all text-center"
+          >
+            Sign in as Participant
+          </Link>
+        </div>
       </div>
     );
   }

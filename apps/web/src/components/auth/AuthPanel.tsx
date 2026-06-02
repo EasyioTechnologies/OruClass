@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { EmailAuthForm } from "./EmailAuthForm";
 
@@ -13,8 +12,6 @@ export function AuthPanel({
   subtitle: string;
   returnTo: string;
 }) {
-  const [mode, setMode] = useState<"login" | "signup">("login");
-
   return (
     <div className="w-full max-w-[400px] mx-auto p-6 sm:p-10 space-y-6 sm:space-y-7 my-4 sm:my-8 relative z-10">
       <div className="text-center space-y-1.5 sm:space-y-2 mb-2">
@@ -22,7 +19,7 @@ export function AuthPanel({
         <p className="text-xs sm:text-sm text-gray-500">{subtitle}</p>
       </div>
 
-      <EmailAuthForm returnTo={returnTo} initialMode={mode} />
+      <EmailAuthForm returnTo={returnTo} />
 
       <div className="pt-4 mt-4 border-t border-gray-100/60 text-center">
         <Link href="/login" className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors">

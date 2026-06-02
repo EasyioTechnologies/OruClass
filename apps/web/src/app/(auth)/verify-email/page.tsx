@@ -15,6 +15,7 @@ function VerifyEmailContent() {
 
   const isVerified = session?.user?.emailVerified;
   const email = session?.user?.email || searchParams.get("email");
+  const returnTo = searchParams.get("returnTo") ?? "/dashboard";
 
   const handleResend = async () => {
     if (!email) return;
@@ -23,7 +24,7 @@ function VerifyEmailContent() {
     try {
       const { error } = await authClient.sendVerificationEmail({
         email,
-        callbackURL: "/dashboard",
+        callbackURL: returnTo,
       });
       if (error) {
         setError(error.message || "Failed to resend.");
@@ -48,10 +49,10 @@ function VerifyEmailContent() {
           <p className="text-sm text-gray-500">Your email has been successfully verified. You're all set.</p>
         </div>
         <button
-          onClick={() => router.push("/dashboard")}
+          onClick={() => router.push(returnTo)}
           className="w-full py-4 bg-brand-600 text-white rounded-2xl text-base font-semibold hover:bg-brand-700 transition-all"
         >
-          Go to Dashboard
+          Continue
         </button>
       </div>
     );

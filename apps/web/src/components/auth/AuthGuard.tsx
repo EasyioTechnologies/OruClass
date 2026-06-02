@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { useRouter } from "next/navigation";
+import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const { user, isPending, isAuthenticated } = useAuth();
   const [mounted, setMounted] = useState(false);
 
@@ -19,9 +20,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     // 2. Session check is complete (not pending)
     // 3. User is not authenticated (either no user or session expired)
     if (mounted && !isPending && !isAuthenticated) {
-      router.replace("/login");
+      const loginPath = pathname.startsWith("/participant") ? "/login/participant" : "/login/trainer";
+      router.replace(`${loginPath}?returnTo=${encodeURIComponent(pathname)}`);
     }
-  }, [mounted, isPending, isAuthenticated, router]);
+  }, [mounted, isPending, isAuthenticated, router, pathname]);
 
   // Show children immediately if we are authenticated (from Zustand localStorage or active session)
   if (isAuthenticated && user) {

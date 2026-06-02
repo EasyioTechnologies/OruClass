@@ -1,13 +1,25 @@
 "use client";
 
-import { useState } from "react";
+import { useState, Suspense } from "react";
 import { authClient } from "@/lib/auth-client";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { UserCircle2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
-export function EmailAuthForm({
+export function EmailAuthForm(props: {
+  returnTo?: string;
+  initialMode?: "login" | "signup";
+  onBack?: () => void;
+}) {
+  return (
+    <Suspense fallback={<div className="h-64" />}>
+      <EmailAuthFormInner {...props} />
+    </Suspense>
+  );
+}
+
+function EmailAuthFormInner({
   returnTo = "/dashboard",
   initialMode = "login",
   onBack,
@@ -29,6 +41,8 @@ export function EmailAuthForm({
   const [showPassword, setShowPassword] = useState(false);
 
   const router = useRouter();
+  const searchParams = useSearchParams();
+  const effectiveReturnTo = returnTo !== "/dashboard" ? returnTo : (searchParams.get("returnTo") ?? returnTo);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -46,7 +60,7 @@ export function EmailAuthForm({
           const errCode = (error as any).code || "";
 
           if (errMsg.toLowerCase().includes("verify") || errCode === "EMAIL_NOT_VERIFIED") {
-            router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+            router.push(`/verify-email?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(effectiveReturnTo)}`);
             return;
           } else if (errCode === "INVALID_EMAIL_OR_PASSWORD" || errMsg.toLowerCase().includes("invalid") || errMsg.toLowerCase().includes("not found") || errCode === "USER_NOT_FOUND") {
             setError("No account found with this email, or incorrect password. Please check your details or sign up.");
@@ -56,7 +70,7 @@ export function EmailAuthForm({
             setError(errMsg || "Failed to sign in. Please try again.");
           }
         } else {
-          window.location.href = returnTo;
+          router.push(effectiveReturnTo);
         }
       } else {
         if (!name.trim()) {
@@ -84,8 +98,7 @@ export function EmailAuthForm({
             setError(errMsg || "Failed to create account. Please try again.");
           }
         } else {
-          // Redirect to verify email page after signup
-          router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+          router.push(`/verify-email?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(effectiveReturnTo)}`);
         }
       }
     } catch (err: any) {

@@ -28,7 +28,8 @@
       "Bash(bunx tsc:*)",
       "Bash(grep -rn \"RESEND_FROM\" apps/api/.env*)",
       "Bash(grep -rn \"RESEND_FROM\" .env*)",
-      "Bash(npx tsx:*)"
+      "Bash(npx tsx:*)",
+      "Bash(npx --package=typescript tsc --noEmit)"
     ],
     "mode": "bypass"
   }

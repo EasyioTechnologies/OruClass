@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState, use } from "react";
+import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/useAuth";
@@ -11,9 +11,9 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
   const router = useRouter();
   const unwrappedParams = use(params);
   const { user, isPending } = useAuth();
-  const handled = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [needsAuth, setNeedsAuth] = useState(false);
+  const [hasJoined, setHasJoined] = useState(false);
 
   async function joinWithToken() {
     try {
@@ -32,14 +32,15 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
   }
 
   useEffect(() => {
-    if (handled.current || isPending) return;
-    handled.current = true;
+    if (isPending || hasJoined) return;
     if (!user) {
       setNeedsAuth(true);
       return;
     }
+    setNeedsAuth(false);
+    setHasJoined(true);
     joinWithToken();
-  }, [user, isPending]);
+  }, [user, isPending, hasJoined]);
 
   if (error) {
     return (
