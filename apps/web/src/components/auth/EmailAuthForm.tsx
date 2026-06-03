@@ -78,7 +78,8 @@ function EmailAuthFormInner({
           avatarUrl: data.user.avatarUrl ?? data.user.image,
           authProvider: "email",
         } as any);
-        router.push(effectiveReturnTo);
+        // Redirect to verify email — don't allow dashboard access until verified
+        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
       }
     } catch (err: any) {
       const errMsg = err.response?.data?.error || err.message || "";

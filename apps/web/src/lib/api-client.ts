@@ -36,6 +36,14 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
+    // Redirect to verify-email if backend rejects with EMAIL_NOT_VERIFIED
+    if (error.response?.status === 403 && error.response?.data?.code === "EMAIL_NOT_VERIFIED") {
+      if (typeof window !== "undefined" && !window.location.pathname.includes("/verify-email")) {
+        window.location.href = "/verify-email";
+      }
+      return Promise.reject(error);
+    }
+
     // Don't retry auth endpoints or already-retried requests
     const isAuthTokenEndpoint = ["/api/auth/login", "/api/auth/signup", "/api/auth/refresh", "/api/auth/logout"].some(
       (ep) => originalRequest.url?.includes(ep),
