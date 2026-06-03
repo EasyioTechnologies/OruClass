@@ -5,14 +5,14 @@ import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
-  const { isAuthenticated, isPending } = useAuth();
+  const { isAuthenticated, emailVerified, user, isPending } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
-    if (!isPending && isAuthenticated) {
+    if (!isPending && isAuthenticated && (emailVerified || user?.authProvider === "guest")) {
       router.replace("/dashboard");
     }
-  }, [isPending, isAuthenticated, router]);
+  }, [isPending, isAuthenticated, emailVerified, user, router]);
 
   return (
     <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50/50">
