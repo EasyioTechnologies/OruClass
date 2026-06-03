@@ -3,6 +3,7 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
+import { useAuthStore } from "@/store/auth";
 import { CheckCircle2, Mail, RefreshCw, Loader2 } from "lucide-react";
 
 function VerifyEmailContent() {
@@ -11,6 +12,7 @@ function VerifyEmailContent() {
   const token = searchParams.get("token");
   const email = searchParams.get("email");
   const returnTo = searchParams.get("returnTo") ?? "/dashboard";
+  const { setEmailVerified } = useAuthStore();
 
   const [verifying, setVerifying] = useState(!!token);
   const [verified, setVerified] = useState(false);
@@ -21,10 +23,13 @@ function VerifyEmailContent() {
   useEffect(() => {
     if (!token) return;
     apiClient.post("/api/auth/verify-email", { token })
-      .then(() => setVerified(true))
+      .then(() => {
+        setVerified(true);
+        setEmailVerified(true);
+      })
       .catch((err) => setError(err.response?.data?.error || "Verification failed. The link may have expired."))
       .finally(() => setVerifying(false));
-  }, [token]);
+  }, [token, setEmailVerified]);
 
   const handleResend = async () => {
     setResending(true);

@@ -28,7 +28,7 @@ export function HeroSection() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.5, ease: "easeOut" }}
-      className="h-screen w-full snap-start relative flex items-center justify-center overflow-hidden bg-white"
+      className="min-h-[100dvh] w-full snap-start relative flex items-center justify-center overflow-hidden bg-white py-20"
     >
       {/* Background Image with Parallax */}
       <motion.div style={{ y, opacity }} className="absolute inset-0 z-0 scale-110 origin-center">
@@ -51,22 +51,22 @@ export function HeroSection() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-6 max-w-5xl"
         >
-          <h1 className="text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-gray-900 leading-[1.05]">
+          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-gray-900 leading-[1.05]">
             Bring Your Classroom <span className="text-gray-400 transition-colors duration-500 hover:text-gray-600">to Life.</span>
           </h1>
 
-          <p className="text-lg md:text-2xl text-gray-700 max-w-2xl mx-auto leading-relaxed font-light mt-6">
+          <p className="text-base sm:text-lg md:text-2xl text-gray-700 max-w-2xl mx-auto leading-relaxed font-light mt-6 px-4">
             Engaging, interactive, and beautifully simple. Deliver courses that your students will actually love.
           </p>
 
           <motion.div
-            className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-8"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-5 pt-8 w-full px-4"
           >
             <MotionLink
               href="/login"
               whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
               whileTap={{ scale: 0.95 }}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-brand-600 text-white font-medium flex items-center justify-center gap-2 group shadow-lg hover:bg-brand-700 transition-colors"
+              className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-full bg-brand-600 text-white font-medium flex items-center justify-center gap-2 group shadow-lg hover:bg-brand-700 transition-colors text-sm sm:text-base"
             >
               Get Started
               <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
@@ -75,7 +75,7 @@ export function HeroSection() {
               href="#platform"
               whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
               whileTap={{ scale: 0.95 }}
-              className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/70 backdrop-blur-lg text-gray-900 font-medium border border-white/50 flex items-center justify-center gap-2 group shadow-sm"
+              className="w-full sm:w-auto px-6 py-3 sm:px-8 sm:py-4 rounded-full bg-white/70 backdrop-blur-lg text-gray-900 font-medium border border-white/50 flex items-center justify-center gap-2 group shadow-sm text-sm sm:text-base"
             >
               <Play className="w-4 h-4 text-gray-900 group-hover:scale-110 transition-transform" />
               See How It Works

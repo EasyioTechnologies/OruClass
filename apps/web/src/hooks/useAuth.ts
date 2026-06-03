@@ -6,7 +6,7 @@ import { apiClient } from "@/lib/api-client";
 import { getAccessToken, getRefreshToken, clearTokens, isTokenExpired, setTokens } from "@/lib/token-storage";
 
 export function useAuth() {
-  const { user, isAuthenticated, isSessionExpired, setUser, clearUser, setSessionExpired } = useAuthStore();
+  const { user, isAuthenticated, isSessionExpired, emailVerified, setUser, setEmailVerified, clearUser, setSessionExpired } = useAuthStore();
   const [isPending, setIsPending] = useState(true);
 
   useEffect(() => {
@@ -37,6 +37,7 @@ export function useAuth() {
             avatarUrl: data.user.avatarUrl ?? data.user.image,
             authProvider: data.user.isAnonymous ? "guest" : "email",
           } as any);
+          setEmailVerified(data.user.emailVerified ?? false);
         })
         .catch(() => {
           clearUser();
@@ -57,6 +58,7 @@ export function useAuth() {
             avatarUrl: data.user.avatarUrl ?? data.user.image,
             authProvider: data.user.isAnonymous ? "guest" : "email",
           } as any);
+          setEmailVerified(data.user.emailVerified ?? false);
         })
         .catch(() => {
           clearUser();
@@ -78,5 +80,5 @@ export function useAuth() {
     window.location.href = "/login";
   }, [clearUser]);
 
-  return { user, isAuthenticated, isSessionExpired, signOut: handleSignOut, isPending };
+  return { user, isAuthenticated, isSessionExpired, emailVerified, signOut: handleSignOut, isPending };
 }

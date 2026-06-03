@@ -28,7 +28,7 @@ import { cn } from "@oruclass/utils";
 import { getPlan } from "@/config/plans";
 
 const trainerNavItems = [
-  { href: "/dashboard", label: "Trainer Dashboard", icon: LayoutDashboard },
+  { href: "/dashboard", label: "Training Dashboard", icon: LayoutDashboard },
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/data", label: "Data", icon: Database },
   { href: "/trainings/new", label: "New Training", icon: PlusCircle },

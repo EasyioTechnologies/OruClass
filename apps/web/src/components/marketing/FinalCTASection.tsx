@@ -11,9 +11,9 @@ export function FinalCTASection() {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: "easeOut" }}
       viewport={{ once: false, amount: 0.1 }}
-      className="h-screen w-full snap-start relative flex items-center justify-center bg-gray-50 overflow-hidden"
+      className="min-h-[100dvh] w-full snap-start relative flex items-center justify-center bg-gray-50 overflow-hidden py-20"
     >
-      <div className="max-w-4xl mx-auto px-6 text-center relative z-10 flex flex-col items-center">
+      <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10 flex flex-col items-center">
         <motion.div
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
           whileInView={{ opacity: 1, y: 0, scale: 1 }}
@@ -27,12 +27,12 @@ export function FinalCTASection() {
             <Rocket className="w-8 h-8 text-brand-600" />
           </motion.div>
           
-          <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-gray-900 leading-[1.05] mb-6">
+          <h2 className="text-4xl sm:text-5xl md:text-7xl font-bold tracking-tight text-gray-900 leading-[1.05] mb-6">
             Ready to teach <br className="hidden md:block" />
             <span className="text-gray-400">differently?</span>
           </h2>
 
-          <p className="text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto font-light">
+          <p className="text-base sm:text-lg md:text-xl text-gray-600 mb-10 max-w-2xl mx-auto font-light px-2">
             Join thousands of educators who have already transformed their classrooms into engaging, interactive learning experiences.
           </p>
           

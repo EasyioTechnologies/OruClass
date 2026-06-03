@@ -23,7 +23,7 @@ export function QuoteSection() {
   };
 
   return (
-    <section className="min-h-screen w-full snap-start relative flex flex-col justify-center items-center bg-gray-50 overflow-hidden py-24 px-6 md:px-12">
+    <section className="min-h-[100dvh] w-full snap-start relative flex flex-col justify-center items-center bg-gray-50 overflow-hidden py-24 px-6 md:px-12">
       {/* Subtle background decoration */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-100/50 blur-3xl" />
@@ -39,14 +39,14 @@ export function QuoteSection() {
       >
         <motion.div
           variants={itemVariants}
-          className="text-4xl md:text-6xl font-bold text-gray-900 tracking-tight mb-10"
+          className="text-3xl sm:text-4xl md:text-6xl font-bold text-gray-900 tracking-tight mb-10"
         >
           How do we train our teachers?
         </motion.div>
 
         <motion.div
           variants={itemVariants}
-          className="text-2xl md:text-3xl text-gray-500 font-light mb-12 space-y-4"
+          className="text-xl sm:text-2xl md:text-3xl text-gray-500 font-light mb-12 space-y-4 px-2"
         >
           <p>Not with <span className="text-gray-400 line-through decoration-red-400/60">passive recorded videos.</span></p>
           <p>Not through <span className="text-gray-400 line-through decoration-red-400/60">silent webinars.</span></p>
@@ -54,7 +54,7 @@ export function QuoteSection() {
 
         <motion.div
           variants={itemVariants}
-          className="text-4xl md:text-6xl font-semibold text-gray-900 leading-[1.15] tracking-tight"
+          className="text-3xl sm:text-4xl md:text-6xl font-semibold text-gray-900 leading-[1.15] tracking-tight"
         >
           With <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-600 to-blue-500">real-time, interactive</span> live classrooms.
         </motion.div>

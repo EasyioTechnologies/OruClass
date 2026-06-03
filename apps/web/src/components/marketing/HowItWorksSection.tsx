@@ -62,7 +62,7 @@ export function HowItWorksSection() {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: "easeOut" }}
       viewport={{ once: false, amount: 0.1 }}
-      className="min-h-screen w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-[#fafafa] py-20"
+      className="min-h-[100dvh] w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-[#fafafa] py-20"
     >
       <div className="max-w-7xl mx-auto w-full h-full flex flex-col">
         <motion.div

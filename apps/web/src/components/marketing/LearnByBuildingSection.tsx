@@ -41,12 +41,8 @@ export function LearnByBuildingSection() {
   const currentItem = carouselData[currentIndex];
 
   return (
-    <motion.section 
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
-      viewport={{ once: false, amount: 0.1 }}
-      className="h-screen w-full snap-start relative bg-black overflow-hidden flex flex-col items-center justify-center"
+    <section 
+      className="min-h-[100dvh] w-full snap-start relative bg-black overflow-hidden flex flex-col items-center justify-center py-20"
     >
       {/* Background Image Carousel with Blur/Gradient */}
       <AnimatePresence mode="wait">
@@ -85,11 +81,11 @@ export function LearnByBuildingSection() {
               <span className="text-sm font-medium text-white tracking-wide uppercase">{currentItem.badge}</span>
             </div>
             
-            <h2 className="text-5xl md:text-7xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
+            <h2 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-white mb-6 leading-[1.1]">
               {currentItem.title}.
             </h2>
             
-            <p className="text-xl md:text-2xl text-gray-200 max-w-2xl font-light leading-relaxed">
+            <p className="text-base sm:text-lg md:text-2xl text-gray-400 max-w-2xl mx-auto font-light leading-relaxed px-4">
               {currentItem.description}
             </p>
           </motion.div>
@@ -118,6 +114,6 @@ export function LearnByBuildingSection() {
           </button>
         ))}
       </div>
-    </motion.section>
+    </section>
   );
 }

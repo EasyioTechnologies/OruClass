@@ -29,7 +29,7 @@ function EmailAuthFormInner({
   initialMode?: "login" | "signup";
   onBack?: () => void;
 }) {
-  const { user, isSessionExpired, clearUser, setUser } = useAuthStore();
+  const { user, isSessionExpired, clearUser, setUser, setEmailVerified } = useAuthStore();
   const [isLogin, setIsLogin] = useState(initialMode === "login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -61,6 +61,7 @@ function EmailAuthFormInner({
           avatarUrl: data.user.avatarUrl ?? data.user.image,
           authProvider: data.user.isAnonymous ? "guest" : "email",
         } as any);
+        setEmailVerified(data.user.emailVerified ?? true);
         router.push(effectiveReturnTo);
       } else {
         if (!name.trim()) {
@@ -78,7 +79,7 @@ function EmailAuthFormInner({
           avatarUrl: data.user.avatarUrl ?? data.user.image,
           authProvider: "email",
         } as any);
-        // Redirect to verify email — don't allow dashboard access until verified
+        setEmailVerified(false);
         router.push(`/verify-email?email=${encodeURIComponent(email)}`);
       }
     } catch (err: any) {

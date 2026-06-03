@@ -36,11 +36,8 @@ apiClient.interceptors.response.use(
   async (error) => {
     const originalRequest = error.config;
 
-    // Redirect to verify-email if backend rejects with EMAIL_NOT_VERIFIED
+    // Let callers handle EMAIL_NOT_VERIFIED — don't redirect here to avoid loops
     if (error.response?.status === 403 && error.response?.data?.code === "EMAIL_NOT_VERIFIED") {
-      if (typeof window !== "undefined" && !window.location.pathname.includes("/verify-email")) {
-        window.location.href = "/verify-email";
-      }
       return Promise.reject(error);
     }
 

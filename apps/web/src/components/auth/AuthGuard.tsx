@@ -7,7 +7,7 @@ import { useAuth } from "@/hooks/useAuth";
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const { user, isPending, isAuthenticated } = useAuth();
+  const { user, isPending, isAuthenticated, emailVerified } = useAuth();
   const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
@@ -25,8 +25,15 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [mounted, isPending, isAuthenticated, router, pathname]);
 
-  // Show children immediately if we are authenticated (from Zustand localStorage or active session)
-  if (isAuthenticated && user) {
+  // Redirect unverified email users to verify-email page
+  useEffect(() => {
+    if (mounted && !isPending && isAuthenticated && user && !emailVerified && user.authProvider !== "guest") {
+      router.replace(`/verify-email?email=${encodeURIComponent(user.email)}`);
+    }
+  }, [mounted, isPending, isAuthenticated, user, emailVerified, router]);
+
+  // Show children only if authenticated AND email verified (or guest)
+  if (isAuthenticated && user && (emailVerified || user.authProvider === "guest")) {
     return <>{children}</>;
   }
 
