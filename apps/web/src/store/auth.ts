@@ -17,9 +17,15 @@ export const useAuthStore = create<AuthState>()(
       user: null,
       isAuthenticated: false,
       isSessionExpired: false,
-      setUser: (user, isAuthenticated = true) => set({ user, isAuthenticated: user !== null && isAuthenticated, isSessionExpired: false }),
-      clearUser: () => set({ user: null, isAuthenticated: false, isSessionExpired: false }),
-      setSessionExpired: (expired) => set((state) => ({ isSessionExpired: expired, isAuthenticated: expired ? false : state.isAuthenticated })),
+      setUser: (user, isAuthenticated = true) =>
+        set({ user, isAuthenticated: user !== null && isAuthenticated, isSessionExpired: false }),
+      clearUser: () =>
+        set({ user: null, isAuthenticated: false, isSessionExpired: false }),
+      setSessionExpired: (expired) =>
+        set((state) => ({
+          isSessionExpired: expired,
+          isAuthenticated: expired ? false : state.isAuthenticated,
+        })),
     }),
     { name: "oruclass-auth" },
   ),

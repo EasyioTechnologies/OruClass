@@ -1,9 +1,9 @@
 "use client";
 
 import { useState, useEffect, Suspense } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { authClient } from "@/lib/auth-client";
+import { apiClient } from "@/lib/api-client";
 import { ArrowLeft, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
 
 export default function ResetPasswordPage() {
@@ -16,7 +16,6 @@ export default function ResetPasswordPage() {
 
 function ResetPasswordForm() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const token = searchParams.get("token") ?? "";
 
   const [password, setPassword] = useState("");
@@ -55,21 +54,15 @@ function ResetPasswordForm() {
 
     setLoading(true);
     try {
-      const { error } = await authClient.resetPassword({
-        newPassword: password,
-        token,
-      });
-      if (error) {
-        if (error.message?.includes("expired") || error.message?.includes("invalid")) {
-          setError("This reset link has expired. Please request a new one.");
-        } else {
-          setError(error.message || "Failed to reset password.");
-        }
+      await apiClient.post("/api/auth/reset-password", { token, newPassword: password });
+      setSuccess(true);
+    } catch (err: any) {
+      const msg = err.response?.data?.error || "";
+      if (msg.includes("expired") || msg.includes("invalid")) {
+        setError("This reset link has expired. Please request a new one.");
       } else {
-        setSuccess(true);
+        setError(msg || "Failed to reset password.");
       }
-    } catch {
-      setError("Something went wrong. Please try again.");
     } finally {
       setLoading(false);
     }

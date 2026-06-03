@@ -4,7 +4,7 @@ import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from "reac
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth";
-import { authClient } from "@/lib/auth-client";
+import { setTokens } from "@/lib/token-storage";
 import { Loader2, LogIn, User } from "lucide-react";
 import type { PublicUser } from "@oruclass/types";
 
@@ -31,14 +31,13 @@ export default function JoinPage() {
     if (!participantName.trim()) return;
     setNameLoading(true);
     try {
-      const { data, error } = await authClient.signIn.anonymous({});
-      if (error) throw error;
-      
+      const { data } = await apiClient.post("/api/auth/guest", { name: participantName });
+      setTokens(data.accessToken, data.refreshToken);
       setUser({
-        id: data?.user?.id ?? "",
+        id: data.user.id,
         name: participantName,
-        email: data?.user?.email ?? "",
-        avatarUrl: data?.user?.image,
+        email: data.user.email,
+        avatarUrl: data.user.avatarUrl ?? data.user.image,
         authProvider: "guest",
       } as any);
       setStep("code");

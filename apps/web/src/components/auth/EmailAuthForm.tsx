@@ -1,9 +1,10 @@
 "use client";
 
 import { useState, Suspense } from "react";
-import { authClient } from "@/lib/auth-client";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
+import { apiClient } from "@/lib/api-client";
+import { setTokens } from "@/lib/token-storage";
 import { UserCircle2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
 
@@ -28,7 +29,7 @@ function EmailAuthFormInner({
   initialMode?: "login" | "signup";
   onBack?: () => void;
 }) {
-  const { user, isSessionExpired, clearUser } = useAuthStore();
+  const { user, isSessionExpired, clearUser, setUser } = useAuthStore();
   const [isLogin, setIsLogin] = useState(initialMode === "login");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
@@ -51,27 +52,16 @@ function EmailAuthFormInner({
 
     try {
       if (isLogin) {
-        const { error } = await authClient.signIn.email({
-          email,
-          password,
-        });
-        if (error) {
-          const errMsg = error.message || "";
-          const errCode = (error as any).code || "";
-
-          if (errMsg.toLowerCase().includes("verify") || errCode === "EMAIL_NOT_VERIFIED") {
-            router.push(`/verify-email?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(effectiveReturnTo)}`);
-            return;
-          } else if (errCode === "INVALID_EMAIL_OR_PASSWORD" || errMsg.toLowerCase().includes("invalid") || errMsg.toLowerCase().includes("not found") || errCode === "USER_NOT_FOUND") {
-            setError("No account found with this email, or incorrect password. Please check your details or sign up.");
-          } else if (errCode === "TOO_MANY_REQUESTS" || errMsg.toLowerCase().includes("rate")) {
-            setError("Too many attempts. Please wait a moment and try again.");
-          } else {
-            setError(errMsg || "Failed to sign in. Please try again.");
-          }
-        } else {
-          router.push(effectiveReturnTo);
-        }
+        const { data } = await apiClient.post("/api/auth/login", { email, password });
+        setTokens(data.accessToken, data.refreshToken);
+        setUser({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          avatarUrl: data.user.avatarUrl ?? data.user.image,
+          authProvider: data.user.isAnonymous ? "guest" : "email",
+        } as any);
+        router.push(effectiveReturnTo);
       } else {
         if (!name.trim()) {
           setError("Name is required.");
@@ -79,31 +69,32 @@ function EmailAuthFormInner({
           return;
         }
 
-        const { error } = await authClient.signUp.email({
-          email,
-          password,
-          name,
-          callbackURL: effectiveReturnTo.startsWith("http") ? effectiveReturnTo : `${window.location.origin}${effectiveReturnTo.startsWith('/') ? '' : '/'}${effectiveReturnTo}`,
-        });
-
-        if (error) {
-          const errMsg = error.message || "";
-          const errCode = (error as any).code || "";
-          if (errMsg.toLowerCase().includes("exist") || errCode === "USER_ALREADY_EXISTS") {
-            setError("An account with this email already exists. Please sign in instead.");
-          } else if (errMsg.toLowerCase().includes("password") || errCode === "WEAK_PASSWORD") {
-            setError("Password is too weak. Use at least 8 characters with uppercase, lowercase, and a number.");
-          } else if (errCode === "TOO_MANY_REQUESTS" || errMsg.toLowerCase().includes("rate")) {
-            setError("Too many attempts. Please wait a moment and try again.");
-          } else {
-            setError(errMsg || "Failed to create account. Please try again.");
-          }
-        } else {
-          router.push(effectiveReturnTo);
-        }
+        const { data } = await apiClient.post("/api/auth/signup", { email, password, name });
+        setTokens(data.accessToken, data.refreshToken);
+        setUser({
+          id: data.user.id,
+          name: data.user.name,
+          email: data.user.email,
+          avatarUrl: data.user.avatarUrl ?? data.user.image,
+          authProvider: "email",
+        } as any);
+        router.push(effectiveReturnTo);
       }
     } catch (err: any) {
-      setError(err.message || "An unexpected error occurred.");
+      const errMsg = err.response?.data?.error || err.message || "";
+      const errCode = err.response?.data?.code || "";
+
+      if (errCode === "INVALID_CREDENTIALS" || errMsg.toLowerCase().includes("invalid")) {
+        setError("No account found with this email, or incorrect password. Please check your details or sign up.");
+      } else if (errCode === "USER_ALREADY_EXISTS") {
+        setError("An account with this email already exists. Please sign in instead.");
+      } else if (errCode === "WEAK_PASSWORD") {
+        setError("Password is too weak. Use at least 8 characters with uppercase, lowercase, and a number.");
+      } else if (err.response?.status === 429) {
+        setError("Too many attempts. Please wait a moment and try again.");
+      } else {
+        setError(errMsg || "An unexpected error occurred.");
+      }
     } finally {
       setLoading(false);
     }

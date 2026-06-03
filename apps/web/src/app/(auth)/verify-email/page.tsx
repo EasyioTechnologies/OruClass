@@ -1,44 +1,54 @@
 "use client";
 
-import { useState, Suspense } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
-import { authClient } from "@/lib/auth-client";
-import { CheckCircle2, Mail, RefreshCw } from "lucide-react";
+import { apiClient } from "@/lib/api-client";
+import { CheckCircle2, Mail, RefreshCw, Loader2 } from "lucide-react";
 
 function VerifyEmailContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { data: session } = authClient.useSession();
-  const [resending, setResending] = useState(false);
-  const [resent, setResent] = useState(false);
-  const [error, setError] = useState("");
-
-  const isVerified = session?.user?.emailVerified;
-  const email = session?.user?.email || searchParams.get("email");
+  const token = searchParams.get("token");
+  const email = searchParams.get("email");
   const returnTo = searchParams.get("returnTo") ?? "/dashboard";
 
+  const [verifying, setVerifying] = useState(!!token);
+  const [verified, setVerified] = useState(false);
+  const [error, setError] = useState("");
+  const [resending, setResending] = useState(false);
+  const [resent, setResent] = useState(false);
+
+  useEffect(() => {
+    if (!token) return;
+    apiClient.post("/api/auth/verify-email", { token })
+      .then(() => setVerified(true))
+      .catch((err) => setError(err.response?.data?.error || "Verification failed. The link may have expired."))
+      .finally(() => setVerifying(false));
+  }, [token]);
+
   const handleResend = async () => {
-    if (!email) return;
     setResending(true);
     setError("");
     try {
-      const { error } = await authClient.sendVerificationEmail({
-        email,
-        callbackURL: returnTo.startsWith("http") ? returnTo : `${window.location.origin}${returnTo.startsWith('/') ? '' : '/'}${returnTo}`,
-      });
-      if (error) {
-        setError(error.message || "Failed to resend.");
-      } else {
-        setResent(true);
-      }
+      await apiClient.post("/api/auth/resend-verification");
+      setResent(true);
     } catch {
-      setError("Something went wrong.");
+      setError("Failed to resend. Please try logging in again.");
     } finally {
       setResending(false);
     }
   };
 
-  if (isVerified) {
+  if (verifying) {
+    return (
+      <div className="w-full max-w-[400px] mx-auto p-6 sm:p-10 space-y-6 my-4 sm:my-8 text-center">
+        <Loader2 className="w-8 h-8 animate-spin text-brand-600 mx-auto" />
+        <p className="text-sm text-gray-500">Verifying your email...</p>
+      </div>
+    );
+  }
+
+  if (verified) {
     return (
       <div className="w-full max-w-[400px] mx-auto p-6 sm:p-10 space-y-6 my-4 sm:my-8">
         <div className="text-center space-y-4">
@@ -72,6 +82,12 @@ function VerifyEmailContent() {
         </p>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-100 rounded-xl p-3">
+          <p className="text-sm text-red-600 text-center">{error}</p>
+        </div>
+      )}
+
       <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-3">
         <p className="text-xs text-gray-500 text-center">Didn't receive the email?</p>
         <button
@@ -96,7 +112,6 @@ function VerifyEmailContent() {
             </>
           )}
         </button>
-        {error && <p className="text-xs text-red-500 text-center">{error}</p>}
       </div>
 
       <p className="text-xs text-gray-400 text-center">

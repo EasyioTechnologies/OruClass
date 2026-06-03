@@ -1,13 +1,39 @@
 import { Metadata } from "next";
+import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
 
 export const metadata: Metadata = {
   title: "Contact Us | OruLabs",
   description: "Get in touch with the OruLabs team for support, inquiries, or feedback regarding OruLabs.",
 };
 
+const contactSchema = {
+  "@context": "https://schema.org",
+  "@type": "ContactPage",
+  "name": "Contact OruLabs",
+  "description": "Contact OruLabs for support, sales, or general inquiries.",
+  "mainEntity": {
+    "@type": "Organization",
+    "name": "OruLabs",
+    "url": "https://orulabs.in",
+    "contactPoint": [
+      {
+        "@type": "ContactPoint",
+        "contactType": "customer support",
+        "email": "support@orulabs.in"
+      },
+      {
+        "@type": "ContactPoint",
+        "contactType": "sales",
+        "email": "sales@orulabs.in"
+      }
+    ]
+  }
+};
+
 export default function ContactPage() {
   return (
     <div className="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
+      <SchemaMarkup schema={contactSchema} />
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
         <div className="text-center mb-10">
           <h1 className="text-3xl font-extrabold text-gray-900">Contact Us</h1>

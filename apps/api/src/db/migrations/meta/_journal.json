@@ -22,6 +22,13 @@
       "when": 1780364181114,
       "tag": "0002_gigantic_runaways",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1780449943627,
+      "tag": "0003_striped_korvac",
+      "breakpoints": true
     }
   ]
 }

@@ -29,7 +29,15 @@
       "Bash(grep -rn \"RESEND_FROM\" apps/api/.env*)",
       "Bash(grep -rn \"RESEND_FROM\" .env*)",
       "Bash(npx tsx:*)",
-      "Bash(npx --package=typescript tsc --noEmit)"
+      "Bash(npx --package=typescript tsc --noEmit)",
+      "WebSearch",
+      "Bash(bun install:*)",
+      "Bash(grep -n \"authMiddleware\\\\|verifyAccessToken\" /f/OruClass/apps/api/src/routes/*.ts)",
+      "Bash(grep -n \"join\" /f/OruClass/apps/api/src/routes/*.ts)",
+      "Bash(PGPASSWORD=postgres psql -h localhost -p 5433 -U postgres -d oruclass -c \"\\\\d users\")",
+      "Bash(PGPASSWORD=oruclass_dev_secret psql -h localhost -p 5433 -U oruclass -d oruclass -c \"\\\\d users\")",
+      "Bash(kill %1)",
+      "Bash(PGPASSWORD=oruclass_dev_secret psql:*)"
     ],
     "mode": "bypass"
   }

@@ -2,10 +2,12 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   output: "standalone",
+  compress: true, // Enable gzip/brotli compression
   transpilePackages: ["@oruclass/types", "@oruclass/validators", "@oruclass/utils"],
   images: {
+    formats: ['image/avif', 'image/webp'], // Optimize images
     remotePatterns: [
-{ protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
+      { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
     ],
   },
   async rewrites() {

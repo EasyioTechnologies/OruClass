@@ -2,8 +2,11 @@
 
 import { motion, useScroll, useTransform } from "framer-motion";
 import Link from "next/link";
+import Image from "next/image";
 import { ArrowRight, Play, ChevronDown } from "lucide-react";
 import { useRef } from "react";
+
+const MotionLink = motion.create(Link);
 
 export function HeroSection() {
   const ref = useRef(null);
@@ -29,10 +32,13 @@ export function HeroSection() {
     >
       {/* Background Image with Parallax */}
       <motion.div style={{ y, opacity }} className="absolute inset-0 z-0 scale-110 origin-center">
-        <img
+        <Image
           src="/hero-bg.gif"
-          alt="Modern bright learning environment"
-          className="w-full h-full object-cover opacity-[0.85]"
+          alt="Modern bright learning environment for OruLabs live training"
+          fill
+          priority
+          unoptimized // Preserve GIF animation
+          className="object-cover opacity-[0.85]"
         />
         <div className="absolute inset-0 bg-gradient-to-b from-white/60 via-white/40 to-white/90" />
       </motion.div>
@@ -56,26 +62,24 @@ export function HeroSection() {
           <motion.div
             className="flex flex-col sm:flex-row items-center justify-center gap-5 pt-8"
           >
-            <Link href="/login" passHref legacyBehavior>
-              <motion.a
-                whileHover={{ scale: 1.05 , transition: { duration: 0.2 }} }
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-8 py-4 rounded-full bg-brand-600 text-white font-medium flex items-center justify-center gap-2 group shadow-lg hover:bg-brand-700 transition-colors"
-              >
-                Get Started
-                <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </motion.a>
-            </Link>
-            <Link href="#platform" passHref legacyBehavior>
-              <motion.a
-                whileHover={{ scale: 1.05 , transition: { duration: 0.2 }} }
-                whileTap={{ scale: 0.95 }}
-                className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/70 backdrop-blur-lg text-gray-900 font-medium border border-white/50 flex items-center justify-center gap-2 group shadow-sm"
-              >
-                <Play className="w-4 h-4 text-gray-900 group-hover:scale-110 transition-transform" />
-                See How It Works
-              </motion.a>
-            </Link>
+            <MotionLink
+              href="/login"
+              whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-brand-600 text-white font-medium flex items-center justify-center gap-2 group shadow-lg hover:bg-brand-700 transition-colors"
+            >
+              Get Started
+              <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+            </MotionLink>
+            <MotionLink
+              href="#platform"
+              whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
+              whileTap={{ scale: 0.95 }}
+              className="w-full sm:w-auto px-8 py-4 rounded-full bg-white/70 backdrop-blur-lg text-gray-900 font-medium border border-white/50 flex items-center justify-center gap-2 group shadow-sm"
+            >
+              <Play className="w-4 h-4 text-gray-900 group-hover:scale-110 transition-transform" />
+              See How It Works
+            </MotionLink>
           </motion.div>
         </motion.div>
       </div>

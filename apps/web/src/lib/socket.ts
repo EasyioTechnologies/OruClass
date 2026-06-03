@@ -1,5 +1,6 @@
 import { io, Socket } from "socket.io-client";
 import type { ClientToServerEvents, ServerToClientEvents } from "@oruclass/types";
+import { getAccessToken } from "@/lib/token-storage";
 
 type AppSocket = Socket<ServerToClientEvents, ClientToServerEvents>;
 
@@ -13,11 +14,13 @@ const getBaseUrl = () => {
 export function getSocket(): AppSocket {
   if (!socket) {
     socket = io(getBaseUrl(), {
-      withCredentials: true,
       autoConnect: false,
       reconnection: true,
       reconnectionAttempts: 10,
       reconnectionDelay: 1000,
+      auth: {
+        token: getAccessToken() ?? "",
+      },
     });
   }
   return socket;
@@ -25,6 +28,8 @@ export function getSocket(): AppSocket {
 
 export function connectSocket(): AppSocket {
   const s = getSocket();
+  // Always send the latest token on connect/reconnect
+  s.auth = { token: getAccessToken() ?? "" };
   if (!s.connected) s.connect();
   return s;
 }

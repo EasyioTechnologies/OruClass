@@ -1,16 +1,18 @@
 import type { MiddlewareHandler } from "hono";
-import { auth } from "../auth";
+import { verifyAccessToken } from "../auth/jwt";
 
 export const authMiddleware: MiddlewareHandler = async (c, next) => {
-  const session = await auth.api.getSession({
-    headers: c.req.raw.headers
-  });
-
-  if (!session) {
-    return c.json({ error: "Unauthorized", code: "NO_SESSION" }, 401);
+  const authHeader = c.req.header("Authorization");
+  if (!authHeader?.startsWith("Bearer ")) {
+    return c.json({ error: "Unauthorized", code: "NO_TOKEN" }, 401);
   }
 
-  c.set("userId", session.user.id);
-  c.set("userEmail", session.user.email);
-  await next();
+  try {
+    const { userId, email } = await verifyAccessToken(authHeader.slice(7));
+    c.set("userId", userId);
+    c.set("userEmail", email);
+    await next();
+  } catch {
+    return c.json({ error: "Unauthorized", code: "INVALID_TOKEN" }, 401);
+  }
 };

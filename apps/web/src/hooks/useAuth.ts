@@ -1,53 +1,80 @@
 "use client";
 
-import React, { useCallback, useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useAuthStore } from "@/store/auth";
-import { authClient } from "@/lib/auth-client";
+import { apiClient } from "@/lib/api-client";
+import { getAccessToken, getRefreshToken, clearTokens, isTokenExpired, setTokens } from "@/lib/token-storage";
 
 export function useAuth() {
-  const { data: session, isPending } = authClient.useSession();
-  const { user: persistedUser, isAuthenticated: isPersistedAuth, setUser, clearUser, setSessionExpired, isSessionExpired } = useAuthStore();
-
-  // Derive user synchronously from session when available,
-  // fall back to Zustand persisted store (survives refreshes/navigation).
-  // This eliminates the race where Zustand hasn't updated yet but session resolved.
-  const sessionUser = React.useMemo(() => {
-    return session?.user
-      ? ({
-          id: session.user.id,
-          name: session.user.name,
-          email: session.user.email,
-          avatarUrl: session.user.image,
-          authProvider: (session.user as any).isAnonymous ? "guest" : "email",
-        } as any)
-      : null;
-  }, [session?.user]);
-
-  // If we have a persisted user but are NOT authenticated locally, we should only expose the user if we specifically need to "continue as" 
-  // However, for typical usage, if the session is expired, we might want `user` to remain accessible for the login UI, 
-  // but `isAuthenticated` should be false.
-  const user = sessionUser ?? persistedUser;
-  
-  // We are authenticated if the server session exists OR if we have a valid persisted auth state (before server check completes)
-  const isAuthenticated = sessionUser !== null || isPersistedAuth;
+  const { user, isAuthenticated, isSessionExpired, setUser, clearUser, setSessionExpired } = useAuthStore();
+  const [isPending, setIsPending] = useState(true);
 
   useEffect(() => {
-    if (isPending) return;
-    if (sessionUser) {
-      // Sync to Zustand for persistence across navigations/refreshes
-      // Only sync if they differ to avoid unnecessary updates
-      if (persistedUser?.id !== sessionUser.id || !isPersistedAuth) {
-        setUser(sessionUser, true);
-      }
-    } else if (persistedUser && !isSessionExpired) {
-      // The session has expired on the server but we have a persisted user
-      setSessionExpired(true);
+    const token = getAccessToken();
+    if (!token) {
+      if (isAuthenticated) setSessionExpired(true);
+      setIsPending(false);
+      return;
     }
-  }, [sessionUser, isPending, setUser, setSessionExpired, persistedUser?.id, isPersistedAuth, isSessionExpired]);
+
+    if (isTokenExpired(token)) {
+      // Try refreshing
+      const refreshToken = getRefreshToken();
+      if (!refreshToken) {
+        clearUser();
+        clearTokens();
+        setIsPending(false);
+        return;
+      }
+
+      apiClient.post("/api/auth/refresh", { refreshToken })
+        .then(({ data }) => {
+          setTokens(data.accessToken, data.refreshToken);
+          setUser({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            avatarUrl: data.user.avatarUrl ?? data.user.image,
+            authProvider: data.user.isAnonymous ? "guest" : "email",
+          } as any);
+        })
+        .catch(() => {
+          clearUser();
+          clearTokens();
+        })
+        .finally(() => setIsPending(false));
+      return;
+    }
+
+    // Token exists and is valid — verify with server if no user in store
+    if (!user) {
+      apiClient.get("/api/auth/me")
+        .then(({ data }) => {
+          setUser({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            avatarUrl: data.user.avatarUrl ?? data.user.image,
+            authProvider: data.user.isAnonymous ? "guest" : "email",
+          } as any);
+        })
+        .catch(() => {
+          clearUser();
+          clearTokens();
+        })
+        .finally(() => setIsPending(false));
+    } else {
+      setIsPending(false);
+    }
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSignOut = useCallback(async () => {
-    await authClient.signOut();
+    const refreshToken = getRefreshToken();
+    try {
+      await apiClient.post("/api/auth/logout", { refreshToken });
+    } catch { /* ignore */ }
     clearUser();
+    clearTokens();
     window.location.href = "/login";
   }, [clearUser]);
 

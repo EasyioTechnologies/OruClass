@@ -29,7 +29,6 @@
     "typescript-eslint": "^8.60.0"
   },
   "dependencies": {
-    "@better-auth/infra": "^0.2.11",
     "@dnd-kit/utilities": "^3.2.2"
   }
 }

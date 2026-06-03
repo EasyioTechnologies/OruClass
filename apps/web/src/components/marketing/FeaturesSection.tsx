@@ -1,76 +1,92 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { CheckCircle, Users, Smartphone, Lock } from "lucide-react";
+import { CheckCircle } from "lucide-react";
+import InfiniteMenu from "./InfiniteMenu";
+import TextPressure from "./TextPressure";
 
 const features = [
   {
-    title: "Real-time Engagement",
-    description: "Keep everyone on the same page. When you change a slide or ask a question, it updates instantly for all students.",
-    icon: <Users className="w-6 h-6 text-brand-600" />,
+    // Real-time: Students collaborating
+    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop&crossorigin=anonymous',
+    link: '#',
+    title: 'Real-time',
+    description: 'Keep everyone on the same page. Updates instantly for all students.'
   },
   {
-    title: "Works Everywhere",
-    description: "Students can join from any phone, tablet, or laptop. No apps to download, no complicated setups.",
-    icon: <Smartphone className="w-6 h-6 text-brand-600" />,
+    // Anywhere: Learning on the go
+    image: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=800&auto=format&fit=crop&crossorigin=anonymous',
+    link: '#',
+    title: 'Anywhere',
+    description: 'Students join from phone, tablet, or laptop. No apps to download.'
   },
   {
-    title: "Private & Secure",
-    description: "Your course materials and student data are kept completely private and secure at all times.",
-    icon: <Lock className="w-6 h-6 text-brand-600" />,
+    // Secure: Privacy and security
+    image: 'https://images.unsplash.com/photo-1614064641936-7329930f7cb6?q=80&w=800&auto=format&fit=crop&crossorigin=anonymous',
+    link: '#',
+    title: 'Secure',
+    description: 'Course materials and student data are kept private and secure.'
   },
+  {
+    // Analytics: Data and charts
+    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop&crossorigin=anonymous',
+    link: '#',
+    title: 'Analytics',
+    description: 'Deep insights on participant engagement and performance.'
+  }
 ];
 
 export function FeaturesSection() {
   return (
-    <motion.section 
-      id="features" 
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ duration: 1.2, ease: "easeOut" }}
-      viewport={{ once: false, amount: 0.1 }}
-      className="min-h-screen w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-white py-16 md:py-0"
-    >
-      <div className="max-w-7xl mx-auto px-6 md:px-12 relative z-10 w-full">
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: false, margin: "-10%" }}
+    <>
+      <section 
+        id="features-intro" 
+        className="h-screen w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-white"
+      >
+        <motion.div 
+          initial={{ opacity: 0, y: 40, scale: 0.95 }}
+          whileInView={{ opacity: 1, y: 0, scale: 1 }}
           transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
-          className="text-center mb-10 md:mb-20"
+          viewport={{ once: false, amount: 0.4 }}
+          className="text-center z-20 w-full"
         >
           <motion.div 
-            whileHover={{ scale: 1.1, rotate: 5 , transition: { duration: 0.2 }} }
-            className="inline-flex items-center justify-center p-3 mb-6 rounded-2xl bg-gray-50 border border-gray-100 cursor-default"
+            whileHover={{ scale: 1.1, rotate: 5, transition: { duration: 0.2 } }}
+            className="inline-flex items-center justify-center p-3 mb-6 rounded-2xl bg-gray-50 border border-gray-100 shadow-sm cursor-default"
           >
             <CheckCircle className="w-6 h-6 text-brand-600" />
           </motion.div>
-          <h2 className="text-2xl sm:text-4xl md:text-6xl font-bold tracking-tight text-gray-900 leading-[1.1] max-w-3xl mx-auto">
-            Why choose this platform? <br className="hidden md:block" />
-            <span className="text-gray-400 transition-colors duration-500 hover:text-gray-600">Because it simply works.</span>
-          </h2>
+          <div className="w-full max-w-5xl mx-auto px-4 h-24 sm:h-32 md:h-48 relative">
+            <TextPressure
+              text="Why choose this platform?"
+              fontUrl=""
+              flex={true}
+              alpha={false}
+              stroke={false}
+              width={true}
+              weight={true}
+              italic={true}
+              textColor="#111827"
+              minFontSize={36}
+            />
+          </div>
         </motion.div>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 md:gap-8">
-          {features.map((feature, index) => (
-            <motion.div
-              key={index}
-              initial={{ opacity: 0, y: 40, scale: 0.95 }}
-              whileInView={{ opacity: 1, y: 0, scale: 1 }}
-              viewport={{ once: false, margin: "-10%" }}
-              transition={{ duration: 0.8, delay: index * 0.15, ease: [0.16, 1, 0.3, 1] }}
-              whileHover={{ y: -10, scale: 1.02 , transition: { duration: 0.2 }} }
-              className="group relative p-5 sm:p-8 rounded-2xl sm:rounded-3xl bg-white/50 backdrop-blur-xl border border-gray-100 shadow-sm hover:shadow-[0_30px_60px_rgba(0,0,0,0.05)] transition-all duration-500"
-            >
-              <div className="w-11 h-11 sm:w-14 sm:h-14 rounded-xl sm:rounded-2xl bg-gray-50 flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-500 border border-gray-100">
-                {feature.icon}
-              </div>
-              <h3 className="text-base sm:text-xl font-bold text-gray-900 mb-1.5 sm:mb-3">{feature.title}</h3>
-              <p className="text-sm sm:text-base text-gray-600 leading-relaxed">{feature.description}</p>
-            </motion.div>
-          ))}
-        </div>
-      </div>
-    </motion.section>
+      <section 
+        id="features-menu" 
+        className="h-screen w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-gray-50/30"
+      >
+        <motion.div 
+          initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}
+          whileInView={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+          transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+          viewport={{ once: false, amount: 0.4 }}
+          style={{ width: '100%', height: '100%', position: 'relative' }}
+        >
+          <InfiniteMenu items={features} scale={1.2} />
+        </motion.div>
+      </section>
+    </>
   );
 }

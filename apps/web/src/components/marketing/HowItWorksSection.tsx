@@ -5,52 +5,52 @@ import { MessageSquare } from "lucide-react";
 const testimonials = [
   {
     quote: "OruLabs completely changed how I deliver my workshops. The engagement level is off the charts.",
-    author: "Sarah Jenkins",
+    author: "Aadil Bhat",
     role: "Corporate Trainer",
   },
   {
     quote: "I used to spend hours grading paper quizzes after a session. Now I get instant analytics before I even leave the room.",
-    author: "David Chen",
+    author: "Priya Sharma",
     role: "Lead Instructor",
   },
   {
     quote: "The seamless experience without needing participants to download an app is a game changer for quick onboarding.",
-    author: "Maria Garcia",
+    author: "Tariq Dar",
     role: "Facilitator",
   },
   {
     quote: "It's so simple to use, yet incredibly powerful. My students actually look forward to our interactive sessions now.",
-    author: "James Wilson",
+    author: "Dr. Rajesh Kumar",
     role: "University Professor",
   },
   {
     quote: "I've tried every platform out there. Nothing comes close to the elegance and reliability of OruLabs.",
-    author: "Elena Rodriguez",
+    author: "Meenakshi Iyer",
     role: "Learning & Development Manager",
   },
   {
     quote: "The ability to instantly see who is falling behind during a live lecture has completely transformed my teaching.",
-    author: "Dr. Robert Chang",
+    author: "Dr. Sameer Wani",
     role: "Senior Lecturer",
   },
   {
     quote: "An absolute lifesaver for hybrid training environments. Remote students feel just as involved as those in the room.",
-    author: "Amanda Lewis",
+    author: "Ananya Desai",
     role: "Hybrid Coach",
   },
   {
     quote: "I was skeptical at first, but the interactive widgets and polls keep my audience glued to their screens.",
-    author: "Tom Baker",
+    author: "Imran Lone",
     role: "Workshop Creator",
   },
   {
     quote: "The best investment our university has made this year. Student satisfaction scores have skyrocketed.",
-    author: "Dr. Emily Stanton",
+    author: "Dr. Kavita Reddy",
     role: "Dean of Innovation",
   },
   {
     quote: "Finally, a platform that doesn't feel like it was built in the 90s. The design and UX are simply gorgeous.",
-    author: "Marcus Vance",
+    author: "Rohan Mehta",
     role: "Design Lead",
   }
 ];
