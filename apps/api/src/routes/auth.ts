@@ -33,11 +33,11 @@ function errorResponse(c: any, err: unknown) {
 
 authRouter.post("/signup", async (c) => {
   try {
-    const { email, password, name } = await c.req.json();
+    const { email, password, name, returnTo } = await c.req.json();
     if (!email || !password || !name) {
       return c.json({ error: "Email, password, and name are required." }, 400);
     }
-    const result = await signUp(email, password, name);
+    const result = await signUp(email, password, name, returnTo);
     return c.json(result, 201);
   } catch (err) {
     return errorResponse(c, err);
@@ -142,9 +142,19 @@ authRouter.post("/resend-verification", async (c) => {
     if (!authHeader?.startsWith("Bearer ")) {
       return c.json({ error: "Authentication required." }, 401);
     }
+    
+    // Parse JSON body to get returnTo, default to empty object if no body provided
+    let returnTo: string | undefined;
+    try {
+      const body = await c.req.json();
+      returnTo = body.returnTo;
+    } catch (e) {
+      // Ignore JSON parse errors for empty bodies
+    }
+
     const { userId, email } = await verifyAccessToken(authHeader.slice(7));
     const user = await getUser(userId);
-    await createAndSendVerificationEmail(userId, email, user.name);
+    await createAndSendVerificationEmail(userId, email, user.name, returnTo);
     return c.json({ success: true });
   } catch (err) {
     return errorResponse(c, err);

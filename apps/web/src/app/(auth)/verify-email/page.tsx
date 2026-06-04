@@ -49,7 +49,7 @@ function VerifyEmailContent() {
     setResending(true);
     setError("");
     try {
-      await apiClient.post("/api/auth/resend-verification");
+      await apiClient.post("/api/auth/resend-verification", { returnTo });
       setResent(true);
     } catch {
       setError("Failed to resend. Please try logging in again.");

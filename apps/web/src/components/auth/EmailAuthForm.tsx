@@ -70,7 +70,7 @@ function EmailAuthFormInner({
           return;
         }
 
-        const { data } = await apiClient.post("/api/auth/signup", { email, password, name });
+        const { data } = await apiClient.post("/api/auth/signup", { email, password, name, returnTo: effectiveReturnTo });
         setTokens(data.accessToken, data.refreshToken);
         setUser({
           id: data.user.id,
@@ -80,7 +80,7 @@ function EmailAuthFormInner({
           authProvider: "email",
         } as any);
         setEmailVerified(false);
-        router.push(`/verify-email?email=${encodeURIComponent(email)}`);
+        router.push(`/verify-email?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(effectiveReturnTo)}`);
       }
     } catch (err: any) {
       const errMsg = err.response?.data?.error || err.message || "";

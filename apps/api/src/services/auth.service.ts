@@ -18,7 +18,7 @@ function generateToken(): string {
 
 // ─── Signup ──────────────────────────────────────────────────────────
 
-export async function signUp(email: string, password: string, name: string) {
+export async function signUp(email: string, password: string, name: string, returnTo?: string) {
   const existing = await db.select({ id: schema.users.id }).from(schema.users).where(eq(schema.users.email, email)).limit(1);
   if (existing.length > 0) {
     throw new AuthError("USER_ALREADY_EXISTS", "An account with this email already exists.");
@@ -38,7 +38,7 @@ export async function signUp(email: string, password: string, name: string) {
   const tokens = await createTokenPair(user.id, user.email);
 
   // Send verification email (async, don't block signup)
-  createAndSendVerificationEmail(user.id, user.email, user.name).catch(() => {});
+  createAndSendVerificationEmail(user.id, user.email, user.name, returnTo).catch(() => {});
 
   // Send welcome email
   const loginUrl = `${WEB_URL}/dashboard`;
@@ -99,7 +99,7 @@ export async function logout(refreshToken: string) {
 
 // ─── Email Verification ──────────────────────────────────────────────
 
-export async function createAndSendVerificationEmail(userId: string, email: string, name: string) {
+export async function createAndSendVerificationEmail(userId: string, email: string, name: string, returnTo?: string) {
   // Clear old tokens for this user
   await db.delete(schema.emailVerificationTokens).where(eq(schema.emailVerificationTokens.userId, userId));
 
@@ -111,7 +111,8 @@ export async function createAndSendVerificationEmail(userId: string, email: stri
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
   });
 
-  const url = `${WEB_URL}/verify-email?token=${token}`;
+  let url = `${WEB_URL}/verify-email?token=${token}`;
+  if (returnTo) url += `&returnTo=${encodeURIComponent(returnTo)}`;
   await sendVerificationEmail({ to: email, name, url });
 }
 
