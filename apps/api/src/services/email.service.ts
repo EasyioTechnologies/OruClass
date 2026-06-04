@@ -10,18 +10,19 @@ const WEB = process.env.WEB_URL ?? "http://localhost:3000";
 function wrap(title: string, body: string) {
   return `<!DOCTYPE html>
 <html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#f9fafb;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif">
-<div style="max-width:560px;margin:40px auto;background:#fff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden">
-  <div style="padding:32px 32px 0">
-    <div style="margin-bottom:20px">
-      <span style="font-size:18px;font-weight:800;color:#111827;letter-spacing:-0.02em">Oru</span><span style="font-size:18px;font-weight:800;color:#10b981;letter-spacing:-0.02em">Labs</span>
+<body style="margin:0;padding:0;background-color:#f3f4f6;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif,'Apple Color Emoji','Segoe UI Emoji','Segoe UI Symbol';-webkit-font-smoothing:antialiased;">
+<div style="max-width:600px;margin:40px auto;background:#ffffff;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;box-shadow:0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);">
+  <div style="padding:40px 40px 0">
+    <div style="margin-bottom:24px">
+      <span style="font-size:24px;font-weight:800;color:#111827;letter-spacing:-0.02em;">Oru</span><span style="font-size:24px;font-weight:800;color:#10b981;letter-spacing:-0.02em;">Labs</span>
     </div>
-    <h1 style="margin:0 0 4px;font-size:20px;font-weight:700;color:#111827">${title}</h1>
-    <div style="width:40px;height:3px;background:#10b981;border-radius:2px;margin:12px 0 24px"></div>
+    <h1 style="margin:0 0 8px;font-size:24px;font-weight:700;color:#111827;line-height:1.3;">${title}</h1>
+    <div style="width:48px;height:4px;background:#10b981;border-radius:2px;margin:16px 0 32px"></div>
   </div>
-  <div style="padding:0 32px 32px;font-size:15px;line-height:1.6;color:#374151">${body}</div>
-  <div style="padding:20px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;text-align:center">
-    <span style="font-size:12px;color:#9ca3af">OruLabs &middot; orulabs.in</span>
+  <div style="padding:0 40px 40px;font-size:16px;line-height:1.6;color:#374151;">${body}</div>
+  <div style="padding:24px 40px;background:#f9fafb;border-top:1px solid #e5e7eb;text-align:center;">
+    <p style="margin:0 0 12px;font-size:13px;color:#6b7280;">You are receiving this email because you signed up for OruLabs, or someone invited you to a session.</p>
+    <span style="font-size:12px;color:#9ca3af;font-weight:500;">&copy; ${new Date().getFullYear()} OruLabs &middot; <a href="${WEB}" style="color:#9ca3af;text-decoration:underline;">orulabs.in</a></span>
   </div>
 </div>
 </body></html>`;
@@ -35,10 +36,23 @@ function muted(text: string) {
   return `<p style="margin-top:20px;font-size:13px;color:#9ca3af">${text}</p>`;
 }
 
+function stripHtml(html: string) {
+  return html
+    .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<\/p>/gi, '\n\n')
+    .replace(/<[^>]*>?/gm, '')
+    .replace(/&middot;/g, '-')
+    .replace(/&copy;/g, '(c)')
+    .replace(/\n\s*\n/g, '\n\n')
+    .trim();
+}
+
 async function send(to: string, subject: string, html: string) {
   console.log(`[email] Attempting to send "${subject}" to ${to} from ${FROM}`);
   try {
-    const response = await resend.emails.send({ from: FROM, to, subject, html });
+    const text = stripHtml(html);
+    const response = await resend.emails.send({ from: FROM, to, subject, html, text });
     console.log(`[email] Resend response:`, JSON.stringify(response));
     if (response.error) {
       console.error("[email] send failed:", response.error);
