@@ -2,34 +2,38 @@
 
 import { motion } from "framer-motion";
 import { CheckCircle } from "lucide-react";
-import InfiniteMenu from "./InfiniteMenu";
-import TextPressure from "./TextPressure";
+import dynamic from "next/dynamic";
+
+// WebGL/canvas eye-candy — heavy (gl-matrix + large shaders) and client-only.
+// Code-split so they never ship in the initial bundle or block SSR.
+const InfiniteMenu = dynamic(() => import("./InfiniteMenu"), { ssr: false });
+const TextPressure = dynamic(() => import("./TextPressure"), { ssr: false });
 
 const features = [
   {
     // Real-time: Students collaborating
-    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop&crossorigin=anonymous',
+    image: 'https://images.unsplash.com/photo-1522071820081-009f0129c71c?q=80&w=800&auto=format&fit=crop',
     link: '#',
     title: 'Real-time',
     description: 'Keep everyone on the same page. Updates instantly for all students.'
   },
   {
     // Anywhere: Learning on the go
-    image: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=800&auto=format&fit=crop&crossorigin=anonymous',
+    image: 'https://images.unsplash.com/photo-1516321497487-e288fb19713f?q=80&w=800&auto=format&fit=crop',
     link: '#',
     title: 'Anywhere',
     description: 'Students join from phone, tablet, or laptop. No apps to download.'
   },
   {
     // Secure: Privacy and security
-    image: 'https://images.unsplash.com/photo-1614064641936-7329930f7cb6?q=80&w=800&auto=format&fit=crop&crossorigin=anonymous',
+    image: 'https://images.unsplash.com/photo-1614064641936-7329930f7cb6?q=80&w=800&auto=format&fit=crop',
     link: '#',
     title: 'Secure',
     description: 'Course materials and student data are kept private and secure.'
   },
   {
     // Analytics: Data and charts
-    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop&crossorigin=anonymous',
+    image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=800&auto=format&fit=crop',
     link: '#',
     title: 'Analytics',
     description: 'Deep insights on participant engagement and performance.'
@@ -75,7 +79,7 @@ export function FeaturesSection() {
 
       <section 
         id="features-menu" 
-        className="min-h-[100dvh] w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-gray-50/30 py-20"
+        className="h-[100dvh] w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-gray-50/30"
       >
         <motion.div 
           initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}

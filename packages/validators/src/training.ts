@@ -88,6 +88,25 @@ export const DrawUpdateSchema = z.object({
   stroke: StrokeSchema,
 });
 
+// Socket payloads for the DB-writing live handlers. Client-sent, so validated
+// before any insert/upsert — rejects malformed trainingId/moduleId early with a
+// clear BAD_PAYLOAD instead of letting bad data reach a FK/insert error.
+export const ParticipantJoinSchema = z.object({
+  trainingId: z.string().uuid(),
+  role: z.enum(["trainer", "participant"]),
+});
+
+export const ModuleUnlockSchema = z.object({
+  trainingId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+});
+
+export const ResponseSubmitSchema = z.object({
+  trainingId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  responseData: z.record(z.unknown()),
+});
+
 export const ScratchpadUpdateSchema = z
   .object({
     personalNotes: z.string().max(50_000).optional(),

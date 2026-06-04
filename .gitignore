@@ -9,6 +9,11 @@ dist/
 out/
 build/
 
+# Archives / build artifacts (never commit)
+*.tar.gz
+*.tgz
+*.zip
+
 # Environment files
 .env
 .env.*

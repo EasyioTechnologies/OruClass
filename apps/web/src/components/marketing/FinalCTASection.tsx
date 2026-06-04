@@ -36,15 +36,15 @@ export function FinalCTASection() {
             Join thousands of educators who have already transformed their classrooms into engaging, interactive learning experiences.
           </p>
           
-          <Link href="/login" passHref legacyBehavior>
-            <motion.a
+          <Link href="/login" className="inline-block">
+            <motion.div
               whileHover={{ scale: 1.05 , transition: { duration: 0.2 }} }
               whileTap={{ scale: 0.95 }}
               className="inline-flex px-10 py-5 rounded-full bg-brand-600 text-white font-medium items-center justify-center gap-3 group shadow-xl hover:bg-brand-700 transition-colors"
             >
               Get Started Now
               <ArrowRight className="w-5 h-5 group-hover:translate-x-1 transition-transform" />
-            </motion.a>
+            </motion.div>
           </Link>
         </motion.div>
       </div>

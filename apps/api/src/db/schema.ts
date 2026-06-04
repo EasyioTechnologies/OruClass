@@ -12,6 +12,7 @@ import {
   uuid,
 } from "drizzle-orm/pg-core";
 import { relations } from "drizzle-orm";
+import type { ModuleType } from "@oruclass/types";
 
 // ─── Users ────────────────────────────────────────────────────────────────────
 export const users = pgTable("users", {
@@ -116,9 +117,7 @@ export const trainingModules = pgTable(
       .references(() => trainings.id, { onDelete: "cascade" }),
     dayId: uuid("day_id").references(() => trainingDays.id, { onDelete: "set null" }),
     title: text("title").notNull(),
-    moduleType: text("module_type")
-      .$type<"quiz" | "whiteboard" | "reflection" | "matrix" | "custom" | "attendance">()
-      .notNull(),
+    moduleType: text("module_type").$type<ModuleType>().notNull(),
     position: integer("position").notNull().default(0),
     isUnlocked: boolean("is_unlocked").notNull().default(false),
     isAlwaysOn: boolean("is_always_on").notNull().default(false),

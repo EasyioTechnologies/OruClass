@@ -13,7 +13,7 @@ import {
 } from "../db/schema";
 import { getOrCreateState, removeParticipant, persistState, restoreState } from "./state";
 import { logger } from "../utils/logger";
-import { DrawUpdateSchema } from "@oruclass/validators";
+import { DrawUpdateSchema, ParticipantJoinSchema, ModuleUnlockSchema, ResponseSubmitSchema } from "@oruclass/validators";
 import { USER_NAME_CACHE_TTL_MS, USER_NAME_CACHE_MAX } from "../config/limits";
 
 // Small in-process cache for socket-join user lookups. Avoids hammering the
@@ -27,6 +27,9 @@ const userCache = new Map<string, { name: string; expiresAt: number }>();
 // submission gets a previous liveSessionId).
 const liveSessionCache = new Map<string, { id: string | null; expiresAt: number }>();
 const LIVE_SESSION_TTL_MS = 15_000;
+
+// Min interval between persisted heartbeat writes per socket (see heartbeat handler).
+const HEARTBEAT_WRITE_MS = 15_000;
 
 async function getActiveLiveSessionId(trainingId: string): Promise<string | null> {
   const now = Date.now();
@@ -62,6 +65,41 @@ async function getUserName(userId: string): Promise<string> {
 
 type IO = SocketIOServer<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 type AppSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
+
+// Emit the durable roster (from DB) to a freshly-joined socket. Source of truth is
+// trainingParticipants + trainingFacilitators, so it survives API restarts and
+// carries each participant's real connectionStatus instead of a hardcoded "online".
+async function syncRosterFromDb(socket: AppSocket, trainingId: string, selfUserId: string): Promise<void> {
+  const [rows, facilitators] = await Promise.all([
+    db
+      .select({
+        userId: trainingParticipants.userId,
+        name: users.name,
+        connectionStatus: trainingParticipants.connectionStatus,
+        joinedAt: trainingParticipants.joinedAt,
+      })
+      .from(trainingParticipants)
+      .innerJoin(users, eq(users.id, trainingParticipants.userId))
+      .where(eq(trainingParticipants.trainingId, trainingId)),
+    db
+      .select({ userId: trainingFacilitators.userId })
+      .from(trainingFacilitators)
+      .where(eq(trainingFacilitators.trainingId, trainingId)),
+  ]);
+
+  const facilitatorIds = new Set(facilitators.map((f) => f.userId));
+
+  for (const p of rows) {
+    if (p.userId === selfUserId) continue;
+    socket.emit("participant:joined", {
+      userId: p.userId,
+      name: p.name ?? "Unknown User",
+      role: facilitatorIds.has(p.userId) ? "trainer" : "participant",
+      joinedAt: (p.joinedAt ?? new Date()).toISOString(),
+      connectionStatus: p.connectionStatus,
+    });
+  }
+}
 
 // Per-event rate limits: [maxRequests, windowMs]
 const EVENT_LIMITS: Record<string, [number, number]> = {
@@ -99,6 +137,12 @@ export function registerSocketHandlers(io: IO): void {
 
     const isAllowed = makePerEventRateLimiter();
 
+    // Heartbeats arrive every few seconds per participant; writing the DB on each
+    // one is needless write amplification (100 participants × every beat). lastHeartbeat
+    // only drives stale/offline detection, so persisting at most every HEARTBEAT_WRITE_MS
+    // is plenty — well under the 20s pingTimeout used for disconnect detection.
+    let lastHeartbeatWrite = 0;
+
     const guard = (event: string, fn: (...args: any[]) => void) =>
       (...args: any[]) => {
         if (!isAllowed(event)) {
@@ -110,16 +154,25 @@ export function registerSocketHandlers(io: IO): void {
 
     socket.on(
       "participant:join",
-      guard("participant:join", async ({ trainingId, role }: { trainingId: string; role: "trainer" | "participant" }) => {
+      guard("participant:join", async (payload: unknown) => {
+        const parsed = ParticipantJoinSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid participant:join payload" });
+          return;
+        }
+        const { trainingId, role } = parsed.data;
         socket.data.trainingId = trainingId;
-        socket.data.role = role;
 
         await socket.join(`training:${trainingId}`);
 
         // Restore persisted state from Redis if this is the first connection after restart
         await restoreState(trainingId);
 
-        // For trainer role, verify they are actually a facilitator in DB
+        // Never trust the client-supplied role. A "trainer" claim is only honored
+        // if the user is a real facilitator in DB; otherwise it is silently
+        // downgraded to "participant". effectiveRole is what we store and broadcast —
+        // the prior code leaked the unverified client role into the roster.
+        let effectiveRole: "trainer" | "participant" = "participant";
         if (role === "trainer") {
           const facilitator = await db.query.trainingFacilitators.findFirst({
             where: and(
@@ -127,10 +180,20 @@ export function registerSocketHandlers(io: IO): void {
               eq(trainingFacilitators.userId, userId),
             ),
           });
-          if (!facilitator) {
+          if (facilitator) {
+            effectiveRole = "trainer";
+          } else {
             socket.emit("error", { code: "UNAUTHORIZED", message: "not a facilitator for this training" });
-            socket.data.role = "participant"; // downgrade
           }
+        }
+        socket.data.role = effectiveRole;
+
+        // Trainers also join a sub-room. Dashboard-only telemetry (submission
+        // progress) is emitted there instead of the whole training room, so a
+        // 40-participant quiz storm doesn't blast every participant socket with
+        // updates only the trainer UI consumes.
+        if (effectiveRole === "trainer") {
+          await socket.join(`training:${trainingId}:trainers`);
         }
 
         const name = await getUserName(userId);
@@ -139,7 +202,7 @@ export function registerSocketHandlers(io: IO): void {
         state.participants.set(userId, {
           userId,
           name,
-          role,
+          role: effectiveRole,
           socketId: socket.id,
           joinedAt: new Date(),
         });
@@ -156,23 +219,16 @@ export function registerSocketHandlers(io: IO): void {
         socket.to(`training:${trainingId}`).emit("participant:joined", {
           userId,
           name,
-          role,
+          role: effectiveRole,
           joinedAt: new Date().toISOString(),
           connectionStatus: "online",
         });
 
-        // Sync existing participants to the joining socket
-        for (const [existingUserId, p] of state.participants.entries()) {
-          if (existingUserId !== userId) {
-            socket.emit("participant:joined", {
-              userId: p.userId,
-              name: p.name,
-              role: p.role,
-              joinedAt: new Date(p.joinedAt).toISOString(),
-              connectionStatus: "online", // or fetch real status
-            });
-          }
-        }
+        // Sync the existing roster to the joining socket from the DB rather than
+        // in-memory state. After an API restart the in-memory roster is empty until
+        // everyone reconnects, so a trainer rejoining would see an empty room. The
+        // DB roster is durable and carries real connectionStatus per participant.
+        await syncRosterFromDb(socket, trainingId, userId);
 
         // Restore active module only if session is currently live
         const trainingData = await db.query.trainings.findFirst({
@@ -204,7 +260,13 @@ export function registerSocketHandlers(io: IO): void {
 
     socket.on(
       "module:unlock",
-      guard("module:unlock", async ({ trainingId, moduleId }: { trainingId: string; moduleId: string }) => {
+      guard("module:unlock", async (payload: unknown) => {
+        const parsed = ModuleUnlockSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid module:unlock payload" });
+          return;
+        }
+        const { trainingId, moduleId } = parsed.data;
         // Re-query facilitator role inside the tx — cached socket.data.role
         // can be stale if a trainer was demoted mid-session.
         let moduleData: typeof trainingModules.$inferSelect | undefined;
@@ -270,9 +332,16 @@ export function registerSocketHandlers(io: IO): void {
     socket.on(
       "response:submit",
       guard("response:submit", async (
-        { trainingId, moduleId, responseData }: { trainingId: string; moduleId: string; responseData: Record<string, unknown> },
+        payload: unknown,
         ack?: (result: { ok: boolean; error?: string }) => void,
       ) => {
+        const parsed = ResponseSubmitSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid response:submit payload" });
+          if (typeof ack === "function") ack({ ok: false, error: "Invalid payload" });
+          return;
+        }
+        const { trainingId, moduleId, responseData } = parsed.data;
         try {
           const liveSessionId = await getActiveLiveSessionId(trainingId);
 
@@ -320,7 +389,9 @@ export function registerSocketHandlers(io: IO): void {
           });
 
           if (liveSessionId) {
-            io.to(`training:${trainingId}`).emit("session:submission_update", {
+            // Trainer-dashboard progress only — emit to trainers sub-room, not
+            // the whole training room (participants don't render this).
+            io.to(`training:${trainingId}:trainers`).emit("session:submission_update", {
               trainingId,
               moduleId,
               liveSessionId,
@@ -386,6 +457,9 @@ export function registerSocketHandlers(io: IO): void {
     socket.on("heartbeat", async () => {
       const { trainingId } = socket.data;
       if (!trainingId || !userId) return;
+      const now = Date.now();
+      if (now - lastHeartbeatWrite < HEARTBEAT_WRITE_MS) return;
+      lastHeartbeatWrite = now;
       await db
         .update(trainingParticipants)
         .set({ lastHeartbeat: new Date(), connectionStatus: "online" })
@@ -400,6 +474,18 @@ export function registerSocketHandlers(io: IO): void {
     socket.on("disconnect", async () => {
       const { trainingId } = socket.data;
       if (!trainingId || !userId) return;
+
+      // A reconnect (network blip) or a second tab/device creates a fresh socket
+      // while this old one's disconnect fires up to pingTimeout (20s) later. If the
+      // user still has another live socket in this room, this disconnect is stale —
+      // marking offline or broadcasting a leave here would ghost a participant who is
+      // actually present. The disconnecting socket has already left its rooms by now,
+      // so fetchSockets() returns only the survivors.
+      const remaining = await io.in(`training:${trainingId}`).fetchSockets();
+      if (remaining.some((s) => s.data.userId === userId)) {
+        logger.debug({ socketId: socket.id, userId, trainingId }, "socket gone but user still present — skipping offline");
+        return;
+      }
 
       removeParticipant(trainingId, userId);
 
