@@ -1,7 +1,7 @@
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client";
-import { users, workspaceMembers } from "../db/schema";
+import { users, workspaceMembers, workspaces } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { sendInvitationEmail } from "../services/email.service";
@@ -24,12 +24,12 @@ invitationsRouter.post("/invite", async (c) => {
   const joinToken = randomBytes(16).toString("hex");
   const joinUrl = `${process.env.NEXT_PUBLIC_API_URL}/join/${joinToken}`;
 
-  const workspace = await db.query.workspaces?.findFirst?.({ where: (t: any, { eq }: any) => eq(t.id, workspaceId) });
+  const workspace = await db.query.workspaces.findFirst({ where: eq(workspaces.id, workspaceId) });
 
   await sendInvitationEmail({
     to: email,
     inviterName: inviter?.name ?? "A teammate",
-    workspaceName: (workspace as any)?.name ?? "a workspace",
+    workspaceName: workspace?.name ?? "a workspace",
     joinUrl,
   });
 

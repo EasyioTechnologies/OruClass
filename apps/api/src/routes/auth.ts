@@ -1,4 +1,4 @@
-import { Hono } from "hono";
+import { Hono, type Context } from "hono";
 import {
   signUp,
   login,
@@ -16,7 +16,7 @@ import { verifyAccessToken } from "../auth/jwt";
 
 export const authRouter = new Hono();
 
-function errorResponse(c: any, err: unknown) {
+function errorResponse(c: Context, err: unknown) {
   if (err instanceof AuthError) {
     const status = err.code === "USER_NOT_FOUND" || err.code === "INVALID_CREDENTIALS" ? 401
       : err.code === "USER_ALREADY_EXISTS" ? 409

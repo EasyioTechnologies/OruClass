@@ -143,8 +143,8 @@ export function registerSocketHandlers(io: IO): void {
     // is plenty — well under the 20s pingTimeout used for disconnect detection.
     let lastHeartbeatWrite = 0;
 
-    const guard = (event: string, fn: (...args: any[]) => void) =>
-      (...args: any[]) => {
+    const guard = <A extends unknown[]>(event: string, fn: (...args: A) => void) =>
+      (...args: A) => {
         if (!isAllowed(event)) {
           socket.emit("error", { code: "RATE_LIMIT", message: "rate limit exceeded" });
           return;
@@ -251,7 +251,7 @@ export function registerSocketHandlers(io: IO): void {
             });
             socket.emit("module:unlocked", {
               moduleId: state.activeModuleId,
-              module: moduleData as any,
+              module: moduleData ?? null,
             });
           }
         }
@@ -321,7 +321,7 @@ export function registerSocketHandlers(io: IO): void {
 
         io.to(`training:${trainingId}`).emit("module:unlocked", {
           moduleId,
-          module: moduleData as any,
+          module: moduleData,
         });
 
         // Persist new active module to Redis for restart survivability
@@ -428,14 +428,14 @@ export function registerSocketHandlers(io: IO): void {
 
     socket.on(
       "draw:sync",
-      guard("draw:sync", ({ trainingId, moduleId, strokes }: { trainingId: string; moduleId: string; strokes: any[] }) => {
+      guard("draw:sync", ({ trainingId, moduleId, strokes }: { trainingId: string; moduleId: string; strokes: unknown[] }) => {
         socket.to(`training:${trainingId}`).emit("draw:sync", { moduleId, userId, strokes });
       }),
     );
 
     socket.on(
       "note:create",
-      guard("note:create", ({ trainingId, moduleId, note }: { trainingId: string; moduleId: string; note: any }) => {
+      guard("note:create", ({ trainingId, moduleId, note }: { trainingId: string; moduleId: string; note: unknown }) => {
         socket.to(`training:${trainingId}`).emit("note:create", { moduleId, note });
       }),
     );
