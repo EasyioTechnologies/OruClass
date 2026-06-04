@@ -4,7 +4,9 @@ import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth";
+import { setTokens } from "@/lib/token-storage";
 import { CheckCircle2, Mail, RefreshCw, Loader2 } from "lucide-react";
+import Link from "next/link";
 
 function VerifyEmailContent() {
   const router = useRouter();
@@ -12,7 +14,7 @@ function VerifyEmailContent() {
   const token = searchParams.get("token");
   const email = searchParams.get("email");
   const returnTo = searchParams.get("returnTo") ?? "/dashboard";
-  const { setEmailVerified } = useAuthStore();
+  const { setEmailVerified, setUser } = useAuthStore();
 
   const [verifying, setVerifying] = useState(!!token);
   const [verified, setVerified] = useState(false);
@@ -23,7 +25,19 @@ function VerifyEmailContent() {
   useEffect(() => {
     if (!token) return;
     apiClient.post("/api/auth/verify-email", { token })
-      .then(() => {
+      .then(({ data }) => {
+        if (data.accessToken && data.refreshToken) {
+          setTokens(data.accessToken, data.refreshToken);
+        }
+        if (data.user) {
+          setUser({
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            avatarUrl: data.user.avatarUrl ?? data.user.image,
+            authProvider: data.user.isAnonymous ? "guest" : "email",
+          } as any);
+        }
         setVerified(true);
         setEmailVerified(true);
       })
@@ -117,6 +131,15 @@ function VerifyEmailContent() {
             </>
           )}
         </button>
+        
+        <div className="pt-2 border-t border-gray-200 mt-2">
+           <Link 
+             href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+             className="w-full py-3 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 transition-all flex items-center justify-center gap-2"
+           >
+             Go to Login
+           </Link>
+        </div>
       </div>
 
       <p className="text-xs text-gray-400 text-center">

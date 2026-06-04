@@ -128,7 +128,13 @@ export async function verifyEmail(token: string) {
   await db.update(schema.users).set({ emailVerified: true }).where(eq(schema.users.id, record.userId));
   await db.delete(schema.emailVerificationTokens).where(eq(schema.emailVerificationTokens.token, token));
 
-  return { userId: record.userId };
+  const [user] = await db.select().from(schema.users).where(eq(schema.users.id, record.userId)).limit(1);
+  if (!user) {
+    throw new AuthError("USER_NOT_FOUND", "User not found.");
+  }
+
+  const tokens = await createTokenPair(user.id, user.email);
+  return { user: sanitizeUser(user), ...tokens };
 }
 
 // ─── Password Reset ─────────────────────────────────────────────────
