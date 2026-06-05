@@ -36,6 +36,13 @@
       "when": 1780628555455,
       "tag": "0004_empty_yellowjacket",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1780649382914,
+      "tag": "0005_short_squadron_sinister",
+      "breakpoints": true
     }
   ]
 }
