@@ -229,8 +229,8 @@ export function TrainerLiveRoom({ trainingId }: { trainingId: string }) {
         )}
 
         {/* Module canvas */}
-        <div className="flex-1 overflow-auto p-3 md:p-4">
-          <div className="h-full bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+        <div className="flex-1 overflow-auto bg-white">
+          <div className="h-full overflow-hidden">
             {renderModuleArea()}
           </div>
         </div>

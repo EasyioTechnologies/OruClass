@@ -15,7 +15,7 @@ import { analyticsRouter } from "./routes/analytics";
 import { invitationsRouter } from "./routes/invitations";
 import { sessionsRouter } from "./routes/sessions";
 import { errorHandler } from "./middleware/errorHandler";
-import { authRateLimiter, apiRateLimiter } from "./middleware/rateLimiter";
+import { authRateLimiter, guestRateLimiter, apiRateLimiter } from "./middleware/rateLimiter";
 import { registerSocketHandlers } from "./socket/handlers";
 import { setIO } from "./socket/io-instance";
 import { startExportWorker } from "./jobs/exportAnalytics.job";
@@ -48,6 +48,9 @@ app.use(
 
 app.get("/health", (c) => c.json({ status: "ok", ts: Date.now() }));
 
+// Lenient guest limiter must be mounted BEFORE the strict auth wildcard so a whole
+// room can provision anonymous guests at once (auth limiter skips this path).
+app.use("/api/auth/guest", guestRateLimiter);
 app.use("/api/auth/*", authRateLimiter);
 app.use("/api/*", apiRateLimiter);
 

@@ -112,6 +112,64 @@ const EVENT_LIMITS: Record<string, [number, number]> = {
   "timer:sync": [10, 1_000],
 };
 
+// Coalesced aggregate broadcaster. A submission storm — 50 participants answering at
+// once — would otherwise run one DB count + one room-wide broadcast PER submit. Since
+// every broadcast fans out to every socket, that's O(N²) messages (50 submits × 50
+// sockets = 2,500) plus N count queries per module, all within a couple hundred ms.
+// Instead we debounce per (training, module): the first submit schedules a flush, the
+// rest in the window just coalesce into it, and a single flush runs the counts once
+// and broadcasts once. The live count lands within AGGREGATE_FLUSH_MS — imperceptible
+// to the trainer — while messages drop from O(N²) to ~1 per window per module.
+const AGGREGATE_FLUSH_MS = 300;
+const pendingAggregates = new Map<string, ReturnType<typeof setTimeout>>();
+
+function scheduleAggregate(io: IO, trainingId: string, moduleId: string): void {
+  const key = `${trainingId}:${moduleId}`;
+  if (pendingAggregates.has(key)) return; // a flush is already queued for this module
+  const timer = setTimeout(async () => {
+    pendingAggregates.delete(key);
+    try {
+      const liveSessionId = await getActiveLiveSessionId(trainingId);
+      const [respRow, partRow] = await Promise.all([
+        db
+          .select({ responseCount: count() })
+          .from(participantResponses)
+          .where(and(
+            eq(participantResponses.trainingId, trainingId),
+            eq(participantResponses.moduleId, moduleId),
+          )),
+        liveSessionId
+          ? db
+              .select({ participantCount: count() })
+              .from(trainingParticipants)
+              .where(eq(trainingParticipants.trainingId, trainingId))
+          : Promise.resolve([{ participantCount: 0 }] as const),
+      ]);
+      const responseCount = respRow[0].responseCount;
+
+      io.to(`training:${trainingId}`).emit("data:aggregate", {
+        trainingId,
+        moduleId,
+        responseCount,
+      });
+
+      if (liveSessionId) {
+        // Trainer-dashboard progress only — trainers sub-room, not the whole room.
+        io.to(`training:${trainingId}:trainers`).emit("session:submission_update", {
+          trainingId,
+          moduleId,
+          liveSessionId,
+          submitted: Number(responseCount),
+          totalParticipants: Number(partRow[0].participantCount),
+        });
+      }
+    } catch (err) {
+      logger.error(err, "aggregate flush failed");
+    }
+  }, AGGREGATE_FLUSH_MS);
+  pendingAggregates.set(key, timer);
+}
+
 function makePerEventRateLimiter() {
   const buckets = new Map<string, { count: number; resetAt: number }>();
   return (event: string): boolean => {
@@ -364,41 +422,9 @@ export function registerSocketHandlers(io: IO): void {
           // affecting the participant's UX.
           if (typeof ack === "function") ack({ ok: true });
 
-          // Counts in parallel (single round-trip wall time).
-          const [respRow, partRow] = await Promise.all([
-            db
-              .select({ responseCount: count() })
-              .from(participantResponses)
-              .where(and(
-                eq(participantResponses.trainingId, trainingId),
-                eq(participantResponses.moduleId, moduleId),
-              )),
-            liveSessionId
-              ? db
-                  .select({ participantCount: count() })
-                  .from(trainingParticipants)
-                  .where(eq(trainingParticipants.trainingId, trainingId))
-              : Promise.resolve([{ participantCount: 0 }] as const),
-          ]);
-          const responseCount = respRow[0].responseCount;
-
-          io.to(`training:${trainingId}`).emit("data:aggregate", {
-            trainingId,
-            moduleId,
-            responseCount,
-          });
-
-          if (liveSessionId) {
-            // Trainer-dashboard progress only — emit to trainers sub-room, not
-            // the whole training room (participants don't render this).
-            io.to(`training:${trainingId}:trainers`).emit("session:submission_update", {
-              trainingId,
-              moduleId,
-              liveSessionId,
-              submitted: Number(responseCount),
-              totalParticipants: Number(partRow[0].participantCount),
-            });
-          }
+          // Coalesced broadcast: collapses a storm of submits into one count + one
+          // fan-out per module per AGGREGATE_FLUSH_MS window (see scheduleAggregate).
+          scheduleAggregate(io, trainingId, moduleId);
         } catch (err) {
           logger.error(err, "response:submit failed");
           if (typeof ack === "function") ack({ ok: false, error: "Failed to save response" });
