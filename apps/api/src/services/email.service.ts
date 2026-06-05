@@ -39,6 +39,7 @@ function muted(text: string) {
 function stripHtml(html: string) {
   return html
     .replace(/<style[^>]*>[\s\S]*?<\/style>/gi, '')
+    .replace(/<a\s+(?:[^>]*?\s+)?href=(["'])(.*?)\1[^>]*>(.*?)<\/a>/gi, '$3: $2')
     .replace(/<br\s*\/?>/gi, '\n')
     .replace(/<\/p>/gi, '\n\n')
     .replace(/<[^>]*>?/gm, '')
@@ -89,6 +90,10 @@ export async function sendVerificationEmail(opts: { to: string; name: string; ur
       <p>Hi ${opts.name},</p>
       <p>Please verify your email address to complete your OruLabs account setup.</p>
       ${btn("Verify Email", opts.url, "#10b981")}
+      <p style="font-size:13px;color:#6b7280;margin-top:24px;word-break:break-all;">
+        If the button doesn't work, copy and paste this link into your browser:<br>
+        <a href="${opts.url}" style="color:#10b981;text-decoration:underline;">${opts.url}</a>
+      </p>
       ${muted("This link expires in 24 hours. If you didn't create an account, ignore this email.")}
     `),
   );
@@ -102,6 +107,10 @@ export async function sendResetPasswordEmail(opts: { to: string; name: string; u
       <p>Hi ${opts.name},</p>
       <p>We received a request to reset the password for your OruLabs account. Click the button below to set a new password.</p>
       ${btn("Reset Password", opts.url)}
+      <p style="font-size:13px;color:#6b7280;margin-top:24px;word-break:break-all;">
+        If the button doesn't work, copy and paste this link into your browser:<br>
+        <a href="${opts.url}" style="color:#111827;text-decoration:underline;">${opts.url}</a>
+      </p>
       ${muted("This link expires in 1 hour. If you didn't request this, you can safely ignore this email — your password won't change.")}
     `),
   );
