@@ -32,34 +32,34 @@ const contactSchema = {
 
 export default function ContactPage() {
   return (
-    <div className="min-h-screen bg-gray-50 py-16 px-4 sm:px-6 lg:px-8">
+    <div className="w-full px-4 sm:px-6 lg:px-8 bg-white">
       <SchemaMarkup schema={contactSchema} />
-      <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-sm border border-gray-100 p-8 space-y-6">
-        <div className="text-center mb-10">
-          <h1 className="text-3xl font-extrabold text-gray-900">Contact Us</h1>
-          <p className="mt-4 text-lg text-gray-500">We'd love to hear from you!</p>
+      <div className="max-w-4xl mx-auto py-12 space-y-12">
+        <div className="text-center space-y-4">
+          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">Contact Us</h1>
+          <p className="max-w-2xl mx-auto text-xl text-gray-500">We'd love to hear from you!</p>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <div className="bg-brand-50 rounded-xl p-6 border border-brand-100">
-            <h3 className="text-lg font-semibold text-brand-900 mb-2">Support</h3>
-            <p className="text-brand-700 mb-4">Need help with your account or joining a class?</p>
-            <a href="mailto:support@orulabs.in" className="text-brand-600 font-medium hover:underline">
+          <div className="bg-brand-50 rounded-2xl p-8 border border-brand-100 shadow-sm">
+            <h3 className="text-2xl font-bold text-brand-900 mb-3">Support</h3>
+            <p className="text-brand-700 text-lg mb-6">Need help with your account or joining a class?</p>
+            <a href="mailto:support@orulabs.in" className="inline-block text-brand-600 font-medium hover:text-brand-800 transition-colors">
               support@orulabs.in
             </a>
           </div>
 
-          <div className="bg-blue-50 rounded-xl p-6 border border-blue-100">
-            <h3 className="text-lg font-semibold text-blue-900 mb-2">Sales & Inquiries</h3>
-            <p className="text-blue-700 mb-4">Interested in using OruLabs for your organization?</p>
-            <a href="mailto:sales@orulabs.in" className="text-blue-600 font-medium hover:underline">
+          <div className="bg-blue-50 rounded-2xl p-8 border border-blue-100 shadow-sm">
+            <h3 className="text-2xl font-bold text-blue-900 mb-3">Sales & Inquiries</h3>
+            <p className="text-blue-700 text-lg mb-6">Interested in using OruLabs for your organization?</p>
+            <a href="mailto:sales@orulabs.in" className="inline-block text-blue-600 font-medium hover:text-blue-800 transition-colors">
               sales@orulabs.in
             </a>
           </div>
         </div>
 
-        <div className="mt-12 text-center text-gray-500 text-sm">
-          <p>OruLabs Inc.</p>
+        <div className="mt-16 pt-8 border-t border-gray-100 text-center text-gray-500 text-base">
+          <p className="font-medium text-gray-900">OruLabs Inc.</p>
           <p>Bringing education to the modern age.</p>
         </div>
       </div>
