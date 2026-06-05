@@ -10,7 +10,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
   useEffect(() => {
     if (!isPending && isAuthenticated && (emailVerified || user?.authProvider === "guest")) {
-      router.replace("/dashboard");
+      let dest = "/participant";
+      try { dest = localStorage.getItem("oru_return") ?? dest; } catch {}
+      router.replace(dest);
     }
   }, [isPending, isAuthenticated, emailVerified, user, router]);
 

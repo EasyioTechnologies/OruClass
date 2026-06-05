@@ -112,7 +112,7 @@ export async function sendWelcomeEmail(opts: { to: string; name: string; loginUr
     "Welcome to OruLabs",
     wrap("Welcome, " + opts.name + "!", `
       <p>Your account is ready. Start creating interactive training sessions in minutes.</p>
-      ${btn("Go to Dashboard", opts.loginUrl, "#10b981")}
+      ${btn("Get Started", opts.loginUrl, "#10b981")}
       ${muted("Need help getting started? Reply to this email — we read every message.")}
     `),
   );

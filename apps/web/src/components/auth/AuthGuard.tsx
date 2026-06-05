@@ -25,12 +25,16 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [mounted, isPending, isAuthenticated, router, pathname]);
 
-  // Redirect unverified email users to verify-email page
+  // Redirect unverified email users to verify-email page.
+  // Thread the intended landing so participants don't fall back to the trainer dashboard.
   useEffect(() => {
     if (mounted && !isPending && isAuthenticated && user && !emailVerified && user.authProvider !== "guest") {
-      router.replace(`/verify-email?email=${encodeURIComponent(user.email)}`);
+      let intended: string | null = null;
+      try { intended = localStorage.getItem("oru_return"); } catch {}
+      const returnTo = intended ?? (pathname.startsWith("/participant") ? "/participant" : pathname);
+      router.replace(`/verify-email?email=${encodeURIComponent(user.email)}&returnTo=${encodeURIComponent(returnTo)}`);
     }
-  }, [mounted, isPending, isAuthenticated, user, emailVerified, router]);
+  }, [mounted, isPending, isAuthenticated, user, emailVerified, router, pathname]);
 
   // Show children only if authenticated AND email verified (or guest)
   if (isAuthenticated && user && (emailVerified || user.authProvider === "guest")) {

@@ -13,7 +13,16 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const email = searchParams.get("email");
-  const returnTo = searchParams.get("returnTo") ?? "/dashboard";
+  // Priority: explicit link param → durable signup intent → safe default.
+  // Default is /participant (NOT /dashboard) so a lost param never promotes a participant to trainer.
+  const [returnTo, setReturnTo] = useState(searchParams.get("returnTo") ?? "/participant");
+  useEffect(() => {
+    if (searchParams.get("returnTo")) return;
+    try {
+      const stored = localStorage.getItem("oru_return");
+      if (stored) setReturnTo(stored);
+    } catch {}
+  }, [searchParams]);
   const { setEmailVerified, setUser } = useAuthStore();
 
   const [verifying, setVerifying] = useState(!!token);

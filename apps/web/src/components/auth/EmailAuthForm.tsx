@@ -54,6 +54,7 @@ function EmailAuthFormInner({
       if (isLogin) {
         const { data } = await apiClient.post("/api/auth/login", { email, password });
         setTokens(data.accessToken, data.refreshToken);
+        try { localStorage.setItem("oru_return", effectiveReturnTo); } catch {}
         setUser({
           id: data.user.id,
           name: data.user.name,
@@ -72,6 +73,7 @@ function EmailAuthFormInner({
 
         const { data } = await apiClient.post("/api/auth/signup", { email, password, name, returnTo: effectiveReturnTo });
         setTokens(data.accessToken, data.refreshToken);
+        try { localStorage.setItem("oru_return", effectiveReturnTo); } catch {}
         setUser({
           id: data.user.id,
           name: data.user.name,

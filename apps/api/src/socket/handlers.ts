@@ -434,6 +434,20 @@ export function registerSocketHandlers(io: IO): void {
     );
 
     socket.on(
+      "draw:update",
+      guard("draw:update", ({ trainingId, moduleId, stroke }: { trainingId: string; moduleId: string; stroke: unknown }) => {
+        socket.to(`training:${trainingId}`).emit("draw:update", { moduleId, userId, stroke });
+      }),
+    );
+
+    socket.on(
+      "draw:clear",
+      guard("draw:clear", ({ trainingId, moduleId }: { trainingId: string; moduleId: string }) => {
+        socket.to(`training:${trainingId}`).emit("draw:clear", { moduleId });
+      }),
+    );
+
+    socket.on(
       "note:create",
       guard("note:create", ({ trainingId, moduleId, note }: { trainingId: string; moduleId: string; note: unknown }) => {
         socket.to(`training:${trainingId}`).emit("note:create", { moduleId, note });

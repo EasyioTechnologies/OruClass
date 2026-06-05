@@ -77,11 +77,16 @@ apiClient.interceptors.response.use(
       originalRequest.headers.Authorization = `Bearer ${data.accessToken}`;
       processQueue(null, data.accessToken);
       return apiClient(originalRequest);
-    } catch (refreshError) {
+    } catch (refreshError: any) {
       processQueue(refreshError, null);
-      clearTokens();
-      if (typeof window !== "undefined") {
-        window.location.href = "/login";
+      // Only nuke the session + redirect when the refresh token is genuinely rejected (401).
+      // Network errors / API restarts (no response, or 5xx) must NOT log out a live participant —
+      // the original call fails this once and retries naturally once the API is back.
+      if (refreshError?.response?.status === 401) {
+        clearTokens();
+        if (typeof window !== "undefined") {
+          window.location.href = "/login";
+        }
       }
       return Promise.reject(refreshError);
     } finally {

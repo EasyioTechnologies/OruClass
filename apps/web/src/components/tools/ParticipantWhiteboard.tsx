@@ -25,12 +25,18 @@ export function ParticipantWhiteboard({ module, trainingId }: Props) {
       setStrokes([]);
     };
 
+    const handleSync = ({ strokes }: { strokes: StrokeData[] }) => {
+      setStrokes(strokes);
+    };
+
     socket.on("draw:update", handleUpdate);
     socket.on("draw:clear", handleClear);
+    socket.on("draw:sync", handleSync);
 
     return () => {
       socket.off("draw:update", handleUpdate);
       socket.off("draw:clear", handleClear);
+      socket.off("draw:sync", handleSync);
     };
   }, [socket]);
 

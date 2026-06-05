@@ -40,8 +40,8 @@ export async function signUp(email: string, password: string, name: string, retu
   // Send verification email (async, don't block signup)
   createAndSendVerificationEmail(user.id, user.email, user.name, returnTo).catch(() => {});
 
-  // Send welcome email
-  const loginUrl = `${WEB_URL}/dashboard`;
+  // Send welcome email — route to the signup-intended landing, never the trainer dashboard by default.
+  const loginUrl = `${WEB_URL}${returnTo ?? "/participant"}`;
   sendWelcomeEmail({ to: user.email, name: user.name, loginUrl }).catch(() => {});
 
   return { user: sanitizeUser(user), ...tokens };
