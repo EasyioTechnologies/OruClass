@@ -17,6 +17,7 @@ import { getPlan } from "@/config/plans";
 import type { Training } from "@oruclass/types";
 import { useDeleteTraining, useUpdateTraining } from "@/hooks/useTrainings";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
+import { SafeHTML } from "@/components/ui/SafeHTML";
 
 function DeleteTrainingModal({ isOpen, onClose, training, onDelete }: { isOpen: boolean, onClose: () => void, training: Training, onDelete: () => void }) {
   const [input, setInput] = useState("");
@@ -295,7 +296,7 @@ function TrainingCard({ t }: { t: Training }) {
         </div>
         
         <h3 className="text-xl font-extrabold text-slate-800 leading-tight mb-2 group-hover:text-brand-700 transition-colors">{t.title}</h3>
-        {t.description && <div className="text-sm text-slate-600 line-clamp-2 leading-relaxed prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: t.description }} />}
+        {t.description && <SafeHTML html={t.description} className="text-sm text-slate-600 line-clamp-2 leading-relaxed" />}
       </div>
 
       {/* Footer */}

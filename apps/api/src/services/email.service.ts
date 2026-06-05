@@ -3,7 +3,8 @@ import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
 const FROM = process.env.RESEND_FROM_EMAIL ?? "OruLabs <noreply@orulabs.in>";
-const WEB = process.env.WEB_URL ?? "http://localhost:3000";
+const RAW_WEB_URL = process.env.WEB_URL ?? "http://localhost:3000";
+const WEB = RAW_WEB_URL.startsWith("http") ? RAW_WEB_URL.replace(/\/$/, "") : `https://${RAW_WEB_URL.replace(/\/$/, "")}`;
 
 // ─── Shared template ────────────────────────────────────────────────
 

@@ -6,6 +6,10 @@ import type { TrainingModule, ReflectionComment } from "@oruclass/types";
 import { apiClient } from "@/lib/api-client";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useQueryClient } from "@tanstack/react-query";
+import {  Clock,
+  CheckCircle2,
+} from "lucide-react";
+import { SafeHTML } from "@/components/ui/SafeHTML";
 import { MessageCircle, Send } from "lucide-react";
 
 interface Props {
@@ -78,10 +82,7 @@ export function TrainerReflectionJournal({ module, trainingId }: Props) {
                     </div>
                   </div>
 
-                  <div 
-                    className="text-gray-700 text-sm flex-1 prose prose-sm max-w-none"
-                    dangerouslySetInnerHTML={{ __html: text || "No content" }}
-                  />
+                  <SafeHTML html={text || "No content"} className="text-gray-700 text-sm" />
 
                   {comments.length > 0 && (
                     <div className="space-y-2 mt-2 bg-gray-50 p-3 rounded-md border border-gray-100">

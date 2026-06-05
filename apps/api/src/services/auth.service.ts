@@ -10,7 +10,8 @@ import {
   sendPasswordChangedEmail,
 } from "./email.service";
 
-const WEB_URL = process.env.WEB_URL ?? "http://localhost:3000";
+const RAW_WEB_URL = process.env.WEB_URL ?? "http://localhost:3000";
+const WEB_URL = RAW_WEB_URL.startsWith("http") ? RAW_WEB_URL.replace(/\/$/, "") : `https://${RAW_WEB_URL.replace(/\/$/, "")}`;
 
 function generateToken(): string {
   return crypto.randomUUID() + crypto.randomUUID().replace(/-/g, "");

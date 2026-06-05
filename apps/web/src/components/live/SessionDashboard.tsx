@@ -48,9 +48,17 @@ function ResponseDetail({
           <p className="text-xs text-gray-400 text-center py-4">No response found</p>
         ) : (
           <div className="space-y-2">
-            <p className="text-[10px] text-gray-400">
-              Submitted {new Date(data.submittedAt).toLocaleTimeString()}
-            </p>
+            <div className="flex items-center justify-between">
+              <p className="text-[10px] text-gray-400">
+                Submitted {new Date(data.submittedAt).toLocaleTimeString()}
+              </p>
+              {typeof data.timeSpentSeconds === "number" && (
+                <p className="text-[10px] text-gray-400 flex items-center gap-1">
+                  <Clock size={10} />
+                  {Math.floor(data.timeSpentSeconds / 60)}m {data.timeSpentSeconds % 60}s
+                </p>
+              )}
+            </div>
             <div className="bg-white rounded-lg border border-gray-200 p-2.5">
               <pre className="text-xs text-gray-700 whitespace-pre-wrap break-words font-sans leading-relaxed">
                 {JSON.stringify(data.responseData, null, 2)}

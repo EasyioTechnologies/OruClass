@@ -59,6 +59,7 @@ import {
   Link2,
   Lock,
 } from "lucide-react";
+import { SafeHTML } from "@/components/ui/SafeHTML";
 
 // ─── Role context ────────────────────────────────────────────────────────────
 // Current user's training role, provided once at StudioPage root so deeply nested
@@ -1525,7 +1526,7 @@ function AddModuleDrawer({
               </div>
               <div>
                 <p className={cn("text-xs font-bold", selected ? t.color : "text-gray-700")}>{t.label}</p>
-                <div className="text-[10px] text-gray-400 leading-tight mt-0.5 line-clamp-2 prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: t.description }} />
+                <SafeHTML html={t.description} className="text-[10px] text-gray-400 leading-tight mt-0.5 line-clamp-2" />
               </div>
             </button>
           );
@@ -2189,10 +2190,7 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
               )}
             </div>
             {training.description && (
-              <div 
-                className="text-xs text-gray-500 leading-relaxed prose prose-sm prose-gray max-w-none prose-p:m-0 prose-ul:m-0 prose-ol:m-0"
-                dangerouslySetInnerHTML={{ __html: training.description }}
-              />
+              <SafeHTML html={training.description} className="text-xs text-gray-500 leading-relaxed prose-gray" />
             )}
           </div>
         )}

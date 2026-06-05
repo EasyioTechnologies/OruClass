@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
+import { SafeHTML } from "@/components/ui/SafeHTML";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
 import { useMyModuleResponse } from "@/hooks/useMyModuleResponse";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
@@ -58,10 +59,7 @@ export function ParticipantReflectionJournal({ module, trainingId }: Props) {
         <div className="flex-1 overflow-auto space-y-6">
           <div className="bg-white p-5 rounded-lg border border-gray-200 shadow-sm">
             <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wider mb-3">Your Entry</h3>
-            <div 
-              className="text-gray-700 text-sm prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: text || "No content" }}
-            />
+            <SafeHTML html={text || "No content"} className="text-gray-700 text-[15px] leading-relaxed whitespace-pre-wrap" />
             <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
               <button
                 onClick={() => setIsEditing(true)}

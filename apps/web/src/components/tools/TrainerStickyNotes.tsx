@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { SafeHTML } from "@/components/ui/SafeHTML";
 import { useSocket } from "@/hooks/useSocket";
 import { useAuthStore } from "@/store/auth";
 import type { TrainingModule, StickyNote } from "@oruclass/types";
@@ -96,10 +97,7 @@ export function TrainerStickyNotes({ module, trainingId }: Props) {
             className="absolute w-48 min-h-[100px] p-3 rounded-lg shadow-md text-sm cursor-move select-none border border-black/10 overflow-hidden"
             style={{ backgroundColor: note.color, left: note.x, top: note.y }}
           >
-            <div 
-              className="prose prose-sm max-w-none"
-              dangerouslySetInnerHTML={{ __html: note.text }}
-            />
+            <SafeHTML html={note.text} className="prose prose-sm max-w-none" />
           </div>
         ))}
         {notes.length === 0 && (

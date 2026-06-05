@@ -79,7 +79,7 @@ export function useParticipantResponse(
   return useQuery({
     queryKey: ["participant-response", sessionId, userId, moduleId],
     queryFn: async () => {
-      const { data } = await apiClient.get<{ responseData: Record<string, unknown>; submittedAt: string; user: { name: string } }>(
+      const { data } = await apiClient.get<{ responseData: Record<string, unknown>; submittedAt: string; timeSpentSeconds: number | null; user: { name: string } }>(
         `/api/workspaces/${workspaceId}/trainings/${trainingId}/sessions/${sessionId}/participants/${userId}/response?moduleId=${moduleId}`,
         { headers: { "X-Workspace-ID": workspaceId } },
       );

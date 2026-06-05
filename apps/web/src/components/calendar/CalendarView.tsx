@@ -13,6 +13,7 @@ import {
   ExternalLink,
   X,
 } from "lucide-react";
+import { SafeHTML } from "@/components/ui/SafeHTML";
 
 const DAYS_FULL = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
 const DAYS_SHORT = ["S", "M", "T", "W", "T", "F", "S"];
@@ -273,7 +274,7 @@ export function CalendarView() {
                       })}
                     </p>
                   )}
-                  {t.description && <div className="text-xs text-gray-500 line-clamp-2 prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: t.description }} />}
+                  {t.description && <SafeHTML html={t.description} className="text-xs text-gray-500 line-clamp-2" />}
                   <Link
                     href={`/trainings/${t.id}/studio`}
                     className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-600 hover:text-brand-700"
@@ -332,7 +333,7 @@ function TrainingDetail({ training, onClose }: { training: Training | null; onCl
         <span className="text-xs font-medium text-gray-700 capitalize">{STATUS_LABEL[training.sessionStatus] ?? training.sessionStatus}</span>
       </div>
       {training.description && (
-        <div className="text-xs text-gray-500 line-clamp-3 prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: training.description }} />
+        <SafeHTML html={training.description} className="text-xs text-gray-500 line-clamp-3" />
       )}
       <Link
         href={`/trainings/${training.id}/studio`}

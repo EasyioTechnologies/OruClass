@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { ArrowLeft, BookOpen, FileText, StickyNote, Award, Calendar, User } from "lucide-react";
+import { SafeHTML } from "@/components/ui/SafeHTML";
 import { cn } from "@oruclass/utils";
 import { useParticipantTrainingReview } from "@/hooks/useParticipant";
 import { useAuth } from "@/hooks/useAuth";
@@ -62,7 +63,7 @@ export function TrainingReviewDetail({ trainingId }: { trainingId: string }) {
         </button>
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{training.title}</h1>
         {training.description && (
-          <div className="text-sm text-gray-500 mt-1 prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: training.description }} />
+          <SafeHTML html={training.description} className="text-sm text-gray-500 mt-1" />
         )}
         <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-gray-400">
           {training.creator && (
