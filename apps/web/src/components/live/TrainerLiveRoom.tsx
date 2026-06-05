@@ -16,6 +16,7 @@ import { CompletedSlide } from "./CompletedSlide";
 import { SelectModuleSlide } from "./SelectModuleSlide";
 import { SessionDashboard } from "./SessionDashboard";
 import { TrainerModuleRenderer } from "../tools/TrainerModuleRenderer";
+import { ModuleStopwatch } from "./ModuleStopwatch";
 import { cn } from "@oruclass/utils";
 import {
   SlidersHorizontal,
@@ -229,7 +230,8 @@ export function TrainerLiveRoom({ trainingId }: { trainingId: string }) {
         )}
 
         {/* Module canvas */}
-        <div className="flex-1 overflow-auto bg-white">
+        <div className="flex-1 overflow-auto bg-white relative">
+          <ModuleStopwatch />
           <div className="h-full overflow-hidden">
             {renderModuleArea()}
           </div>

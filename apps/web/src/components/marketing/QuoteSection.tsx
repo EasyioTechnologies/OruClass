@@ -23,7 +23,7 @@ export function QuoteSection() {
   };
 
   return (
-    <section className="min-h-[100dvh] w-full snap-start relative flex flex-col justify-center items-center bg-gray-50 overflow-hidden py-24 px-6 md:px-12">
+    <section className="min-h-[100dvh] w-full  relative flex flex-col justify-center items-center bg-gray-50 overflow-hidden py-24 px-6 md:px-12">
       {/* Subtle background decoration */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden pointer-events-none">
         <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-brand-100/50 blur-3xl" />

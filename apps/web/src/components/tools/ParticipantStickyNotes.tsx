@@ -5,6 +5,7 @@ import { useSocket } from "@/hooks/useSocket";
 import { useAuthStore } from "@/store/auth";
 import type { TrainingModule, StickyNote } from "@oruclass/types";
 import { cn } from "@oruclass/utils";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 interface Props {
   module: TrainingModule;
@@ -53,13 +54,14 @@ export function ParticipantStickyNotes({ module, trainingId }: Props) {
       <h2 className="font-bold text-gray-900">{module.title}</h2>
 
       <div className="flex gap-2 items-center">
-        <input
-          value={draft}
-          onChange={(e) => setDraft(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && addNote()}
-          className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-          placeholder="Add a sticky note…"
-        />
+        <div className="flex-1">
+          <RichTextEditor
+            value={draft}
+            onChange={setDraft}
+            placeholder="Add a sticky note…"
+            minHeight="60px"
+          />
+        </div>
         <div className="flex gap-1">
           {NOTE_COLORS.map((c) => (
             <button
@@ -86,10 +88,13 @@ export function ParticipantStickyNotes({ module, trainingId }: Props) {
         {notes.map((note) => (
           <div
             key={note.id}
-            className="absolute w-36 min-h-[80px] p-3 rounded-lg shadow-sm text-sm break-words cursor-move select-none border border-black/5"
+            className="absolute w-48 min-h-[100px] p-3 rounded-lg shadow-sm text-sm cursor-move select-none border border-black/5 overflow-hidden"
             style={{ backgroundColor: note.color, left: note.x, top: note.y }}
           >
-            {note.text}
+            <div 
+              className="prose prose-sm max-w-none"
+              dangerouslySetInnerHTML={{ __html: note.text }}
+            />
           </div>
         ))}
         {notes.length === 0 && (

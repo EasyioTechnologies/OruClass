@@ -44,6 +44,11 @@ export function ParticipantPulse({ module, trainingId }: Props) {
         <p className="text-gray-600 text-center text-sm sm:text-base">{module.config.pulsePrompt}</p>
       )}
       <p className="text-xs sm:text-sm text-gray-400">How are you feeling right now?</p>
+      {module.config.isAnonymous && (
+        <p className="text-[10px] sm:text-xs text-brand-600 font-medium flex items-center gap-1 bg-brand-50 px-2 py-1 rounded-md">
+          <span className="text-sm">🔒</span> Your response is anonymous
+        </p>
+      )}
 
       <div className="flex flex-wrap justify-center gap-2 sm:gap-4">
         {emojis.map((emoji) => (

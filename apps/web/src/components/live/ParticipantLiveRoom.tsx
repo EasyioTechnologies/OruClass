@@ -11,6 +11,7 @@ import { CompletedSlide } from "./CompletedSlide";
 import { SelectModuleSlide } from "./SelectModuleSlide";
 import { ParticipantModuleRenderer } from "../tools/ParticipantModuleRenderer";
 import { ParticipantScratchpad } from "./ParticipantScratchpad";
+import { ModuleStopwatch } from "./ModuleStopwatch";
 import { cn } from "@oruclass/utils";
 import { WifiOff, RefreshCw } from "lucide-react";
 
@@ -168,6 +169,7 @@ export function ParticipantLiveRoom({ trainingId }: { trainingId: string }) {
 
       {/* Content Area */}
       <div className="flex-1 relative overflow-y-auto">
+        <ModuleStopwatch />
         {renderContent()}
       </div>
 

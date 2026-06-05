@@ -29,13 +29,13 @@ export function MarketingNavbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-10">
-          <Link href="#features" className={`text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
+          <Link href="/#features" className={`text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
             Features
           </Link>
-          <Link href="#platform" className={`text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
+          <Link href="/#platform" className={`text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
             Platform
           </Link>
-          <Link href="#solutions" className={`text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
+          <Link href="/#solutions" className={`text-sm font-medium transition-colors hover:text-brand-600 ${isScrolled ? "text-gray-500" : "text-gray-600"}`}>
             Solutions
           </Link>
         </nav>

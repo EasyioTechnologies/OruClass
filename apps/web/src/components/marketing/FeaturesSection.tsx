@@ -45,7 +45,7 @@ export function FeaturesSection() {
     <>
       <section 
         id="features-intro" 
-        className="min-h-[100dvh] w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-white py-20"
+        className="min-h-[100dvh] w-full  relative flex flex-col items-center justify-center overflow-hidden bg-white py-20"
       >
         <motion.div 
           initial={{ opacity: 0, y: 40, scale: 0.95 }}
@@ -79,7 +79,7 @@ export function FeaturesSection() {
 
       <section 
         id="features-menu" 
-        className="h-[70dvh] md:h-[100dvh] min-h-[400px] w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-gray-50/30"
+        className="h-[70dvh] md:h-[100dvh] min-h-[400px] w-full  relative flex flex-col items-center justify-center overflow-hidden bg-gray-50/30"
       >
         <motion.div 
           initial={{ opacity: 0, scale: 0.9, filter: "blur(10px)" }}

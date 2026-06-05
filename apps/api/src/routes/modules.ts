@@ -52,7 +52,7 @@ modulesRouter.get("/:trainingId/modules", async (c) => {
 // POST /trainings/:trainingId/modules
 modulesRouter.post(
   "/:trainingId/modules",
-  requireTrainingPermission("edit_agenda"),
+  requireTrainingPermission("edit_modules"),
   async (c) => {
     const { trainingId } = c.req.param();
     const body = await parseBody(c, CreateModuleSchema);
@@ -69,7 +69,7 @@ modulesRouter.post(
 // PATCH /trainings/:trainingId/modules/:moduleId
 modulesRouter.patch(
   "/:trainingId/modules/:moduleId",
-  requireTrainingPermission("edit_agenda"),
+  requireTrainingPermission("edit_modules"),
   async (c) => {
     const { trainingId, moduleId } = c.req.param();
     const body = await parseBody(c, UpdateModuleSchema);
@@ -113,7 +113,7 @@ modulesRouter.get(
 // DELETE /trainings/:trainingId/modules/:moduleId
 modulesRouter.delete(
   "/:trainingId/modules/:moduleId",
-  requireTrainingPermission("edit_agenda"),
+  requireTrainingPermission("edit_modules"),
   async (c) => {
     const { trainingId, moduleId } = c.req.param();
 
@@ -199,7 +199,7 @@ modulesRouter.post(
 // belong to the same workspace.
 modulesRouter.post(
   "/:trainingId/modules/:moduleId/duplicate",
-  requireTrainingPermission("edit_agenda"),
+  requireTrainingPermission("edit_modules"),
   async (c) => {
     const workspaceId = c.get("workspaceId") as string;
     const { trainingId, moduleId } = c.req.param();
@@ -251,7 +251,7 @@ modulesRouter.post(
 // unique (trainingId, position) constraint mid-update.
 modulesRouter.post(
   "/:trainingId/modules/reorder",
-  requireTrainingPermission("edit_agenda"),
+  requireTrainingPermission("edit_modules"),
   async (c) => {
     const { trainingId } = c.req.param();
     const { order } = await parseBody(c, ReorderModulesSchema);

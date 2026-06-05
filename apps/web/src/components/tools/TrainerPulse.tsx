@@ -28,11 +28,29 @@ export function TrainerPulse({ module, trainingId }: Props) {
 
   const maxCount = Math.max(1, ...Object.values(tally));
 
+  const averageScore = useMemo(() => {
+    if (totalResponses === 0) return 0;
+    // Assume emojis are ordered Best -> Worst or Worst -> Best.
+    // For a generic scale, we'll assign (emojis.length - index) so index 0 = N points.
+    let totalScore = 0;
+    responses?.forEach((r) => {
+      const emoji = (r.responseData as any).emoji;
+      const idx = emojis.indexOf(emoji);
+      if (idx >= 0) totalScore += (emojis.length - idx);
+    });
+    return totalScore / totalResponses;
+  }, [responses, emojis, totalResponses]);
+
   return (
     <div className="flex h-full flex-col p-4 sm:p-6">
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-1 mb-4 sm:mb-6">
         <h2 className="text-lg sm:text-xl font-bold text-gray-900">{module.title} (Trainer View)</h2>
-        <div className="text-sm text-gray-500 font-medium">{totalResponses} Responses</div>
+        <div className="flex gap-4">
+          <div className="text-sm font-semibold text-brand-700 bg-brand-50 px-3 py-1 rounded-lg">
+            Avg Score: {averageScore.toFixed(1)} / {emojis.length}
+          </div>
+          <div className="text-sm text-gray-500 font-medium py-1">{totalResponses} Responses</div>
+        </div>
       </div>
 
       {module.config.pulsePrompt && (

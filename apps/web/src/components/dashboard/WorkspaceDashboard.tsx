@@ -16,6 +16,7 @@ import { useState, useEffect, useRef } from "react";
 import { getPlan } from "@/config/plans";
 import type { Training } from "@oruclass/types";
 import { useDeleteTraining, useUpdateTraining } from "@/hooks/useTrainings";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 function DeleteTrainingModal({ isOpen, onClose, training, onDelete }: { isOpen: boolean, onClose: () => void, training: Training, onDelete: () => void }) {
   const [input, setInput] = useState("");
@@ -158,13 +159,17 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
         </div>
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-          <textarea
+          <RichTextEditor
             value={description}
-            onChange={(e) => setDescription(e.target.value)}
-            rows={3}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+            onChange={setDescription}
             placeholder="Optional description…"
+            minHeight="120px"
           />
+          <div className="flex justify-end mt-1">
+            <span className={cn("text-xs font-medium", description.replace(new RegExp("<[^>]*>?", "gm"), '').length > 2000 ? "text-red-500" : "text-gray-500")}>
+              {description.replace(new RegExp("<[^>]*>?", "gm"), '').length} / 2000 characters
+            </span>
+          </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div>
@@ -290,7 +295,7 @@ function TrainingCard({ t }: { t: Training }) {
         </div>
         
         <h3 className="text-xl font-extrabold text-slate-800 leading-tight mb-2 group-hover:text-brand-700 transition-colors">{t.title}</h3>
-        {t.description && <p className="text-sm text-slate-600 line-clamp-2 leading-relaxed">{t.description}</p>}
+        {t.description && <div className="text-sm text-slate-600 line-clamp-2 leading-relaxed prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: t.description }} />}
       </div>
 
       {/* Footer */}

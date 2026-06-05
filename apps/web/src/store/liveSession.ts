@@ -18,6 +18,7 @@ interface LiveSessionState {
   isPaused: boolean;
   responseCounts: Map<string, number>;
   socketStatus: SocketStatus;
+  stopwatch: { moduleId: string; accumulatedSeconds: number; isRunning: boolean; lastStartedAt: string } | null;
   sessionStats: { submitted: number; totalParticipants: number; completionPct: number; liveSessionId: string | null } | null;
   setTrainingId: (id: string) => void;
   setActiveModule: (module: TrainingModule | null) => void;
@@ -26,6 +27,7 @@ interface LiveSessionState {
   setPaused: (paused: boolean) => void;
   setResponseCount: (moduleId: string, count: number) => void;
   setSocketStatus: (status: SocketStatus) => void;
+  setStopwatch: (data: { moduleId: string; accumulatedSeconds: number; isRunning: boolean; lastStartedAt: string } | null) => void;
   setSessionStats: (stats: { submitted: number; totalParticipants: number; completionPct: number; liveSessionId: string } | null) => void;
   reset: () => void;
 }
@@ -37,6 +39,7 @@ export const useLiveSessionStore = create<LiveSessionState>((set) => ({
   isPaused: false,
   responseCounts: new Map(),
   socketStatus: "connected",
+  stopwatch: null,
   sessionStats: null,
   setTrainingId: (trainingId) => set({ trainingId }),
   setActiveModule: (activeModule) => set({ activeModule }),
@@ -69,6 +72,7 @@ export const useLiveSessionStore = create<LiveSessionState>((set) => ({
       return { responseCounts: next };
     }),
   setSocketStatus: (socketStatus) => set({ socketStatus }),
+  setStopwatch: (stopwatch) => set({ stopwatch }),
   setSessionStats: (sessionStats) => set({ sessionStats }),
   reset: () =>
     set({
@@ -78,6 +82,7 @@ export const useLiveSessionStore = create<LiveSessionState>((set) => ({
       isPaused: false,
       responseCounts: new Map(),
       socketStatus: "connected",
+      stopwatch: null,
       sessionStats: null,
     }),
 }));

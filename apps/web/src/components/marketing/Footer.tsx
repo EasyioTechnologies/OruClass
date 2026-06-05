@@ -5,7 +5,7 @@ import { Twitter, Linkedin, Github } from "lucide-react";
 
 export function Footer() {
   return (
-    <footer className="snap-start bg-gray-50 border-t border-gray-100 pt-16 pb-8">
+    <footer className=" bg-gray-50 border-t border-gray-100 pt-16 pb-8">
       <div className="max-w-7xl mx-auto px-6 md:px-12">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-12 md:gap-8 mb-12">
           <div className="col-span-1 md:col-span-2">
@@ -33,10 +33,10 @@ export function Footer() {
           <div>
             <h4 className="font-semibold text-gray-900 mb-4">Platform</h4>
             <ul className="space-y-3">
-              <li><Link href="#features" className="text-gray-500 hover:text-brand-600 transition-colors">Features</Link></li>
-              <li><Link href="#solutions" className="text-gray-500 hover:text-brand-600 transition-colors">Live Sessions</Link></li>
-              <li><Link href="#solutions" className="text-gray-500 hover:text-brand-600 transition-colors">Workspaces</Link></li>
-              <li><Link href="#solutions" className="text-gray-500 hover:text-brand-600 transition-colors">Analytics</Link></li>
+              <li><Link href="/#features" className="text-gray-500 hover:text-brand-600 transition-colors">Features</Link></li>
+              <li><Link href="/#solutions" className="text-gray-500 hover:text-brand-600 transition-colors">Live Sessions</Link></li>
+              <li><Link href="/#solutions" className="text-gray-500 hover:text-brand-600 transition-colors">Workspaces</Link></li>
+              <li><Link href="/#solutions" className="text-gray-500 hover:text-brand-600 transition-colors">Analytics</Link></li>
             </ul>
           </div>
 

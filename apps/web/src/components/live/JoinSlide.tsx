@@ -51,10 +51,9 @@ function CounterDigit({ digit }: { digit: string }) {
   );
 }
 
-function ParticipantCounter({ count }: { count: number }) {
+function ParticipantCounter({ count, names }: { count: number, names: string[] }) {
   const prev = useRef(count);
   const [pinging, setPinging] = useState(false);
-  const digits = count.toString().split("");
 
   useEffect(() => {
     if (count > prev.current) {
@@ -64,83 +63,71 @@ function ParticipantCounter({ count }: { count: number }) {
     prev.current = count;
   }, [count]);
 
+  const recent = [...names].reverse().slice(0, 5);
+
   return (
-    <div className="flex flex-col items-center gap-3">
+    <div className="flex flex-col items-center gap-4">
       <div className="relative flex items-center justify-center">
         {pinging && (
           <motion.span
             key={Date.now()}
-            initial={{ scale: 0.6, opacity: 0.7 }}
-            animate={{ scale: 2.4, opacity: 0 }}
-            transition={{ duration: 0.85, ease: "easeOut" }}
+            initial={{ scale: 0.8, opacity: 0.8 }}
+            animate={{ scale: 1.5, opacity: 0 }}
+            transition={{ duration: 0.8, ease: "easeOut" }}
             className="absolute inset-0 rounded-full bg-brand-400 pointer-events-none"
           />
         )}
-        <div className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-brand-50 border-2 border-brand-100 flex items-center justify-center transition-all duration-300">
-          <Users size={28} className="text-brand-500 sm:w-8 sm:h-8" />
+        <div className="flex -space-x-3 relative z-10">
+          <AnimatePresence mode="popLayout">
+            {recent.map((name, i) => (
+              <motion.div
+                key={`${name}-${names.length - i}`}
+                initial={{ opacity: 0, scale: 0.5, x: -20 }}
+                animate={{ opacity: 1, scale: 1, x: 0 }}
+                exit={{ opacity: 0, scale: 0.5 }}
+                transition={{ type: "spring", stiffness: 400, damping: 25 }}
+                className="w-10 h-10 rounded-full bg-white border-2 border-gray-50 flex items-center justify-center shadow-sm relative"
+                style={{ zIndex: 10 - i }}
+              >
+                <div className="w-full h-full rounded-full bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center">
+                  <span className="text-brand-600 font-bold text-[12px]">{name.slice(0, 2).toUpperCase()}</span>
+                </div>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+          {count === 0 && (
+            <div className="w-10 h-10 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center z-0 relative shadow-sm">
+              <Users size={16} className="text-gray-400" />
+            </div>
+          )}
+          {count > 5 && (
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.5 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="w-10 h-10 rounded-full bg-gray-100 border-2 border-white flex items-center justify-center z-0 relative shadow-sm"
+            >
+              <span className="text-gray-600 font-bold text-[11px]">+{count - 5}</span>
+            </motion.div>
+          )}
         </div>
       </div>
 
-      <div className="flex items-end gap-0.5 min-w-[2.6rem] justify-center">
-        <AnimatePresence mode="popLayout">
-          {digits.map((d, i) => (
-            <CounterDigit key={`${digits.length}-${i}`} digit={d} />
-          ))}
-        </AnimatePresence>
-      </div>
-
-      <p className="text-[11px] font-semibold text-gray-400 uppercase tracking-widest leading-none">
-        joined
-      </p>
-
-      <div className="flex items-center gap-1.5">
-        <span className="relative flex h-2 w-2">
-          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
-          <span className="relative inline-flex rounded-full h-2 w-2 bg-green-500" />
-        </span>
-        <span className="text-[10px] text-green-600 font-semibold">Live</span>
+      <div className="text-center">
+        <div className="flex items-center justify-center gap-2">
+          <div className="flex items-center gap-1.5 bg-green-50 px-2 py-1 rounded-full">
+            <span className="relative flex h-1.5 w-1.5">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75" />
+              <span className="relative inline-flex rounded-full h-1.5 w-1.5 bg-green-500" />
+            </span>
+            <span className="text-[10px] text-green-600 font-bold uppercase tracking-wide">Live</span>
+          </div>
+        </div>
+        <div className="mt-2 flex items-baseline justify-center gap-1.5">
+          <span className="text-4xl font-black text-gray-900 tabular-nums leading-none tracking-tight">{count}</span>
+          <span className="text-sm font-semibold text-gray-400 uppercase tracking-widest">Joined</span>
+        </div>
       </div>
     </div>
-  );
-}
-
-function RecentJoiners({ names }: { names: string[] }) {
-  if (names.length === 0) return null;
-  const recent = names.slice(-3).reverse();
-  const othersCount = names.length > 3 ? names.length - 3 : 0;
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="mt-2 flex items-center gap-2.5 px-3 py-2 bg-white border border-gray-200 rounded-full shadow-sm w-full max-w-[200px]"
-    >
-      <div className="flex -space-x-2 shrink-0">
-        <AnimatePresence mode="popLayout">
-          {recent.map((name, i) => (
-            <motion.div
-              key={name}
-              initial={{ opacity: 0, scale: 0.5, x: 20 }}
-              animate={{ opacity: 1, scale: 1, x: 0 }}
-              exit={{ opacity: 0, scale: 0.5, x: -20 }}
-              transition={{ type: "spring", stiffness: 400, damping: 25 }}
-              className="w-7 h-7 rounded-full bg-brand-100 border-2 border-white flex items-center justify-center text-[9px] font-bold text-brand-600 relative"
-              style={{ zIndex: 10 - i }}
-            >
-              {name.slice(0, 2).toUpperCase()}
-            </motion.div>
-          ))}
-        </AnimatePresence>
-      </div>
-      <div className="flex-1 min-w-0 text-left">
-        <p className="text-[11px] text-gray-700 font-medium truncate">
-          {recent[0]}
-        </p>
-        <p className="text-[10px] text-gray-500 truncate">
-          {othersCount > 0 ? `+${othersCount} others` : recent.length > 1 ? `+${recent.length - 1} more` : 'joined just now'}
-        </p>
-      </div>
-    </motion.div>
   );
 }
 
@@ -281,53 +268,39 @@ export function JoinSlide({ training, trainingId, isTrainer }: JoinSlideProps) {
       </div>
 
       {/* QR + Counter */}
-      <div className="flex flex-col md:flex-row items-center gap-8">
+      <div className="flex flex-col md:flex-row items-center justify-center gap-10 md:gap-16 w-full max-w-2xl">
         {/* QR */}
-        <div className="flex flex-col items-center gap-2">
-          <div className="p-5 bg-white border-2 border-brand-200 rounded-2xl shadow-sm">
-            <QRCode value={directUrl} size={180} className="md:w-[200px] md:h-[200px] w-[180px] h-[180px]" />
+        <div className="flex flex-col items-center gap-3">
+          <div className="p-2">
+            <QRCode value={directUrl} size={160} className="md:w-[180px] md:h-[180px] w-[160px] h-[160px]" />
           </div>
-          <span className="flex items-center gap-1 text-[11px] text-gray-400">
-            <LinkIcon size={11} />
+          <span className="flex items-center gap-1 text-[12px] text-gray-400 font-medium">
+            <LinkIcon size={12} />
             Scan to join
           </span>
         </div>
 
-        {/* Separator */}
-        <div className="flex md:flex-col items-center gap-2 md:gap-1 w-full md:w-auto h-auto md:h-[230px]">
-          <div className="h-px md:h-full w-full md:w-px bg-gray-200 flex-1" />
-          <span className="text-[10px] text-gray-300 font-medium">or</span>
-          <div className="h-px md:h-full w-full md:w-px bg-gray-200 flex-1" />
-        </div>
-
         {/* Counter */}
-        <div className="flex flex-col items-center gap-3 w-36">
-          <ParticipantCounter count={count} />
-          <RecentJoiners names={names} />
+        <div className="flex flex-col items-center gap-2 min-w-[220px]">
+          <ParticipantCounter count={count} names={names} />
         </div>
       </div>
 
       {/* Code + Link */}
-      <div className="w-full max-w-sm flex flex-col gap-3">
-        <div className="flex items-center gap-3">
-          <div className="flex-1 h-px bg-gray-200" />
-          <span className="text-[11px] text-gray-400 font-medium">enter code or link</span>
-          <div className="flex-1 h-px bg-gray-200" />
-        </div>
-
+      <div className="w-full max-w-sm flex flex-col gap-4 mt-4">
         {/* XXX-XXX code */}
-        <div>
-          <p className="text-[11px] text-gray-400 font-medium mb-2 flex items-center gap-1">
-            <Hash size={11} />
+        <div className="flex flex-col items-center">
+          <p className="text-[12px] text-gray-400 font-medium mb-2 flex items-center gap-1">
+            <Hash size={12} />
             Session code
           </p>
-          <div className="flex items-center gap-2">
-            <div className="flex-1 flex items-center justify-center gap-2 bg-white border-2 border-brand-200 rounded-xl py-3 shadow-sm">
-              <span className="text-3xl font-bold tracking-widest text-brand-700 font-mono">
+          <div className="flex items-center gap-3">
+            <div className="flex-1 flex items-center justify-center gap-2 bg-gray-50/50 rounded-2xl py-3 px-6">
+              <span className="text-3xl font-extrabold tracking-widest text-brand-700 font-mono">
                 {code.slice(0, 3)}
               </span>
-              <span className="text-2xl font-bold text-brand-300">—</span>
-              <span className="text-3xl font-bold tracking-widest text-brand-700 font-mono">
+              <span className="text-2xl font-bold text-gray-300">—</span>
+              <span className="text-3xl font-extrabold tracking-widest text-brand-700 font-mono">
                 {code.slice(3)}
               </span>
             </div>
@@ -336,13 +309,9 @@ export function JoinSlide({ training, trainingId, isTrainer }: JoinSlideProps) {
         </div>
 
         {/* Link */}
-        <div>
-          <p className="text-[11px] text-gray-400 font-medium mb-1.5 flex items-center gap-1">
-            <LinkIcon size={11} />
-            Direct link
-          </p>
-          <div className="flex items-center gap-2 bg-gray-50 border border-gray-200 rounded-lg px-3 py-2 overflow-hidden">
-            <span className="text-[11px] text-gray-500 truncate flex-1 font-mono">{directUrl}</span>
+        <div className="flex flex-col items-center">
+          <div className="flex items-center gap-2 bg-gray-50 rounded-xl px-4 py-2.5 max-w-[280px] w-full">
+            <span className="text-[12px] text-gray-500 truncate flex-1 font-mono">{directUrl}</span>
             <CopyButton text={directUrl} />
           </div>
         </div>

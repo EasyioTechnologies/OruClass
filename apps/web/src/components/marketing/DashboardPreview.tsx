@@ -20,7 +20,7 @@ export function DashboardPreview() {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: "easeOut" }}
       viewport={{ once: false, amount: 0.1 }}
-      className="min-h-screen w-full snap-start relative flex flex-col items-center justify-center overflow-hidden bg-white py-12 md:py-20"
+      className="md:min-h-screen w-full  relative flex flex-col items-center justify-center overflow-hidden bg-white py-12 md:py-20"
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 md:px-12 relative z-10 w-full flex flex-col items-center">
         <motion.div

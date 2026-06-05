@@ -60,7 +60,9 @@ export function TrainerQuiz({ module, trainingId }: Props) {
           ? ["True", "False"]
           : q.type === "multiple_choice"
             ? q.options ?? []
-            : [];
+            : q.type === "metric_rating"
+              ? Array.from({ length: (q.maxVal ?? 10) - (q.minVal ?? 1) + 1 }, (_, i) => String((q.minVal ?? 1) + i))
+              : [];
       const bars = seed.map((opt) => ({
         name: opt,
         count: optionCounts.get(opt) ?? 0,
@@ -71,7 +73,13 @@ export function TrainerQuiz({ module, trainingId }: Props) {
         if (!seed.includes(opt)) bars.push({ name: opt, count, correct: false });
       }
 
-      return { q, bars, textAnswers, correctCount, totalAnswered };
+      let averageRating = 0;
+      if (q.type === "metric_rating" && totalAnswered > 0) {
+        const sum = Array.from(optionCounts.entries()).reduce((acc, [val, count]) => acc + Number(val) * count, 0);
+        averageRating = sum / totalAnswered;
+      }
+
+      return { q, bars, textAnswers, correctCount, totalAnswered, averageRating };
     });
   }, [questions, responseList]);
 
@@ -113,7 +121,7 @@ export function TrainerQuiz({ module, trainingId }: Props) {
             <p className="text-sm mt-1">Participants are working on the quiz.</p>
           </div>
         ) : (
-          stats.map(({ q, bars, textAnswers, correctCount, totalAnswered }, qi) => (
+          stats.map(({ q, bars, textAnswers, correctCount, totalAnswered, averageRating }, qi) => (
             <div key={q.id} className="bg-white rounded-2xl border border-gray-200 p-5">
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex-1">
@@ -132,6 +140,13 @@ export function TrainerQuiz({ module, trainingId }: Props) {
                   <p className="text-sm font-bold text-gray-800">{totalAnswered}</p>
                 </div>
               </div>
+
+              {q.type === "metric_rating" && totalAnswered > 0 && (
+                <div className="mb-4 text-center p-4 bg-brand-50 border border-brand-100 rounded-xl">
+                  <p className="text-xs font-semibold text-brand-600 uppercase tracking-wide">Average Rating</p>
+                  <p className="text-3xl font-bold text-brand-900 mt-1">{averageRating.toFixed(1)}</p>
+                </div>
+              )}
 
               {q.correctAnswer && (
                 <div className="flex items-center gap-2 text-xs mb-4 px-3 py-2 bg-emerald-50 border border-emerald-100 rounded-lg">
@@ -185,16 +200,20 @@ export function TrainerQuiz({ module, trainingId }: Props) {
                       </PieChart>
                     </ResponsiveContainer>
                   </div>
-                  <div className="h-56">
+                  <div className={q.type === "metric_rating" ? "h-56 md:col-span-2" : "h-56"}>
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={bars} layout="vertical" margin={{ left: 8, right: 16 }}>
-                        <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          width={100}
-                          tick={{ fontSize: 11 }}
-                        />
+                      <BarChart data={bars} layout={q.type === "metric_rating" ? "horizontal" : "vertical"} margin={{ left: 8, right: 16 }}>
+                        {q.type === "metric_rating" ? (
+                          <>
+                            <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                            <YAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                          </>
+                        ) : (
+                          <>
+                            <XAxis type="number" allowDecimals={false} tick={{ fontSize: 11 }} />
+                            <YAxis type="category" dataKey="name" width={100} tick={{ fontSize: 11 }} />
+                          </>
+                        )}
                         <Tooltip />
                         <Bar dataKey="count" radius={[0, 6, 6, 0]}>
                           {bars.map((b, i) => (

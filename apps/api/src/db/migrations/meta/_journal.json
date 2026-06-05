@@ -29,6 +29,13 @@
       "when": 1780449943627,
       "tag": "0003_striped_korvac",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "7",
+      "when": 1780628555455,
+      "tag": "0004_empty_yellowjacket",
+      "breakpoints": true
     }
   ]
 }

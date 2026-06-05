@@ -96,6 +96,25 @@ export function ParticipantQuiz({ module, trainingId }: Props) {
                   </button>
                 ))}
               </div>
+            ) : q.type === "metric_rating" ? (
+              <div className="overflow-x-auto pb-2">
+                <div className="flex gap-2 min-w-max">
+                  {Array.from({ length: (q.maxVal ?? 10) - (q.minVal ?? 1) + 1 }, (_, i) => (q.minVal ?? 1) + i).map((val) => (
+                    <button
+                      key={val}
+                      onClick={() => set(q.id, val.toString())}
+                      className={cn(
+                        "w-10 h-10 rounded-lg border text-sm font-medium transition-colors shrink-0",
+                        answers[q.id] === val.toString()
+                          ? "border-brand-500 bg-brand-50 text-brand-700"
+                          : "border-gray-200 hover:bg-gray-50 text-gray-700",
+                      )}
+                    >
+                      {val}
+                    </button>
+                  ))}
+                </div>
+              </div>
             ) : (
               <textarea
                 value={answers[q.id] ?? ""}

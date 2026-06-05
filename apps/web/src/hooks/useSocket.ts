@@ -105,6 +105,10 @@ export function useSocketSession(trainingId: string | null) {
       );
     });
 
+    socket.on("stopwatch:sync", (data) => {
+      useLiveSessionStore.getState().setStopwatch(data);
+    });
+
     socket.on("session:paused", () => {
       setPaused(true);
       invalidateAll();
@@ -142,6 +146,7 @@ export function useSocketSession(trainingId: string | null) {
       socket.off("participant:joined");
       socket.off("participant:left");
       socket.off("data:aggregate");
+      socket.off("stopwatch:sync");
       socket.off("session:paused");
       socket.off("session:resumed");
       socket.off("session:started");

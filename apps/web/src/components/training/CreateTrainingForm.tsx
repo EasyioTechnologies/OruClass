@@ -1,12 +1,13 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { CreateTrainingSchema } from "@oruclass/validators";
 import { useRouter } from "next/navigation";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useCreateTraining } from "@/hooks/useTrainings";
 import type { z } from "zod";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 
 type FormData = {
   title: string;
@@ -40,6 +41,7 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
     register,
     handleSubmit,
     watch,
+    control,
     formState: { errors },
   } = useForm<FormData>({ 
     resolver: zodResolver(CreateTrainingSchema) as any,
@@ -49,6 +51,21 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
   });
 
   const selectedType = watch("type");
+  const startDateStr = watch("startDate");
+  const endDateStr = watch("endDate");
+
+  const calculateDuration = () => {
+    if (!startDateStr || !endDateStr) return null;
+    const start = new Date(startDateStr);
+    const end = new Date(endDateStr);
+    if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+    const diffTime = end.getTime() - start.getTime();
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1; // inclusive of start day
+    if (diffDays <= 0) return null;
+    return { days: diffDays, hours: diffDays * 8 }; // Assume 8 hours per day
+  };
+
+  const duration = calculateDuration();
 
   const onSubmit = async (data: FormData) => {
     console.log("Submitting CreateTraining form data:", data);
@@ -102,12 +119,31 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
       </div>
 
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
-        <textarea
-          {...register("description")}
-          rows={3}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-          placeholder="Optional description…"
+        <div className="flex justify-between items-center mb-1">
+          <label className="block text-sm font-medium text-gray-700">Description</label>
+        </div>
+        <Controller
+          name="description"
+          control={control}
+          render={({ field }) => {
+            const charCount = field.value ? field.value.replace(new RegExp("<[^>]*>?", "gm"), '').length : 0;
+            const limit = 2000;
+            const isOverLimit = charCount > limit;
+            
+            return (
+              <div>
+                <RichTextEditor
+                  value={field.value || ""}
+                  onChange={field.onChange}
+                  placeholder="Optional description…"
+                  minHeight="120px"
+                />
+                <div className={`text-xs mt-1 text-right ${isOverLimit ? 'text-red-500' : 'text-gray-500'}`}>
+                  {charCount} / {limit} characters
+                </div>
+              </div>
+            );
+          }}
         />
       </div>
 
@@ -129,6 +165,13 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
           />
         </div>
       </div>
+      
+      {duration && (
+        <div className="bg-brand-50 border border-brand-100 rounded-lg p-3 flex justify-between items-center text-sm text-brand-800">
+          <span><strong>Duration:</strong> {duration.days} Day{duration.days !== 1 ? 's' : ''}</span>
+          <span className="opacity-70">{duration.hours} Total Hours</span>
+        </div>
+      )}
 
       {selectedType === "in_person" || selectedType === "hybrid" ? (
         <div>

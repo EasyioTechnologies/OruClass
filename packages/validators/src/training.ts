@@ -40,6 +40,7 @@ export const CreateDaySchema = z.object({
     z.string().datetime({ offset: true }).optional(),
   ),
   description: z.string().max(1000).optional(),
+  deliveryMode: z.enum(["in_person", "online", "hybrid"]).optional(),
 });
 
 export const UpdateDaySchema = CreateDaySchema.partial();
@@ -107,6 +108,12 @@ export const ResponseSubmitSchema = z.object({
   responseData: z.record(z.unknown()),
 });
 
+export const StopwatchActionSchema = z.object({
+  trainingId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  action: z.enum(["pause", "resume", "reset"]),
+});
+
 export const ScratchpadUpdateSchema = z
   .object({
     personalNotes: z.string().max(50_000).optional(),
@@ -162,3 +169,4 @@ export type AssignModuleToDayInput = z.infer<typeof AssignModuleToDaySchema>;
 export type DuplicateModuleInput = z.infer<typeof DuplicateModuleSchema>;
 export type StrokeInput = z.infer<typeof StrokeSchema>;
 export type DrawUpdateInput = z.infer<typeof DrawUpdateSchema>;
+export type StopwatchActionInput = z.infer<typeof StopwatchActionSchema>;

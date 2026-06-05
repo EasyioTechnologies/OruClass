@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect, KeyboardEvent, ClipboardEvent } from "react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth";
@@ -97,7 +98,11 @@ export default function JoinPage() {
       <div className="w-full max-w-sm">
         {/* Brand */}
         <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold text-gray-900">OruClass</h1>
+          <Link href="/" className="inline-block hover:opacity-80 transition-opacity">
+            <h1 className="text-2xl font-bold text-gray-900">
+              <span className="text-brand-600">Oru</span>Labs
+            </h1>
+          </Link>
           <p className="text-sm text-gray-500 mt-1">Join your live session</p>
         </div>
 

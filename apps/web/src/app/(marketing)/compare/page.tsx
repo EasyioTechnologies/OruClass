@@ -17,16 +17,26 @@ const compareHubSchema = {
 
 export default function CompareHubPage() {
   return (
-    <div className="w-full px-4 sm:px-6 lg:px-8 bg-white">
+    <div className="w-full bg-white relative">
       <SchemaMarkup schema={compareHubSchema} />
-      <div className="max-w-5xl mx-auto py-12 space-y-12">
-        <div className="text-center space-y-4">
-          <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight sm:text-5xl">Compare OruLabs</h1>
-          <p className="max-w-2xl mx-auto text-xl text-gray-500">
+      
+      {/* Hero Section */}
+      <div className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden bg-gray-50">
+        <div className="absolute inset-0 z-0">
+          <div className="absolute inset-0 bg-gradient-to-b from-brand-50 to-white" />
+          <div className="absolute top-0 right-0 w-1/2 h-full bg-gradient-to-l from-brand-100/50 to-transparent blur-3xl" />
+        </div>
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 text-center space-y-6">
+          <h1 className="text-5xl font-extrabold text-gray-900 tracking-tight sm:text-6xl lg:text-7xl">
+            Compare <span className="text-brand-600">OruLabs</span>
+          </h1>
+          <p className="max-w-2xl mx-auto text-xl text-gray-600 font-light leading-relaxed">
             Discover why educational institutions are switching from generic video conferencing to specialized live training platforms.
           </p>
         </div>
+      </div>
 
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <Link href="/compare/orulabs-vs-zoom" className="bg-gray-50 rounded-2xl shadow-sm border border-gray-100 p-8 hover:shadow-md hover:border-brand-200 transition-all group">
             <h2 className="text-2xl font-bold text-gray-900 mb-3 group-hover:text-brand-600 transition-colors">OruLabs vs. Zoom</h2>

@@ -58,7 +58,7 @@ export function TrainingCertificate({ data, userName }: Props) {
         <div className="bg-gray-50 rounded-xl px-6 py-4 inline-block mb-6">
           <h3 className="text-lg sm:text-xl font-bold text-gray-900">{training.title}</h3>
           {training.description && (
-            <p className="text-sm text-gray-500 mt-1 max-w-md">{training.description}</p>
+            <div className="text-sm text-gray-500 mt-1 max-w-md prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: training.description }} />
           )}
         </div>
 

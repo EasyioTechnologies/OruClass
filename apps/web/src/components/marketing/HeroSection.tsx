@@ -28,7 +28,7 @@ export function HeroSection() {
       initial={{ opacity: 0 }}
       animate={{ opacity: 1 }}
       transition={{ duration: 1.5, ease: "easeOut" }}
-      className="min-h-[100dvh] w-full snap-start relative flex items-center justify-center overflow-hidden bg-white py-20"
+      className="min-h-[100dvh] w-full  relative flex items-center justify-center overflow-hidden bg-white py-20"
     >
       {/* Background Image with Parallax */}
       <motion.div style={{ y, opacity }} className="absolute inset-0 z-0 scale-110 origin-center">

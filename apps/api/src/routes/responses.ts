@@ -88,3 +88,66 @@ responsesRouter.get("/:trainingId/modules/:moduleId/responses", async (c) => {
 
   return c.json(responses);
 });
+
+// GET /trainings/:trainingId/modules/:moduleId/responses/me — get current user's response
+responsesRouter.get("/:trainingId/modules/:moduleId/responses/me", async (c) => {
+  const { trainingId, moduleId } = c.req.param();
+  const userId = c.get("userId") as string;
+  const workspaceId = c.get("workspaceId") as string;
+
+  if (!(await moduleInWorkspace(trainingId, moduleId, workspaceId))) {
+    return c.json({ error: "Module not found in workspace" }, 404);
+  }
+
+  const response = await db.query.participantResponses.findFirst({
+    where: and(
+      eq(participantResponses.trainingId, trainingId),
+      eq(participantResponses.moduleId, moduleId),
+      eq(participantResponses.userId, userId),
+    ),
+  });
+
+  return c.json(response || null);
+});
+
+// POST /trainings/:trainingId/modules/:moduleId/responses/:responseId/comments — trainer adds a comment
+responsesRouter.post("/:trainingId/modules/:moduleId/responses/:responseId/comments", async (c) => {
+  const { trainingId, moduleId, responseId } = c.req.param();
+  const workspaceId = c.get("workspaceId") as string;
+  const trainerName = c.get("userName") as string || "Trainer"; // Assume we can get trainer name or just use "Trainer"
+
+  if (!(await moduleInWorkspace(trainingId, moduleId, workspaceId))) {
+    return c.json({ error: "Module not found in workspace" }, 404);
+  }
+
+  const body = await c.req.json<{ text: string }>();
+
+  const response = await db.query.participantResponses.findFirst({
+    where: and(
+      eq(participantResponses.id, responseId),
+      eq(participantResponses.trainingId, trainingId)
+    )
+  });
+
+  if (!response) {
+    return c.json({ error: "Response not found" }, 404);
+  }
+
+  const existingData = response.responseData as any;
+  const comments = existingData.comments || [];
+  
+  comments.push({
+    id: crypto.randomUUID(),
+    text: body.text,
+    trainerName,
+    createdAt: new Date().toISOString(),
+  });
+
+  const [updated] = await db
+    .update(participantResponses)
+    .set({ responseData: { ...existingData, comments } })
+    .where(eq(participantResponses.id, responseId))
+    .returning();
+
+  return c.json(updated);
+});

@@ -11,7 +11,7 @@ export function FinalCTASection() {
       whileInView={{ opacity: 1 }}
       transition={{ duration: 1.2, ease: "easeOut" }}
       viewport={{ once: false, amount: 0.1 }}
-      className="min-h-[100dvh] w-full snap-start relative flex items-center justify-center bg-gray-50 overflow-hidden py-20"
+      className="min-h-[100dvh] w-full  relative flex items-center justify-center bg-gray-50 overflow-hidden py-20"
     >
       <div className="max-w-4xl mx-auto px-4 sm:px-6 text-center relative z-10 flex flex-col items-center">
         <motion.div

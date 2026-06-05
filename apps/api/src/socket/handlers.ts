@@ -10,10 +10,11 @@ import {
   participantResponses,
   users,
   liveSessions,
+  liveSessionModuleStats,
 } from "../db/schema";
 import { getOrCreateState, removeParticipant, persistState, restoreState } from "./state";
 import { logger } from "../utils/logger";
-import { DrawUpdateSchema, ParticipantJoinSchema, ModuleUnlockSchema, ResponseSubmitSchema } from "@oruclass/validators";
+import { DrawUpdateSchema, ParticipantJoinSchema, ModuleUnlockSchema, ResponseSubmitSchema, StopwatchActionSchema } from "@oruclass/validators";
 import { USER_NAME_CACHE_TTL_MS, USER_NAME_CACHE_MAX } from "../config/limits";
 
 // Small in-process cache for socket-join user lookups. Avoids hammering the
@@ -311,6 +312,24 @@ export function registerSocketHandlers(io: IO): void {
               moduleId: state.activeModuleId,
               module: moduleData ?? null,
             });
+
+            const liveSessionId = await getActiveLiveSessionId(trainingId);
+            if (liveSessionId) {
+              const stats = await db.query.liveSessionModuleStats.findFirst({
+                where: and(
+                  eq(liveSessionModuleStats.liveSessionId, liveSessionId),
+                  eq(liveSessionModuleStats.moduleId, state.activeModuleId)
+                )
+              });
+              if (stats) {
+                socket.emit("stopwatch:sync", {
+                  moduleId: state.activeModuleId,
+                  accumulatedSeconds: stats.accumulatedSeconds,
+                  isRunning: stats.isRunning,
+                  lastStartedAt: stats.lastStartedAt.toISOString()
+                });
+              }
+            }
           }
         }
       }),
@@ -327,7 +346,11 @@ export function registerSocketHandlers(io: IO): void {
         const { trainingId, moduleId } = parsed.data;
         // Re-query facilitator role inside the tx — cached socket.data.role
         // can be stale if a trainer was demoted mid-session.
+        const state = getOrCreateState(trainingId);
+        const prevModuleId = state.activeModuleId;
+
         let moduleData: typeof trainingModules.$inferSelect | undefined;
+        let stopwatchData: typeof liveSessionModuleStats.$inferSelect | undefined;
         let denied = false;
         try {
           await db.transaction(async (tx) => {
@@ -361,6 +384,57 @@ export function registerSocketHandlers(io: IO): void {
               .set({ currentActiveModuleId: moduleId, updatedAt: new Date() })
               .where(eq(trainings.id, trainingId));
 
+            const liveSession = await tx.query.liveSessions.findFirst({
+              where: and(eq(liveSessions.trainingId, trainingId), eq(liveSessions.status, "active")),
+            });
+
+            if (liveSession) {
+              if (prevModuleId && prevModuleId !== moduleId) {
+                const oldStats = await tx.query.liveSessionModuleStats.findFirst({
+                   where: and(
+                     eq(liveSessionModuleStats.liveSessionId, liveSession.id),
+                     eq(liveSessionModuleStats.moduleId, prevModuleId)
+                   )
+                });
+                if (oldStats && oldStats.isRunning) {
+                  const elapsedSeconds = Math.floor((Date.now() - oldStats.lastStartedAt.getTime()) / 1000);
+                  await tx.update(liveSessionModuleStats)
+                    .set({
+                      isRunning: false,
+                      accumulatedSeconds: oldStats.accumulatedSeconds + elapsedSeconds,
+                      updatedAt: new Date()
+                    })
+                    .where(eq(liveSessionModuleStats.id, oldStats.id));
+                }
+              }
+
+              const newStats = await tx.query.liveSessionModuleStats.findFirst({
+                where: and(
+                  eq(liveSessionModuleStats.liveSessionId, liveSession.id),
+                  eq(liveSessionModuleStats.moduleId, moduleId)
+                )
+              });
+              if (newStats) {
+                const updated = await tx.update(liveSessionModuleStats)
+                  .set({
+                    isRunning: true,
+                    lastStartedAt: new Date(),
+                    updatedAt: new Date()
+                  })
+                  .where(eq(liveSessionModuleStats.id, newStats.id))
+                  .returning();
+                stopwatchData = updated[0];
+              } else {
+                const inserted = await tx.insert(liveSessionModuleStats).values({
+                  liveSessionId: liveSession.id,
+                  moduleId: moduleId,
+                  isRunning: true,
+                  lastStartedAt: new Date(),
+                }).returning();
+                stopwatchData = inserted[0];
+              }
+            }
+
             moduleData = { ...mod, isUnlocked: true };
           });
         } catch (err) {
@@ -374,7 +448,6 @@ export function registerSocketHandlers(io: IO): void {
           return;
         }
 
-        const state = getOrCreateState(trainingId);
         state.activeModuleId = moduleId;
 
         io.to(`training:${trainingId}`).emit("module:unlocked", {
@@ -382,8 +455,111 @@ export function registerSocketHandlers(io: IO): void {
           module: moduleData,
         });
 
+        if (stopwatchData) {
+          io.to(`training:${trainingId}`).emit("stopwatch:sync", {
+            moduleId,
+            accumulatedSeconds: stopwatchData.accumulatedSeconds,
+            isRunning: stopwatchData.isRunning,
+            lastStartedAt: stopwatchData.lastStartedAt.toISOString()
+          });
+        }
+
         // Persist new active module to Redis for restart survivability
         await persistState(trainingId);
+      }),
+    );
+
+    socket.on(
+      "stopwatch:action",
+      guard("stopwatch:action", async (payload: unknown) => {
+        const parsed = StopwatchActionSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid stopwatch:action payload" });
+          return;
+        }
+        const { trainingId, moduleId, action } = parsed.data;
+
+        let stopwatchData: typeof liveSessionModuleStats.$inferSelect | undefined;
+        let denied = false;
+        try {
+          await db.transaction(async (tx) => {
+            const facilitator = await tx.query.trainingFacilitators.findFirst({
+              where: and(
+                eq(trainingFacilitators.trainingId, trainingId),
+                eq(trainingFacilitators.userId, userId),
+              ),
+            });
+            if (!facilitator) {
+              denied = true;
+              return;
+            }
+
+            const liveSession = await tx.query.liveSessions.findFirst({
+              where: and(eq(liveSessions.trainingId, trainingId), eq(liveSessions.status, "active")),
+            });
+            if (!liveSession) return;
+
+            const stats = await tx.query.liveSessionModuleStats.findFirst({
+              where: and(
+                eq(liveSessionModuleStats.liveSessionId, liveSession.id),
+                eq(liveSessionModuleStats.moduleId, moduleId)
+              )
+            });
+
+            if (!stats) return;
+
+            if (action === "pause" && stats.isRunning) {
+              const elapsedSeconds = Math.floor((Date.now() - stats.lastStartedAt.getTime()) / 1000);
+              const updated = await tx.update(liveSessionModuleStats)
+                .set({
+                  isRunning: false,
+                  accumulatedSeconds: stats.accumulatedSeconds + elapsedSeconds,
+                  updatedAt: new Date()
+                })
+                .where(eq(liveSessionModuleStats.id, stats.id))
+                .returning();
+              stopwatchData = updated[0];
+            } else if (action === "resume" && !stats.isRunning) {
+              const updated = await tx.update(liveSessionModuleStats)
+                .set({
+                  isRunning: true,
+                  lastStartedAt: new Date(),
+                  updatedAt: new Date()
+                })
+                .where(eq(liveSessionModuleStats.id, stats.id))
+                .returning();
+              stopwatchData = updated[0];
+            } else if (action === "reset") {
+              const updated = await tx.update(liveSessionModuleStats)
+                .set({
+                  isRunning: false,
+                  accumulatedSeconds: 0,
+                  updatedAt: new Date()
+                })
+                .where(eq(liveSessionModuleStats.id, stats.id))
+                .returning();
+              stopwatchData = updated[0];
+            }
+          });
+        } catch (err) {
+          logger.error(err, "stopwatch:action tx failed");
+          socket.emit("error", { code: "INTERNAL", message: "failed to action stopwatch" });
+          return;
+        }
+
+        if (denied) {
+          socket.emit("error", { code: "FORBIDDEN", message: "not authorized to control stopwatch" });
+          return;
+        }
+
+        if (stopwatchData) {
+          io.to(`training:${trainingId}`).emit("stopwatch:sync", {
+            moduleId,
+            accumulatedSeconds: stopwatchData.accumulatedSeconds,
+            isRunning: stopwatchData.isRunning,
+            lastStartedAt: stopwatchData.lastStartedAt.toISOString()
+          });
+        }
       }),
     );
 
@@ -402,20 +578,34 @@ export function registerSocketHandlers(io: IO): void {
         const { trainingId, moduleId, responseData } = parsed.data;
         try {
           const liveSessionId = await getActiveLiveSessionId(trainingId);
+          let timeSpentSeconds = null;
+          
+          if (liveSessionId) {
+            const stats = await db.query.liveSessionModuleStats.findFirst({
+              where: and(
+                eq(liveSessionModuleStats.liveSessionId, liveSessionId),
+                eq(liveSessionModuleStats.moduleId, moduleId)
+              )
+            });
+            if (stats) {
+              const elapsedSeconds = stats.isRunning ? Math.floor((Date.now() - stats.lastStartedAt.getTime()) / 1000) : 0;
+              timeSpentSeconds = stats.accumulatedSeconds + elapsedSeconds;
+            }
+          }
 
           // Single upsert — requires UNIQUE (training_id, module_id, user_id).
           // Avoids the read-then-write race that lets two near-simultaneous
           // submissions from the same participant create duplicates.
           await db
             .insert(participantResponses)
-            .values({ trainingId, moduleId, userId, responseData, liveSessionId })
+            .values({ trainingId, moduleId, userId, responseData, liveSessionId, timeSpentSeconds, startedAt: new Date() })
             .onConflictDoUpdate({
               target: [
                 participantResponses.trainingId,
                 participantResponses.moduleId,
                 participantResponses.userId,
               ],
-              set: { responseData, submittedAt: new Date(), liveSessionId },
+              set: { responseData, submittedAt: new Date(), liveSessionId, timeSpentSeconds },
             });
 
           // Ack immediately — counts/broadcasts can lag the ack without

@@ -43,7 +43,7 @@ const landingSchema = {
 
 export default function LandingPage() {
   return (
-    <main id="main-scroller" className="h-screen w-full overflow-y-auto overflow-x-hidden md:snap-y md:snap-mandatory scroll-smooth bg-white selection:bg-gray-200 selection:text-black">
+    <main id="main-scroller" className="w-full overflow-x-hidden bg-white selection:bg-gray-200 selection:text-black">
       <SchemaMarkup schema={landingSchema} />
       <MarketingNavbar />
       <HeroSection />

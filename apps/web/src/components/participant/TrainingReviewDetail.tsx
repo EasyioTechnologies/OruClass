@@ -62,7 +62,7 @@ export function TrainingReviewDetail({ trainingId }: { trainingId: string }) {
         </button>
         <h1 className="text-xl sm:text-2xl font-bold text-gray-900">{training.title}</h1>
         {training.description && (
-          <p className="text-sm text-gray-500 mt-1">{training.description}</p>
+          <div className="text-sm text-gray-500 mt-1 prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: training.description }} />
         )}
         <div className="flex flex-wrap items-center gap-4 mt-3 text-xs text-gray-400">
           {training.creator && (

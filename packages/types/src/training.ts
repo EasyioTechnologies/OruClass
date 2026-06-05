@@ -39,6 +39,7 @@ export interface TrainingDay {
   description: string | null;
   createdAt: Date;
   updatedAt: Date;
+  deliveryMode?: "in_person" | "online" | "hybrid";
   modules?: TrainingModule[];
 }
 
@@ -107,6 +108,7 @@ export interface ModuleConfig {
   // Pulse
   pulsePrompt?: string;
   pulseEmojis?: string[];
+  isAnonymous?: boolean;
   // Mapping
   mappingFocusAreas?: { id: string; title: string; numFields: number }[];
   // Form
@@ -114,17 +116,17 @@ export interface ModuleConfig {
   formDescription?: string;
   formFields?: FormField[];
   // Embed
-  embedUrl?: string;
-  embedTitle?: string;
-  embedDescription?: string;
+  embeds?: { id: string; url: string; title?: string; description?: string; type?: string }[];
 }
 
 export interface QuizQuestion {
   id: string;
   text: string;
-  type: "multiple_choice" | "short_answer" | "true_false";
+  type: "multiple_choice" | "short_answer" | "true_false" | "metric_rating";
   options?: string[];
   correctAnswer?: string;
+  minVal?: number;
+  maxVal?: number;
 }
 
 export interface TrainingFacilitator {
@@ -187,7 +189,7 @@ export interface SubmissionEntry {
 export type ResponseData =
   | { type: "quiz"; answers: Record<string, string> }
   | { type: "whiteboard"; strokes: StrokeData[] }
-  | { type: "reflection"; text: string }
+  | { type: "reflection"; text: string; comments?: ReflectionComment[] }
   | { type: "matrix"; cells: Record<string, string> }
   | { type: "sticky"; notes: StickyNote[] }
   | { type: "attendance"; fields: Record<string, string> }
@@ -204,6 +206,13 @@ export interface StrokeData {
   color: string;
   width: number;
   tool?: "pen" | "eraser" | "highlighter" | "line" | "arrow" | "square";
+}
+
+export interface ReflectionComment {
+  id: string;
+  text: string;
+  trainerName: string;
+  createdAt: string;
 }
 
 export interface StickyNote {

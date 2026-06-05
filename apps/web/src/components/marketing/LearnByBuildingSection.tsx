@@ -42,7 +42,7 @@ export function LearnByBuildingSection() {
 
   return (
     <section 
-      className="min-h-[100dvh] w-full snap-start relative bg-black overflow-hidden flex flex-col items-center justify-center py-20"
+      className="min-h-[100dvh] w-full  relative bg-black overflow-hidden flex flex-col items-center justify-center py-20"
     >
       {/* Background Image Carousel with Blur/Gradient */}
       <AnimatePresence mode="wait">

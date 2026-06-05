@@ -14,6 +14,7 @@ export interface ClientToServerEvents {
   "note:create": (data: { trainingId: string; moduleId: string; note: StickyNote }) => void;
   "note:position": (data: { trainingId: string; moduleId: string; noteId: string; x: number; y: number }) => void;
   "timer:sync": (data: { trainingId: string; moduleId: string; remaining: number; running: boolean; duration: number }) => void;
+  "stopwatch:action": (data: { trainingId: string; moduleId: string; action: "pause" | "resume" | "reset" }) => void;
   heartbeat: () => void;
 }
 
@@ -30,6 +31,7 @@ export interface ServerToClientEvents {
   "note:create": (data: { moduleId: string; note: StickyNote }) => void;
   "note:position": (data: { moduleId: string; noteId: string; x: number; y: number }) => void;
   "timer:sync": (data: { moduleId: string; remaining: number; running: boolean; duration: number }) => void;
+  "stopwatch:sync": (data: { moduleId: string; accumulatedSeconds: number; isRunning: boolean; lastStartedAt: string }) => void;
   "session:paused": () => void;
   "session:resumed": () => void;
   "session:started": () => void;

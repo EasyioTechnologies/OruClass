@@ -273,7 +273,7 @@ export function CalendarView() {
                       })}
                     </p>
                   )}
-                  {t.description && <p className="text-xs text-gray-500 line-clamp-2">{t.description}</p>}
+                  {t.description && <div className="text-xs text-gray-500 line-clamp-2 prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: t.description }} />}
                   <Link
                     href={`/trainings/${t.id}/studio`}
                     className="inline-flex items-center gap-1.5 text-xs font-medium text-brand-600 hover:text-brand-700"
@@ -332,7 +332,7 @@ function TrainingDetail({ training, onClose }: { training: Training | null; onCl
         <span className="text-xs font-medium text-gray-700 capitalize">{STATUS_LABEL[training.sessionStatus] ?? training.sessionStatus}</span>
       </div>
       {training.description && (
-        <p className="text-xs text-gray-500 line-clamp-3">{training.description}</p>
+        <div className="text-xs text-gray-500 line-clamp-3 prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: training.description }} />
       )}
       <Link
         href={`/trainings/${training.id}/studio`}

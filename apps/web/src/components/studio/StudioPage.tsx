@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { createContext, useContext, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
@@ -11,12 +11,16 @@ import { useModules, useReorderModules, useUpdateModule, useDuplicateModule, use
 import { useDays, useCreateDay, useDeleteDay, useUpdateDay } from "@/hooks/useDays";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useWorkspaceMembers } from "@/hooks/useWorkspace";
-import { useAssignFacilitator, useTraining, useInviteFacilitator, useTrainings, useUpdateTraining } from "@/hooks/useTrainings";
+import { useAssignFacilitator, useTraining, useInviteFacilitator, useTrainings, useUpdateTraining, useMyTrainingRole } from "@/hooks/useTrainings";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { apiClient } from "@/lib/api-client";
+import { canDo } from "@/lib/permissions";
 import type { TrainingModule, TrainingRole, ModuleConfig, AttendanceField, TrainingDay, FormField, FormFieldType } from "@oruclass/types";
+import { Switch } from "@/components/ui/switch";
+import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { cn } from "@oruclass/utils";
+import type { Permission } from "@oruclass/utils";
 import {
   GripVertical,
   ListChecks,
@@ -53,7 +57,22 @@ import {
   Network,
   FileText,
   Link2,
+  Lock,
 } from "lucide-react";
+
+// ─── Role context ────────────────────────────────────────────────────────────
+// Current user's training role, provided once at StudioPage root so deeply nested
+// cards/panels can gate mutating controls without prop-drilling. `undefined` =
+// not a facilitator (participant / still loading) → no edit rights.
+const StudioRoleContext = createContext<TrainingRole | undefined>(undefined);
+
+function useStudioRole(): TrainingRole | undefined {
+  return useContext(StudioRoleContext);
+}
+
+function useStudioCan(permission: Permission): boolean {
+  return canDo(useStudioRole(), permission);
+}
 
 // ─── Module type config ──────────────────────────────────────────────────────
 
@@ -90,7 +109,7 @@ const MODULE_TYPES = [
   },
   {
     type: "reflection",
-    label: "Reflection",
+    label: "Reflection Journal",
     description: "Prompted written response for participants",
     Icon: BookOpen,
     color: "text-emerald-600",
@@ -287,6 +306,7 @@ function ModuleConfigEditor({
               <option value="multiple_choice">Multiple Choice</option>
               <option value="short_answer">Short Answer</option>
               <option value="true_false">True / False</option>
+              <option value="metric_rating">Metric Rating</option>
             </select>
             {q.type === "multiple_choice" && (
               <div className="space-y-1.5 pl-1">
@@ -385,6 +405,38 @@ function ModuleConfigEditor({
                     </button>
                   );
                 })}
+              </div>
+            )}
+            {q.type === "metric_rating" && (
+              <div className="flex items-center gap-3 pl-1">
+                <div className="flex items-center gap-2">
+                  <label className="text-[10px] font-medium text-gray-600">Min</label>
+                  <input
+                    type="number"
+                    value={q.minVal ?? 1}
+                    onChange={(e) => {
+                      const updated = questions.map((x, i) =>
+                        i === qi ? { ...x, minVal: Number(e.target.value) } : x,
+                      );
+                      onChange({ ...config, questions: updated });
+                    }}
+                    className="w-16 px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="text-[10px] font-medium text-gray-600">Max</label>
+                  <input
+                    type="number"
+                    value={q.maxVal ?? 10}
+                    onChange={(e) => {
+                      const updated = questions.map((x, i) =>
+                        i === qi ? { ...x, maxVal: Number(e.target.value) } : x,
+                      );
+                      onChange({ ...config, questions: updated });
+                    }}
+                    className="w-16 px-2 py-1 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brand-500"
+                  />
+                </div>
               </div>
             )}
           </div>
@@ -825,6 +877,17 @@ function ModuleConfigEditor({
             <span key={i} className="text-2xl">{e}</span>
           ))}
         </div>
+        <div className="flex items-center gap-2 pt-2">
+          <label className="text-xs font-medium text-gray-600">Anonymous responses</label>
+          <button
+            onClick={() => onChange({ ...config, isAnonymous: !config.isAnonymous })}
+            className={cn("flex items-center gap-1 text-[10px] font-semibold px-2.5 py-1 rounded-lg border transition-colors",
+              config.isAnonymous ? "bg-brand-50 border-brand-200 text-brand-700" : "bg-white border-gray-200 text-gray-400")}
+          >
+            {config.isAnonymous ? <ToggleRight size={12} /> : <ToggleLeft size={12} />}
+            {config.isAnonymous ? "On" : "Off"}
+          </button>
+        </div>
       </div>
     );
   }
@@ -1019,37 +1082,88 @@ function ModuleConfigEditor({
   }
 
   if (module.moduleType === "embed") {
+    // Migration from old single-embed structure
+    const embeds = config.embeds || (config.embedUrl ? [{ id: crypto.randomUUID(), url: config.embedUrl, title: config.embedTitle, description: config.embedDescription }] : []);
+
+    const addEmbed = () => onChange({ ...config, embeds: [...embeds, { id: crypto.randomUUID(), url: "" }] });
+    
+    const updateEmbed = (i: number, patch: any) => {
+      const updated = embeds.map((e: any, j: number) => j === i ? { ...e, ...patch } : e);
+      onChange({ ...config, embeds: updated });
+    };
+
+    const removeEmbed = (i: number) => {
+      onChange({ ...config, embeds: embeds.filter((_: any, j: number) => j !== i) });
+    };
+
+    const moveEmbed = (i: number, dir: -1 | 1) => {
+      if (i + dir < 0 || i + dir >= embeds.length) return;
+      const updated = [...embeds];
+      const temp = updated[i];
+      updated[i] = updated[i + dir];
+      updated[i + dir] = temp;
+      onChange({ ...config, embeds: updated });
+    };
+
     return (
       <div className="space-y-4 mt-4">
-        <div>
-          <label className="text-xs font-semibold text-gray-700 block mb-1.5">Embed Link / URL</label>
-          <input
-            type="url"
-            value={config.embedUrl ?? ""}
-            onChange={(e) => onChange({ ...config, embedUrl: e.target.value })}
-            className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
-            placeholder="https://example.com"
-          />
+        <div className="flex items-center justify-between pt-2">
+          <p className="text-xs font-semibold text-gray-700">Embedded Resources</p>
+          <button
+            onClick={addEmbed}
+            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
+          >
+            <Plus size={12} /> Add embed
+          </button>
         </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700 block mb-1.5">Link Title (optional)</label>
-          <input
-            value={config.embedTitle ?? ""}
-            onChange={(e) => onChange({ ...config, embedTitle: e.target.value })}
-            className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
-            placeholder="Title to display above embed"
-          />
-        </div>
-        <div>
-          <label className="text-xs font-semibold text-gray-700 block mb-1.5">Description (optional)</label>
-          <textarea
-            value={config.embedDescription ?? ""}
-            onChange={(e) => onChange({ ...config, embedDescription: e.target.value })}
-            rows={2}
-            className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
-            placeholder="Add some context or instructions..."
-          />
-        </div>
+
+        {embeds.length === 0 && (
+          <div className="py-5 text-center bg-gray-50 rounded-xl border border-dashed border-gray-200">
+            <p className="text-xs text-gray-400">No resources added yet.</p>
+          </div>
+        )}
+
+        {embeds.map((embed: any, i: number) => (
+          <div key={embed.id} className="bg-gray-50 rounded-xl border border-gray-200 p-3 space-y-3 relative group">
+            <div className="flex items-center justify-between">
+              <span className="text-[10px] font-bold text-gray-500 uppercase">Embed {i + 1}</span>
+              <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                <button onClick={() => moveEmbed(i, -1)} disabled={i === 0} className="p-1 text-gray-400 hover:text-gray-900 disabled:opacity-30"><ChevronUp size={14}/></button>
+                <button onClick={() => moveEmbed(i, 1)} disabled={i === embeds.length - 1} className="p-1 text-gray-400 hover:text-gray-900 disabled:opacity-30"><ChevronDown size={14}/></button>
+                <button onClick={() => removeEmbed(i)} className="p-1 text-red-400 hover:text-red-600 ml-2"><Trash2 size={14}/></button>
+              </div>
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-gray-700 block mb-1">Link / URL</label>
+              <input
+                type="url"
+                value={embed.url ?? ""}
+                onChange={(e) => updateEmbed(i, { url: e.target.value })}
+                className="w-full px-2.5 py-1.5 border border-gray-200 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                placeholder="https://example.com"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-gray-700 block mb-1">Title (optional)</label>
+              <input
+                value={embed.title ?? ""}
+                onChange={(e) => updateEmbed(i, { title: e.target.value })}
+                className="w-full px-2.5 py-1.5 border border-gray-200 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                placeholder="Title to display above embed"
+              />
+            </div>
+            <div>
+              <label className="text-[10px] font-semibold text-gray-700 block mb-1">Description (optional)</label>
+              <textarea
+                value={embed.description ?? ""}
+                onChange={(e) => updateEmbed(i, { description: e.target.value })}
+                rows={2}
+                className="w-full px-2.5 py-1.5 border border-gray-200 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                placeholder="Add some context or instructions..."
+              />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }
@@ -1071,6 +1185,7 @@ function SortableModuleCard({
   trainingId: string;
 }) {
   const { attributes, listeners, setNodeRef, transform, transition, isDragging } = useSortable({ id: module.id });
+  const canEdit = useStudioCan("edit_modules");
   const qc = useQueryClient();
   const [expanded, setExpanded] = useState(false);
   const [moveOpen, setMoveOpen] = useState(false);
@@ -1117,13 +1232,15 @@ function SortableModuleCard({
       )}
     >
       <div className="flex items-center gap-3 px-4 py-3">
-        <div
-          {...attributes}
-          {...listeners}
-          className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors shrink-0"
-        >
-          <GripVertical size={16} />
-        </div>
+        {canEdit && (
+          <div
+            {...attributes}
+            {...listeners}
+            className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors shrink-0"
+          >
+            <GripVertical size={16} />
+          </div>
+        )}
 
         <div className="flex items-center gap-2.5 flex-1 min-w-0">
           <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0", def.bg)}>
@@ -1151,7 +1268,7 @@ function SortableModuleCard({
             <Eye size={11} />
             <span className="hidden sm:inline">Always visible</span>
           </div>
-        ) : (
+        ) : canEdit ? (
           <button
             onClick={toggleAlwaysOn}
             title={
@@ -1169,8 +1286,21 @@ function SortableModuleCard({
             {module.isAlwaysOn ? <Eye size={11} /> : <EyeOff size={11} />}
             <span className="hidden sm:inline">{module.isAlwaysOn ? "Always visible" : "On demand"}</span>
           </button>
+        ) : (
+          <div
+            className={cn(
+              "shrink-0 flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border font-medium",
+              module.isAlwaysOn
+                ? "bg-emerald-50 border-emerald-200 text-emerald-700"
+                : "border-gray-200 text-gray-400",
+            )}
+          >
+            {module.isAlwaysOn ? <Eye size={11} /> : <EyeOff size={11} />}
+            <span className="hidden sm:inline">{module.isAlwaysOn ? "Always visible" : "On demand"}</span>
+          </div>
         )}
 
+        {canEdit && (
         <div className="flex items-center gap-1 shrink-0">
           <DropdownMenu.Root>
             <DropdownMenu.Trigger asChild>
@@ -1304,6 +1434,7 @@ function SortableModuleCard({
             </DropdownMenu.Portal>
           </DropdownMenu.Root>
         </div>
+        )}
       </div>
 
 
@@ -1394,7 +1525,7 @@ function AddModuleDrawer({
               </div>
               <div>
                 <p className={cn("text-xs font-bold", selected ? t.color : "text-gray-700")}>{t.label}</p>
-                <p className="text-[10px] text-gray-400 leading-tight mt-0.5 line-clamp-2">{t.description}</p>
+                <div className="text-[10px] text-gray-400 leading-tight mt-0.5 line-clamp-2 prose prose-sm max-w-none prose-p:my-0 prose-p:leading-normal" dangerouslySetInnerHTML={{ __html: t.description }} />
               </div>
             </button>
           );
@@ -1457,8 +1588,12 @@ function DayTabHeader({
   const [dateVal, setDateVal] = useState(
     day.date ? new Date(day.date).toISOString().split("T")[0] : "",
   );
+  const [deliveryMode, setDeliveryMode] = useState<"in_person" | "online" | "hybrid" | "">(
+    day.deliveryMode ?? ""
+  );
   const updateDay = useUpdateDay(workspaceId, trainingId);
   const deleteDay = useDeleteDay(workspaceId, trainingId);
+  const canEdit = useStudioCan("edit_agenda");
 
   const save = () => {
     updateDay.mutate({
@@ -1466,6 +1601,7 @@ function DayTabHeader({
       data: {
         title: title.trim() || day.title,
         date: dateVal ? new Date(dateVal).toISOString() : null,
+        deliveryMode: deliveryMode ? deliveryMode : undefined,
       },
     });
     setEditing(false);
@@ -1498,6 +1634,18 @@ function DayTabHeader({
             </button>
           )}
         </div>
+        <div className="flex items-center gap-2">
+          <select
+            value={deliveryMode}
+            onChange={(e) => setDeliveryMode(e.target.value as "in_person" | "online" | "hybrid" | "")}
+            className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm bg-white focus:outline-none focus:ring-2 focus:ring-brand-500"
+          >
+            <option value="">Select Delivery Mode...</option>
+            <option value="in_person">In-Person</option>
+            <option value="online">Virtual / Online</option>
+            <option value="hybrid">Hybrid</option>
+          </select>
+        </div>
         <div className="flex gap-2">
           <button
             onClick={() => { setTitle(day.title); setEditing(false); }}
@@ -1525,37 +1673,46 @@ function DayTabHeader({
         </div>
         <div className="min-w-0">
           <p className="text-sm font-bold text-gray-900 truncate">{day.title}</p>
-          {day.date ? (
-            <p className="text-[11px] text-gray-400 flex items-center gap-1 mt-0.5">
-              <Calendar size={10} />
-              {new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
-            </p>
-          ) : (
-            <p className="text-[11px] text-gray-300 mt-0.5">No date set</p>
-          )}
+          <div className="flex items-center gap-2 mt-0.5">
+            {day.date ? (
+              <p className="text-[11px] text-gray-400 flex items-center gap-1">
+                <Calendar size={10} />
+                {new Date(day.date).toLocaleDateString("en-US", { weekday: "short", month: "short", day: "numeric" })}
+              </p>
+            ) : (
+              <p className="text-[11px] text-gray-300">No date set</p>
+            )}
+            {day.deliveryMode && (
+              <span className="text-[10px] font-medium bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded-full border border-gray-200">
+                {day.deliveryMode === "in_person" ? "In-Person" : day.deliveryMode === "online" ? "Virtual" : "Hybrid"}
+              </span>
+            )}
+          </div>
         </div>
       </div>
-      <div className="flex items-center gap-1 shrink-0">
-        <button
-          onClick={() => setEditing(true)}
-          className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
-          title="Edit day"
-        >
-          <Pencil size={13} />
-        </button>
-        <button
-          onClick={() => {
-            if (confirm(`Delete "${day.title}" and unassign its modules?`)) {
-              deleteDay.mutate(day.id);
-            }
-          }}
-          disabled={deleteDay.isPending}
-          className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40"
-          title="Delete day"
-        >
-          <Trash2 size={13} />
-        </button>
-      </div>
+      {canEdit && (
+        <div className="flex items-center gap-1 shrink-0">
+          <button
+            onClick={() => setEditing(true)}
+            className="p-1.5 text-gray-400 hover:text-brand-600 hover:bg-brand-50 rounded-lg transition-colors"
+            title="Edit day"
+          >
+            <Pencil size={13} />
+          </button>
+          <button
+            onClick={() => {
+              if (confirm(`Delete "${day.title}" and unassign its modules?`)) {
+                deleteDay.mutate(day.id);
+              }
+            }}
+            disabled={deleteDay.isPending}
+            className="p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors disabled:opacity-40"
+            title="Delete day"
+          >
+            <Trash2 size={13} />
+          </button>
+        </div>
+      )}
     </div>
   );
 }
@@ -1575,8 +1732,10 @@ function DayModuleList({
 }) {
   const reorderModules = useReorderModules(workspaceId, trainingId);
   const [adding, setAdding] = useState(false);
+  const canEdit = useStudioCan("edit_modules");
 
   const handleDragEnd = (event: DragEndEvent) => {
+    if (!canEdit) return;
     const { active, over } = event;
     if (!over || active.id === over.id) return;
     const oldIndex = modules.findIndex((m) => m.id === active.id);
@@ -1587,7 +1746,7 @@ function DayModuleList({
 
   return (
     <div className="space-y-3">
-      {adding && (
+      {adding && canEdit && (
         <AddModuleDrawer
           onClose={() => setAdding(false)}
           workspaceId={workspaceId}
@@ -1613,7 +1772,7 @@ function DayModuleList({
         </SortableContext>
       </DndContext>
 
-      {modules.length === 0 && !adding && (
+      {modules.length === 0 && !adding && canEdit && (
         <div
           className="flex flex-col items-center justify-center py-12 bg-brand-50/40 rounded-2xl border-2 border-dashed border-brand-200 cursor-pointer hover:border-brand-400 hover:bg-brand-50 transition-all group"
           onClick={() => setAdding(true)}
@@ -1628,7 +1787,13 @@ function DayModuleList({
         </div>
       )}
 
-      {!adding && modules.length > 0 && (
+      {modules.length === 0 && !canEdit && (
+        <div className="flex flex-col items-center justify-center py-12 bg-gray-50 rounded-2xl border border-gray-200">
+          <p className="text-sm font-medium text-gray-400">No modules for this day</p>
+        </div>
+      )}
+
+      {!adding && modules.length > 0 && canEdit && (
         <button
           onClick={() => setAdding(true)}
           className="w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-brand-300 rounded-xl text-xs font-semibold text-brand-600 bg-brand-50/40 hover:border-brand-400 hover:text-brand-700 hover:bg-brand-50 transition-all"
@@ -1647,6 +1812,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
   const { data: members = [] } = useWorkspaceMembers(workspaceId);
   const assignFacilitator = useAssignFacilitator(workspaceId, trainingId);
   const inviteFacilitator = useInviteFacilitator(workspaceId, trainingId);
+  const canManage = useStudioCan("assign_roles");
 
   const [selectedUserId, setSelectedUserId] = useState("");
   const [selectedRole, setSelectedRole] = useState<TrainingRole>("full_editor");
@@ -1673,13 +1839,15 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
             </span>
           )}
         </div>
-        <button
-          onClick={() => setShowAssign((v) => !v)}
-          className="flex items-center gap-1 text-[11px] text-brand-600 hover:text-brand-800 font-semibold"
-        >
-          <UserPlus size={12} />
-          Assign
-        </button>
+        {canManage && (
+          <button
+            onClick={() => setShowAssign((v) => !v)}
+            className="flex items-center gap-1 text-[11px] text-brand-600 hover:text-brand-800 font-semibold"
+          >
+            <UserPlus size={12} />
+            Assign
+          </button>
+        )}
       </div>
 
       <div className="p-4 space-y-3">
@@ -1699,9 +1867,22 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
               </div>
               <span className="text-sm text-gray-800 font-medium">{f.user?.name ?? f.userId}</span>
             </div>
-            <span className="text-[10px] px-2 py-0.5 rounded-full bg-gray-100 text-gray-600 font-medium shrink-0">
-              {roleLabel(f.role)}
-            </span>
+            {canManage ? (
+              <select
+                value={f.role}
+                onChange={(e) => assignFacilitator.mutate({ userId: f.userId, role: e.target.value as TrainingRole })}
+                disabled={assignFacilitator.isPending}
+                className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 font-medium shrink-0 border-none outline-none focus:ring-1 focus:ring-brand-500 cursor-pointer disabled:opacity-50"
+              >
+                {FACILITATOR_ROLES.map((r) => (
+                  <option key={r.value} value={r.value}>{r.label}</option>
+                ))}
+              </select>
+            ) : (
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 text-gray-600 font-medium shrink-0">
+                {roleLabel(f.role)}
+              </span>
+            )}
           </div>
         ))}
 
@@ -1852,6 +2033,7 @@ const TRAINING_CATEGORIES: { value: string; label: string }[] = [
 function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; workspaceId: string }) {
   const { data: training } = useTraining(workspaceId, trainingId);
   const updateTraining = useUpdateTraining(workspaceId, trainingId);
+  const canEdit = useStudioCan("edit_agenda");
   const [editing, setEditing] = useState(false);
   const [title, setTitle] = useState("");
   const [labels, setLabels] = useState("");
@@ -1894,7 +2076,7 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
           <Pencil size={14} className="text-gray-500" />
           <h2 className="text-sm font-bold text-gray-900">Training Info</h2>
         </div>
-        {!editing && (
+        {!editing && canEdit && (
           <button
             onClick={startEditing}
             className="flex items-center gap-1 text-[11px] text-brand-600 hover:text-brand-800 font-semibold"
@@ -1938,13 +2120,17 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
             </div>
             <div>
               <label className="text-xs font-semibold text-gray-700 block mb-1">Description</label>
-              <textarea
+              <RichTextEditor
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                rows={2}
-                className="w-full px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                onChange={setDescription}
                 placeholder="Optional…"
+                minHeight="120px"
               />
+              <div className="flex justify-end mt-1">
+                <span className={cn("text-[10px] font-medium", description.replace(new RegExp("<[^>]*>?", "gm"), '').length > 2000 ? "text-red-500" : "text-gray-500")}>
+                  {description.replace(new RegExp("<[^>]*>?", "gm"), '').length} / 2000
+                </span>
+              </div>
             </div>
             {type === "in_person" || type === "hybrid" ? (
               <div>
@@ -2003,7 +2189,10 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
               )}
             </div>
             {training.description && (
-              <p className="text-xs text-gray-500 leading-relaxed">{training.description}</p>
+              <div 
+                className="text-xs text-gray-500 leading-relaxed prose prose-sm prose-gray max-w-none prose-p:m-0 prose-ul:m-0 prose-ol:m-0"
+                dangerouslySetInnerHTML={{ __html: training.description }}
+              />
             )}
           </div>
         )}
@@ -2068,6 +2257,9 @@ function SessionChecklist({ dayCount, moduleCount }: { dayCount: number; moduleC
 
 export function StudioPage({ trainingId }: { trainingId: string }) {
   const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
+  const rawRole = useMyTrainingRole(workspaceId, trainingId);
+  const myRole: TrainingRole | undefined =
+    rawRole && rawRole !== "participant" ? rawRole : undefined;
   const { data: days = [], isLoading: daysLoading } = useDays(workspaceId, trainingId);
   const { data: allModules = [] } = useModules(workspaceId, trainingId);
   const createDay = useCreateDay(workspaceId, trainingId);
@@ -2106,10 +2298,13 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
   };
 
   const totalModules = allModules.length;
+  const canEditAgenda = canDo(myRole, "edit_agenda");
+  const isReadOnly = myRole !== undefined && !canDo(myRole, "edit_modules") && !canEditAgenda;
 
   // ── Onboarding empty state ──
   if (!daysLoading && days.length === 0 && unassignedModules.length === 0) {
     return (
+      <StudioRoleContext.Provider value={myRole}>
       <div className="max-w-5xl mx-auto px-1 space-y-6 pb-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
           <div>
@@ -2127,27 +2322,39 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <div
-              className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200 cursor-pointer hover:border-brand-300 hover:bg-brand-50/20 transition-all group"
-              onClick={handleAddDay}
-            >
-              <div className="w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-100 border border-brand-100 flex items-center justify-center mb-4 transition-colors">
-                <CalendarDays size={24} className="text-brand-500" />
-              </div>
-              <p className="text-base font-bold text-gray-800 group-hover:text-brand-700 transition-colors">
-                Start building your curriculum
-              </p>
-              <p className="text-sm text-gray-400 mt-1 text-center max-w-xs">
-                Add Day 1 to get started. Each day holds its own set of activities.
-              </p>
-              <button
-                disabled={createDay.isPending}
-                className="mt-5 flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 disabled:opacity-60 transition-colors shadow-sm shadow-brand-200"
+            {canEditAgenda ? (
+              <div
+                className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200 cursor-pointer hover:border-brand-300 hover:bg-brand-50/20 transition-all group"
+                onClick={handleAddDay}
               >
-                <Plus size={15} />
-                {createDay.isPending ? "Adding…" : "Add Day 1"}
-              </button>
-            </div>
+                <div className="w-14 h-14 rounded-2xl bg-brand-50 group-hover:bg-brand-100 border border-brand-100 flex items-center justify-center mb-4 transition-colors">
+                  <CalendarDays size={24} className="text-brand-500" />
+                </div>
+                <p className="text-base font-bold text-gray-800 group-hover:text-brand-700 transition-colors">
+                  Start building your curriculum
+                </p>
+                <p className="text-sm text-gray-400 mt-1 text-center max-w-xs">
+                  Add Day 1 to get started. Each day holds its own set of activities.
+                </p>
+                <button
+                  disabled={createDay.isPending}
+                  className="mt-5 flex items-center gap-2 px-5 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 disabled:opacity-60 transition-colors shadow-sm shadow-brand-200"
+                >
+                  <Plus size={15} />
+                  {createDay.isPending ? "Adding…" : "Add Day 1"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-20 bg-white rounded-2xl border-2 border-dashed border-gray-200">
+                <div className="w-14 h-14 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-center mb-4">
+                  <CalendarDays size={24} className="text-gray-300" />
+                </div>
+                <p className="text-base font-bold text-gray-700">No curriculum yet</p>
+                <p className="text-sm text-gray-400 mt-1 text-center max-w-xs">
+                  This training has no days or modules set up yet.
+                </p>
+              </div>
+            )}
           </div>
           <div className="space-y-4">
             <TrainingInfoPanel trainingId={trainingId} workspaceId={workspaceId} />
@@ -2155,10 +2362,12 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
           </div>
         </div>
       </div>
+      </StudioRoleContext.Provider>
     );
   }
 
   return (
+    <StudioRoleContext.Provider value={myRole}>
     <div className="max-w-5xl mx-auto px-1 space-y-5 pb-8">
       {/* Page header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -2174,6 +2383,18 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
           Go Live
         </Link>
       </div>
+
+      {isReadOnly && (
+        <div className="flex items-start gap-2.5 bg-gray-50 border border-gray-200 rounded-2xl px-4 py-3">
+          <Lock size={15} className="text-gray-400 mt-0.5 shrink-0" />
+          <div>
+            <p className="text-sm font-semibold text-gray-700">Read-only access</p>
+            <p className="text-xs text-gray-500 mt-0.5">
+              Your role lets you view this training and participate in chat, but not edit content.
+            </p>
+          </div>
+        </div>
+      )}
 
       {/* Day tabs row */}
       <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
@@ -2232,14 +2453,16 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
         )}
 
         {/* Add day button */}
-        <button
-          onClick={handleAddDay}
-          disabled={createDay.isPending}
-          className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold shrink-0 border border-dashed border-gray-300 text-gray-400 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/30 transition-all disabled:opacity-50"
-        >
-          <Plus size={13} />
-          {createDay.isPending ? "Adding…" : "Add Day"}
-        </button>
+        {canEditAgenda && (
+          <button
+            onClick={handleAddDay}
+            disabled={createDay.isPending}
+            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold shrink-0 border border-dashed border-gray-300 text-gray-400 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/30 transition-all disabled:opacity-50"
+          >
+            <Plus size={13} />
+            {createDay.isPending ? "Adding…" : "Add Day"}
+          </button>
+        )}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -2284,5 +2507,6 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
         </div>
       </div>
     </div>
+    </StudioRoleContext.Provider>
   );
 }

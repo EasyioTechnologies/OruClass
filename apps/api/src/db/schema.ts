@@ -97,6 +97,7 @@ export const trainingDays = pgTable(
     dayNumber: integer("day_number").notNull(),
     title: text("title").notNull(),
     date: timestamp("date"),
+    deliveryMode: text("delivery_mode").$type<"in_person" | "online" | "hybrid">().default("in_person"),
     description: text("description"),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
@@ -189,6 +190,27 @@ export const liveSessions = pgTable(
   (t) => [index("live_sessions_training_idx").on(t.trainingId)],
 );
 
+// ─── LiveSessionModuleStats ───────────────────────────────────────────────────
+export const liveSessionModuleStats = pgTable(
+  "live_session_module_stats",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    liveSessionId: uuid("live_session_id")
+      .notNull()
+      .references(() => liveSessions.id, { onDelete: "cascade" }),
+    moduleId: uuid("module_id")
+      .notNull()
+      .references(() => trainingModules.id, { onDelete: "cascade" }),
+    accumulatedSeconds: integer("accumulated_seconds").notNull().default(0),
+    isRunning: boolean("is_running").notNull().default(true),
+    lastStartedAt: timestamp("last_started_at").notNull().defaultNow(),
+    updatedAt: timestamp("updated_at").notNull().defaultNow(),
+  },
+  (t) => [
+    uniqueIndex("module_stats_session_module_idx").on(t.liveSessionId, t.moduleId),
+  ],
+);
+
 // ─── ParticipantResponses ─────────────────────────────────────────────────────
 export const participantResponses = pgTable(
   "participant_responses",
@@ -204,6 +226,8 @@ export const participantResponses = pgTable(
       .notNull()
       .references(() => users.id, { onDelete: "cascade" }),
     responseData: jsonb("response_data").$type<Record<string, unknown>>().notNull(),
+    startedAt: timestamp("started_at"),
+    timeSpentSeconds: integer("time_spent_seconds"),
     submittedAt: timestamp("submitted_at").notNull().defaultNow(),
     liveSessionId: uuid("live_session_id").references(() => liveSessions.id, { onDelete: "set null" }),
   },
@@ -265,6 +289,11 @@ export const trainingsRelations = relations(trainings, ({ one, many }) => ({
     fields: [trainings.id],
     references: [trainingAnalytics.trainingId],
   }),
+}));
+
+export const liveSessionModuleStatsRelations = relations(liveSessionModuleStats, ({ one }) => ({
+  liveSession: one(liveSessions, { fields: [liveSessionModuleStats.liveSessionId], references: [liveSessions.id] }),
+  module: one(trainingModules, { fields: [liveSessionModuleStats.moduleId], references: [trainingModules.id] }),
 }));
 
 export const trainingDaysRelations = relations(trainingDays, ({ one, many }) => ({

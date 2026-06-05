@@ -13,8 +13,11 @@ interface Props {
 
 export function TrainerEmbed({ module, trainingId }: Props) {
   const { data: responses, isLoading } = useModuleResponses(trainingId, module.id);
-  const url = module.config.embedUrl;
-  const title = module.config.embedTitle ?? module.title;
+  const embeds = module.config.embeds?.length 
+    ? module.config.embeds 
+    : (module.config.embedUrl ? [{ id: 'legacy', url: module.config.embedUrl, title: module.config.embedTitle, description: module.config.embedDescription }] : []);
+    
+  const title = module.title;
   
   const participants = useLiveSessionStore((s) => s.participants);
   const joinedCount = useMemo(
@@ -32,11 +35,11 @@ export function TrainerEmbed({ module, trainingId }: Props) {
       .map((r) => r.user?.name ?? "Anonymous");
   }, [responseList]);
 
-  if (!url) {
+  if (embeds.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
         <div className="text-center p-12 text-gray-500 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
-          No embed URL has been configured for this module.
+          No embedded resources have been configured for this module.
         </div>
       </div>
     );
@@ -45,15 +48,27 @@ export function TrainerEmbed({ module, trainingId }: Props) {
   return (
     <div className="h-full flex flex-col md:flex-row overflow-hidden bg-gray-50">
       {/* Left side: The Embed */}
-      <div className="flex-1 h-full border-r border-gray-200 relative bg-white">
-        <iframe
-          src={url}
-          className="absolute inset-0 w-full h-full border-0"
-          sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          title={title}
-        />
+      <div className="flex-1 h-full border-r border-gray-200 relative bg-gray-100 overflow-y-auto p-4 md:p-8 space-y-8">
+        {embeds.map((embed: any, index: number) => (
+          <div key={embed.id || index} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+            {(embed.title || embed.description) && (
+              <div className="p-4 border-b border-gray-100 bg-gray-50/50">
+                {embed.title && <h3 className="font-bold text-gray-900">{embed.title}</h3>}
+                {embed.description && <p className="text-sm text-gray-600 mt-1">{embed.description}</p>}
+              </div>
+            )}
+            <div className="w-full aspect-video relative bg-gray-900">
+              <iframe
+                src={embed.url}
+                className="absolute inset-0 w-full h-full border-0"
+                sandbox="allow-scripts allow-same-origin allow-popups allow-forms"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+                title={embed.title || `Embedded Resource ${index + 1}`}
+              />
+            </div>
+          </div>
+        ))}
       </div>
 
       {/* Right side: Analytics */}
