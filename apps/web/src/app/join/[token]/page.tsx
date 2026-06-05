@@ -5,6 +5,8 @@ import { useRouter } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuth } from "@/hooks/useAuth";
 import { EmailAuthForm } from "@/components/auth/EmailAuthForm";
+import Link from "next/link";
+import { ArrowLeft } from "lucide-react";
 import type { Training } from "@oruclass/types";
 
 export default function JoinTokenPage({ params }: { params: Promise<{ token: string }> }) {
@@ -56,8 +58,12 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
 
   if (needsAuth) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="w-full max-w-sm">
+      <div className="relative min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <Link href="/" className="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors z-20 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/50 hover:bg-white hover:border-gray-300 hover:shadow-sm">
+          <ArrowLeft className="w-4 h-4" />
+          Back to Home
+        </Link>
+        <div className="w-full max-w-sm relative z-10">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900">OruClass</h1>
             <p className="text-sm text-gray-500 mt-1">Sign in to join this session</p>
