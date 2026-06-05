@@ -76,8 +76,8 @@ function ParticipantCounter({ count }: { count: number }) {
             className="absolute inset-0 rounded-full bg-brand-400 pointer-events-none"
           />
         )}
-        <div className="relative z-10 w-16 h-16 rounded-2xl bg-brand-50 border-2 border-brand-100 flex items-center justify-center">
-          <Users size={26} className="text-brand-500" />
+        <div className="relative z-10 w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-brand-50 border-2 border-brand-100 flex items-center justify-center transition-all duration-300">
+          <Users size={28} className="text-brand-500 sm:w-8 sm:h-8" />
         </div>
       </div>
 
@@ -107,27 +107,40 @@ function ParticipantCounter({ count }: { count: number }) {
 function RecentJoiners({ names }: { names: string[] }) {
   if (names.length === 0) return null;
   const recent = names.slice(-3).reverse();
+  const othersCount = names.length > 3 ? names.length - 3 : 0;
+
   return (
-    <div className="flex flex-col gap-1 w-full mt-1">
-      <AnimatePresence initial={false}>
-        {recent.map((name) => (
-          <motion.div
-            key={name}
-            initial={{ opacity: 0, x: 16, height: 0 }}
-            animate={{ opacity: 1, x: 0, height: "auto" }}
-            exit={{ opacity: 0, x: -16, height: 0 }}
-            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-            className="flex items-center gap-2 px-2.5 py-1.5 bg-green-50 border border-green-100 rounded-lg overflow-hidden"
-          >
-            <div className="w-5 h-5 rounded-full bg-brand-100 flex items-center justify-center text-[9px] font-bold text-brand-600 flex-shrink-0">
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="mt-2 flex items-center gap-2.5 px-3 py-2 bg-white border border-gray-200 rounded-full shadow-sm w-full max-w-[200px]"
+    >
+      <div className="flex -space-x-2 shrink-0">
+        <AnimatePresence mode="popLayout">
+          {recent.map((name, i) => (
+            <motion.div
+              key={name}
+              initial={{ opacity: 0, scale: 0.5, x: 20 }}
+              animate={{ opacity: 1, scale: 1, x: 0 }}
+              exit={{ opacity: 0, scale: 0.5, x: -20 }}
+              transition={{ type: "spring", stiffness: 400, damping: 25 }}
+              className="w-7 h-7 rounded-full bg-brand-100 border-2 border-white flex items-center justify-center text-[9px] font-bold text-brand-600 relative"
+              style={{ zIndex: 10 - i }}
+            >
               {name.slice(0, 2).toUpperCase()}
-            </div>
-            <span className="text-[11px] text-gray-700 font-medium truncate">{name}</span>
-            <span className="text-[10px] text-green-500 font-semibold ml-auto flex-shrink-0">joined</span>
-          </motion.div>
-        ))}
-      </AnimatePresence>
-    </div>
+            </motion.div>
+          ))}
+        </AnimatePresence>
+      </div>
+      <div className="flex-1 min-w-0 text-left">
+        <p className="text-[11px] text-gray-700 font-medium truncate">
+          {recent[0]}
+        </p>
+        <p className="text-[10px] text-gray-500 truncate">
+          {othersCount > 0 ? `+${othersCount} others` : recent.length > 1 ? `+${recent.length - 1} more` : 'joined just now'}
+        </p>
+      </div>
+    </motion.div>
   );
 }
 
