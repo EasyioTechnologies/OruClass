@@ -117,6 +117,10 @@ export interface ModuleConfig {
   formFields?: FormField[];
   // Embed
   embeds?: { id: string; url: string; title?: string; description?: string; type?: string }[];
+  // Legacy single-embed fields (pre-multi-embed migration); read as fallback.
+  embedUrl?: string;
+  embedTitle?: string;
+  embedDescription?: string;
 }
 
 export interface QuizQuestion {

@@ -1,5 +1,6 @@
 import type { Server as SocketIOServer, Socket } from "socket.io";
-import type { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData } from "@oruclass/types";
+import type { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData, TrainingRole, StrokeData, StickyNote } from "@oruclass/types";
+import { hasPermission } from "@oruclass/utils";
 import { eq, and, count, desc } from "drizzle-orm";
 import { db } from "../db/client";
 import {
@@ -83,19 +84,21 @@ async function syncRosterFromDb(socket: AppSocket, trainingId: string, selfUserI
       .innerJoin(users, eq(users.id, trainingParticipants.userId))
       .where(eq(trainingParticipants.trainingId, trainingId)),
     db
-      .select({ userId: trainingFacilitators.userId })
+      .select({ userId: trainingFacilitators.userId, role: trainingFacilitators.role })
       .from(trainingFacilitators)
       .where(eq(trainingFacilitators.trainingId, trainingId)),
   ]);
 
-  const facilitatorIds = new Set(facilitators.map((f) => f.userId));
+  const facilitatorRoles = new Map(facilitators.map((f) => [f.userId, f.role as TrainingRole]));
 
   for (const p of rows) {
     if (p.userId === selfUserId) continue;
+    const trainingRole = facilitatorRoles.get(p.userId) ?? null;
     socket.emit("participant:joined", {
       userId: p.userId,
       name: p.name ?? "Unknown User",
-      role: facilitatorIds.has(p.userId) ? "trainer" : "participant",
+      role: trainingRole ? "trainer" : "participant",
+      trainingRole,
       joinedAt: (p.joinedAt ?? new Date()).toISOString(),
       connectionStatus: p.connectionStatus,
     });
@@ -232,6 +235,7 @@ export function registerSocketHandlers(io: IO): void {
         // downgraded to "participant". effectiveRole is what we store and broadcast —
         // the prior code leaked the unverified client role into the roster.
         let effectiveRole: "trainer" | "participant" = "participant";
+        let trainingRole: TrainingRole | null = null;
         if (role === "trainer") {
           const facilitator = await db.query.trainingFacilitators.findFirst({
             where: and(
@@ -241,11 +245,13 @@ export function registerSocketHandlers(io: IO): void {
           });
           if (facilitator) {
             effectiveRole = "trainer";
+            trainingRole = facilitator.role as TrainingRole;
           } else {
             socket.emit("error", { code: "UNAUTHORIZED", message: "not a facilitator for this training" });
           }
         }
         socket.data.role = effectiveRole;
+        socket.data.trainingRole = trainingRole;
 
         // Trainers also join a sub-room. Dashboard-only telemetry (submission
         // progress) is emitted there instead of the whole training room, so a
@@ -279,6 +285,7 @@ export function registerSocketHandlers(io: IO): void {
           userId,
           name,
           role: effectiveRole,
+          trainingRole,
           joinedAt: new Date().toISOString(),
           connectionStatus: "online",
         });
@@ -360,7 +367,10 @@ export function registerSocketHandlers(io: IO): void {
                 eq(trainingFacilitators.userId, userId),
               ),
             });
-            if (!facilitator) {
+            // Only roles with unlock_modules (lead_trainer, full_editor) may drive
+            // the live room. partial_editor / facilitation_support are denied even
+            // though they're facilitators.
+            if (!facilitator || !hasPermission(facilitator.role as TrainingRole, "unlock_modules")) {
               denied = true;
               return;
             }
@@ -489,7 +499,9 @@ export function registerSocketHandlers(io: IO): void {
                 eq(trainingFacilitators.userId, userId),
               ),
             });
-            if (!facilitator) {
+            // Stopwatch is a room-control action — requires pause_room (lead_trainer,
+            // full_editor). partial_editor / facilitation_support cannot control it.
+            if (!facilitator || !hasPermission(facilitator.role as TrainingRole, "pause_room")) {
               denied = true;
               return;
             }
@@ -645,28 +657,14 @@ export function registerSocketHandlers(io: IO): void {
     socket.on(
       "draw:sync",
       guard("draw:sync", ({ trainingId, moduleId, strokes }: { trainingId: string; moduleId: string; strokes: unknown[] }) => {
-        socket.to(`training:${trainingId}`).emit("draw:sync", { moduleId, userId, strokes });
-      }),
-    );
-
-    socket.on(
-      "draw:update",
-      guard("draw:update", ({ trainingId, moduleId, stroke }: { trainingId: string; moduleId: string; stroke: unknown }) => {
-        socket.to(`training:${trainingId}`).emit("draw:update", { moduleId, userId, stroke });
-      }),
-    );
-
-    socket.on(
-      "draw:clear",
-      guard("draw:clear", ({ trainingId, moduleId }: { trainingId: string; moduleId: string }) => {
-        socket.to(`training:${trainingId}`).emit("draw:clear", { moduleId });
+        socket.to(`training:${trainingId}`).emit("draw:sync", { moduleId, userId, strokes: strokes as StrokeData[] });
       }),
     );
 
     socket.on(
       "note:create",
       guard("note:create", ({ trainingId, moduleId, note }: { trainingId: string; moduleId: string; note: unknown }) => {
-        socket.to(`training:${trainingId}`).emit("note:create", { moduleId, note });
+        socket.to(`training:${trainingId}`).emit("note:create", { moduleId, note: note as StickyNote });
       }),
     );
 

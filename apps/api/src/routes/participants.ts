@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db/client";
@@ -10,7 +11,7 @@ import { parseBody } from "../utils/validators";
 import { trainingInWorkspace } from "../utils/workspaceAssets";
 import { sendParticipantJoinedEmail, sendAccountDeletedEmail } from "../services/email.service";
 
-export const participantsRouter = new Hono();
+export const participantsRouter = new Hono<AppEnv>();
 
 participantsRouter.use("*", authMiddleware);
 

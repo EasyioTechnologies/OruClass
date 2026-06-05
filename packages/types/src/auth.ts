@@ -3,7 +3,9 @@ export interface User {
   email: string;
   name: string;
   avatarUrl: string | null;
-  authProvider: "google";
+  // Better Auth migration: "google" retained for legacy rows; live values are
+  // "email" (credential trainers) and "guest" (anonymous QR-join participants).
+  authProvider: "google" | "email" | "guest";
   createdAt: Date;
   updatedAt: Date;
 }
@@ -22,4 +24,8 @@ export interface JWTPayload {
   exp: number;
 }
 
-export type PublicUser = Pick<User, "id" | "name" | "email" | "avatarUrl" | "authProvider">;
+export type PublicUser = Pick<User, "id" | "name" | "email" | "avatarUrl" | "authProvider"> & {
+  // Client-only optional fields hydrated from the auth response when present.
+  image?: string | null;
+  createdAt?: Date | string;
+};

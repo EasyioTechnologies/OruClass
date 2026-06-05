@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, type ReactElement } from "react";
 import { useRouter } from "next/navigation";
 import { Check, ArrowRight } from "lucide-react";
 import { cn } from "@oruclass/utils";
@@ -89,7 +89,7 @@ function EnterpriseIcon() {
   );
 }
 
-const tierIcons: Record<PlanId, () => JSX.Element> = {
+const tierIcons: Record<PlanId, () => ReactElement> = {
   monthly: StarterIcon,
   quarterly: ProIcon,
   yearly: EnterpriseIcon,

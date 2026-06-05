@@ -1,4 +1,4 @@
-import type { TrainingModule, StickyNote, StrokeData, ConnectionStatus } from "./training";
+import type { TrainingModule, StickyNote, StrokeData, ConnectionStatus, TrainingRole } from "./training";
 
 // Client → Server events
 export interface ClientToServerEvents {
@@ -21,7 +21,7 @@ export interface ClientToServerEvents {
 // Server → Client events
 export interface ServerToClientEvents {
   "module:unlocked": (data: { moduleId: string | null; module: TrainingModule | null }) => void;
-  "participant:joined": (data: { userId: string; name: string; role: string; joinedAt: string; connectionStatus: ConnectionStatus }) => void;
+  "participant:joined": (data: { userId: string; name: string; role: string; trainingRole?: TrainingRole | null; joinedAt: string; connectionStatus: ConnectionStatus }) => void;
   "participant:left": (data: { userId: string }) => void;
   "data:aggregate": (data: { trainingId: string; moduleId: string; responseCount: number }) => void;
   "session:submission_update": (data: { trainingId: string; moduleId: string; liveSessionId: string; submitted: number; totalParticipants: number }) => void;
@@ -51,4 +51,7 @@ export interface SocketData {
   userEmail: string;
   trainingId: string;
   role: "trainer" | "participant";
+  // The facilitator's granular role (lead_trainer | full_editor | partial_editor |
+  // facilitation_support) when role === "trainer". null/undefined for participants.
+  trainingRole?: TrainingRole | null;
 }

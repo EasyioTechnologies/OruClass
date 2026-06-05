@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and, sql } from "drizzle-orm";
 import { db } from "../db/client";
@@ -22,7 +23,7 @@ import { randomBytes } from "crypto";
 import { getIO } from "../socket/io-instance";
 import { digestQueue } from "../jobs/sendSessionDigest.job";
 
-export const trainingsRouter = new Hono();
+export const trainingsRouter = new Hono<AppEnv>();
 
 trainingsRouter.use("*", authMiddleware);
 trainingsRouter.use("*", workspaceTenantMiddleware);

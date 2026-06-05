@@ -17,7 +17,6 @@ import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { apiClient } from "@/lib/api-client";
 import { canDo } from "@/lib/permissions";
 import type { TrainingModule, TrainingRole, ModuleConfig, AttendanceField, TrainingDay, FormField, FormFieldType } from "@oruclass/types";
-import { Switch } from "@/components/ui/switch";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { cn } from "@oruclass/utils";
 import type { Permission } from "@oruclass/utils";

@@ -45,7 +45,8 @@ export function WhiteboardCanvas({ module, trainingId }: Props) {
     socket.emit("draw:clear", { moduleId: module.id, trainingId });
   }, [socket, module.id, trainingId]);
 
-  const isTrainer = user?.authProvider === "google";
+  // Guests are QR-join participants; any credentialed (email) user is a trainer.
+  const isTrainer = !!user && user.authProvider !== "guest";
 
   return (
     <div className="flex flex-col h-full w-full">

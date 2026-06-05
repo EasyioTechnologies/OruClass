@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and } from "drizzle-orm";
 import { db } from "../db/client";
@@ -7,7 +8,7 @@ import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { moduleInWorkspace } from "../utils/workspaceAssets";
 import { SUBMIT_RATE_MAX, SUBMIT_RATE_WINDOW_MS } from "../config/limits";
 
-export const responsesRouter = new Hono();
+export const responsesRouter = new Hono<AppEnv>();
 
 responsesRouter.use("*", authMiddleware);
 responsesRouter.use("*", workspaceTenantMiddleware);

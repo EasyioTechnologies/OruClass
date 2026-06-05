@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and, asc, isNull } from "drizzle-orm";
 import { db } from "../db/client";
@@ -13,7 +14,7 @@ import {
 } from "@oruclass/validators";
 import { parseBody } from "../utils/validators";
 
-export const daysRouter = new Hono();
+export const daysRouter = new Hono<AppEnv>();
 
 daysRouter.use("*", authMiddleware);
 daysRouter.use("*", workspaceTenantMiddleware);

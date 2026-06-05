@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and, inArray, desc } from "drizzle-orm";
 import { db } from "../db/client";
@@ -8,7 +9,7 @@ import { CreateWorkspaceSchema, UpdateWorkspaceSchema } from "@oruclass/validato
 import { parseBody } from "../utils/validators";
 import { nanoid } from "nanoid";
 
-export const workspacesRouter = new Hono();
+export const workspacesRouter = new Hono<AppEnv>();
 
 workspacesRouter.use("*", authMiddleware);
 

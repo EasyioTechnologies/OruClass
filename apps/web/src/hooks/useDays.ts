@@ -34,7 +34,7 @@ export function useCreateDay(workspaceId: string, trainingId: string) {
 export function useUpdateDay(workspaceId: string, trainingId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: ({ dayId, data }: { dayId: string; data: Partial<{ title: string; date: string | null; description: string }> }) =>
+    mutationFn: ({ dayId, data }: { dayId: string; data: Partial<{ title: string; date: string | null; description: string; deliveryMode: "in_person" | "online" | "hybrid" }> }) =>
       apiClient.patch(
         `/api/workspaces/${workspaceId}/trainings/${trainingId}/days/${dayId}`,
         data,

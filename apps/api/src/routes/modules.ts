@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and, asc } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
@@ -19,7 +20,7 @@ import { parseBody } from "../utils/validators";
 
 type TrainingModule = InferSelectModel<typeof trainingModules>;
 
-export const modulesRouter = new Hono();
+export const modulesRouter = new Hono<AppEnv>();
 
 modulesRouter.use("*", authMiddleware);
 modulesRouter.use("*", workspaceTenantMiddleware);

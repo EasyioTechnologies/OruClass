@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono, type Context } from "hono";
 import {
   signUp,
@@ -14,7 +15,7 @@ import {
 } from "../services/auth.service";
 import { verifyAccessToken } from "../auth/jwt";
 
-export const authRouter = new Hono();
+export const authRouter = new Hono<AppEnv>();
 
 function errorResponse(c: Context, err: unknown) {
   if (err instanceof AuthError) {

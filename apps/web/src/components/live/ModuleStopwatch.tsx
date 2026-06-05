@@ -6,14 +6,15 @@ import { useSocket } from "@/hooks/useSocket";
 import { Pause, Play, RotateCcw, Timer } from "lucide-react";
 import { cn } from "@oruclass/utils";
 
-export function ModuleStopwatch() {
+// canControl gates the pause/resume/reset buttons. It must reflect the
+// pause_room permission (lead_trainer / full_editor only), NOT the binary
+// trainer flag — partial_editor / facilitation_support are "trainers" but the
+// server rejects their stopwatch:action, so showing them the buttons is a lie.
+export function ModuleStopwatch({ canControl = false }: { canControl?: boolean }) {
   const stopwatch = useLiveSessionStore((s) => s.stopwatch);
   const trainingId = useLiveSessionStore((s) => s.trainingId);
   const socket = useSocket();
   const [displaySeconds, setDisplaySeconds] = useState(0);
-
-  const myParticipant = Array.from(useLiveSessionStore((s) => s.participants.values())).find((p) => p.userId);
-  const isTrainer = myParticipant?.role === "trainer";
 
   useEffect(() => {
     if (!stopwatch) {
@@ -55,7 +56,7 @@ export function ModuleStopwatch() {
       <Timer className="w-4 h-4 text-brand-500" />
       <span className="font-mono font-bold text-sm tracking-widest">{formatTime(displaySeconds)}</span>
       
-      {isTrainer && (
+      {canControl && (
         <div className="flex items-center gap-1 ml-2 border-l border-brand-200 pl-2">
           {stopwatch.isRunning ? (
             <button

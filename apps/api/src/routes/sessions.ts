@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and, count, sql, desc, inArray } from "drizzle-orm";
 import { db } from "../db/client";
@@ -11,7 +12,7 @@ import {
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 
-export const sessionsRouter = new Hono();
+export const sessionsRouter = new Hono<AppEnv>();
 
 sessionsRouter.use("*", authMiddleware);
 sessionsRouter.use("*", workspaceTenantMiddleware);

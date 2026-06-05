@@ -22,12 +22,13 @@ import { startExportWorker } from "./jobs/exportAnalytics.job";
 import { startDigestWorker } from "./jobs/sendSessionDigest.job";
 import { connectRedis } from "./db/redis";
 import { logger } from "./utils/logger";
+import type { AppEnv } from "./types/hono";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const ALLOWED_ORIGIN = process.env.WEB_URL ?? "http://localhost:3000";
 
 // ─── Hono App ─────────────────────────────────────────────────────────────────
-const app = new Hono();
+const app = new Hono<AppEnv>();
 
 app.use("*", honoLogger());
 app.use(
@@ -85,7 +86,7 @@ const httpServer = createServer(async (req, res) => {
     const response = await app.fetch(
       new Request(`http://localhost${req.url}`, {
         method: req.method,
-        headers: req.headers as HeadersInit,
+        headers: req.headers as unknown as Record<string, string>,
         body: bodyBuffer,
       })
     );

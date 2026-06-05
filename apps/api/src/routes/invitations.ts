@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client";
@@ -7,7 +8,7 @@ import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { sendInvitationEmail } from "../services/email.service";
 import { randomBytes } from "crypto";
 
-export const invitationsRouter = new Hono();
+export const invitationsRouter = new Hono<AppEnv>();
 
 invitationsRouter.use("*", authMiddleware);
 invitationsRouter.use("*", workspaceTenantMiddleware);

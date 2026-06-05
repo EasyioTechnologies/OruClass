@@ -1,3 +1,4 @@
+import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client";
@@ -8,7 +9,7 @@ import { requireTrainingPermission } from "../middleware/roleGuard";
 import { getTrainingAnalytics } from "../services/analytics.service";
 import { exportQueue } from "../jobs/exportAnalytics.job";
 
-export const analyticsRouter = new Hono();
+export const analyticsRouter = new Hono<AppEnv>();
 
 analyticsRouter.use("*", authMiddleware);
 analyticsRouter.use("*", workspaceTenantMiddleware);
