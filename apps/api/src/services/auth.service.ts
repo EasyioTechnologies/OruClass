@@ -37,12 +37,8 @@ export async function signUp(email: string, password: string, name: string, retu
 
   const tokens = await createTokenPair(user.id, user.email);
 
-  // Send verification email (async, don't block signup)
+  // Only ONE email at signup: the verification email. Welcome is sent after they verify.
   createAndSendVerificationEmail(user.id, user.email, user.name, returnTo).catch(() => {});
-
-  // Send welcome email — route to the signup-intended landing, never the trainer dashboard by default.
-  const loginUrl = `${WEB_URL}${returnTo ?? "/participant"}`;
-  sendWelcomeEmail({ to: user.email, name: user.name, loginUrl }).catch(() => {});
 
   return { user: sanitizeUser(user), ...tokens };
 }
@@ -133,6 +129,9 @@ export async function verifyEmail(token: string) {
   if (!user) {
     throw new AuthError("USER_NOT_FOUND", "User not found.");
   }
+
+  // Now that the account is verified, send the welcome email (single, separate from verification).
+  sendWelcomeEmail({ to: user.email, name: user.name, loginUrl: WEB_URL }).catch(() => {});
 
   const tokens = await createTokenPair(user.id, user.email);
   return { user: sanitizeUser(user), ...tokens };

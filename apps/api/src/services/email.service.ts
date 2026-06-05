@@ -48,11 +48,25 @@ function stripHtml(html: string) {
     .trim();
 }
 
+// Pull a bare address out of "Name <addr@x>" for the unsubscribe mailbox / domain hints.
+const FROM_ADDR = (FROM.match(/<([^>]+)>/)?.[1] ?? FROM).trim();
+
 async function send(to: string, subject: string, html: string) {
   console.log(`[email] Attempting to send "${subject}" to ${to} from ${FROM}`);
   try {
     const text = stripHtml(html);
-    const response = await resend.emails.send({ from: FROM, to, subject, html, text });
+    const response = await resend.emails.send({
+      from: FROM,
+      to,
+      subject,
+      html,
+      text,
+      // List-Unsubscribe materially improves inbox placement and is expected by Gmail/Yahoo bulk rules.
+      headers: {
+        "List-Unsubscribe": `<mailto:${FROM_ADDR}?subject=unsubscribe>`,
+        "List-Unsubscribe-Post": "List-Unsubscribe=One-Click",
+      },
+    });
     console.log(`[email] Resend response:`, JSON.stringify(response));
     if (response.error) {
       console.error("[email] send failed:", response.error);
@@ -109,11 +123,12 @@ export async function sendPasswordChangedEmail(opts: { to: string; name: string 
 export async function sendWelcomeEmail(opts: { to: string; name: string; loginUrl: string }) {
   return send(
     opts.to,
-    "Welcome to OruLabs",
-    wrap("Welcome, " + opts.name + "!", `
-      <p>Your account is ready. Start creating interactive training sessions in minutes.</p>
-      ${btn("Get Started", opts.loginUrl, "#10b981")}
-      ${muted("Need help getting started? Reply to this email — we read every message.")}
+    "Your OruLabs account is verified",
+    wrap("You're all set, " + opts.name, `
+      <p>Your email is verified and your OruLabs account is active.</p>
+      <p>You can sign in any time to create or join a training session.</p>
+      ${btn("Sign in", opts.loginUrl)}
+      ${muted("Questions? Just reply to this email.")}
     `),
   );
 }
