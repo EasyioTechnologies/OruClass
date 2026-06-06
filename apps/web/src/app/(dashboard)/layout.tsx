@@ -5,7 +5,7 @@ import { ActiveSessionManager } from "@/components/dashboard/ActiveSessionManage
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGuard>
+    <AuthGuard area="trainer">
       <div className="flex h-screen overflow-hidden bg-gray-50">
         <Sidebar />
         <div className="flex flex-col flex-1 overflow-hidden relative">

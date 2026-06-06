@@ -4,7 +4,7 @@ import { ParticipantTopBar } from "@/components/shared/ParticipantTopBar";
 
 export default function ParticipantDashboardLayout({ children }: { children: React.ReactNode }) {
   return (
-    <AuthGuard>
+    <AuthGuard area="participant">
       <div className="flex h-screen overflow-hidden bg-gray-50">
         <ParticipantSidebar />
         <div className="flex flex-col flex-1 overflow-hidden relative">

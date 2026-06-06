@@ -4,15 +4,33 @@ import { useEffect, useState } from "react";
 import { useRouter, usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
 
-export function AuthGuard({ children }: { children: React.ReactNode }) {
+export function AuthGuard({
+  children,
+  area,
+}: {
+  children: React.ReactNode;
+  // "trainer" areas are off-limits to guests — they are participants only.
+  area?: "trainer" | "participant";
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const { user, isPending, isAuthenticated, emailVerified } = useAuth();
   const [mounted, setMounted] = useState(false);
 
+  const isGuest = user?.authProvider === "guest";
+  const guestBlocked = isGuest && area === "trainer";
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  // A guest can only ever be a participant. If one lands on a trainer route
+  // (stale link, bookmarked dashboard, etc.) send them to the participant area.
+  useEffect(() => {
+    if (mounted && !isPending && isAuthenticated && guestBlocked) {
+      router.replace("/participant");
+    }
+  }, [mounted, isPending, isAuthenticated, guestBlocked, router]);
 
   useEffect(() => {
     // Only redirect when:
@@ -36,8 +54,9 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     }
   }, [mounted, isPending, isAuthenticated, user, emailVerified, router, pathname]);
 
-  // Show children only if authenticated AND email verified (or guest)
-  if (isAuthenticated && user && (emailVerified || user.authProvider === "guest")) {
+  // Show children only if authenticated AND email verified (or guest),
+  // and never render a trainer area for a guest (redirect is firing above).
+  if (isAuthenticated && user && (emailVerified || user.authProvider === "guest") && !guestBlocked) {
     return <>{children}</>;
   }
 

@@ -24,7 +24,7 @@ export const authRouter = new Hono<AppEnv>();
 // the cookie is same-site → SameSite=Lax is sent on cross-origin XHR to the API.
 const REFRESH_COOKIE = "oruclass-refresh-token";
 const REFRESH_COOKIE_PATH = "/api/auth";
-const REFRESH_COOKIE_MAX_AGE = 7 * 24 * 60 * 60; // 7d, matches refresh token TTL
+const REFRESH_COOKIE_MAX_AGE = 365 * 24 * 60 * 60; // 365d, matches refresh token TTL — stay logged in until manual logout
 const IS_PROD = process.env.NODE_ENV === "production";
 const COOKIE_DOMAIN = process.env.COOKIE_DOMAIN || undefined; // e.g. ".orulabs.in" in prod
 

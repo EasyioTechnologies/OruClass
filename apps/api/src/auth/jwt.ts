@@ -23,7 +23,10 @@ const secret = new TextEncoder().encode(resolveSecret());
 const issuer = process.env.JWT_ISSUER ?? "oruclass-api";
 
 const ACCESS_TOKEN_EXPIRY = "15m";
-const REFRESH_TOKEN_EXPIRY = "7d";
+// Long-lived refresh so users stay logged in until they explicitly log out.
+// Access tokens stay short (15m) and are renewed silently via the refresh cookie.
+const REFRESH_TOKEN_EXPIRY = "365d";
+const REFRESH_TOKEN_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
 export async function signAccessToken(userId: string, email: string): Promise<string> {
   return new SignJWT({ userId, email })
@@ -54,5 +57,5 @@ export async function verifyRefreshToken(token: string): Promise<{ userId: strin
 }
 
 export function getRefreshTokenExpiryDate(): Date {
-  return new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+  return new Date(Date.now() + REFRESH_TOKEN_TTL_MS);
 }
