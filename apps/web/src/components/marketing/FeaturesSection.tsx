@@ -60,7 +60,7 @@ export function FeaturesSection() {
           >
             <CheckCircle className="w-6 h-6 text-brand-600" />
           </motion.div>
-          <div className="w-full max-w-5xl mx-auto px-4 h-24 sm:h-32 md:h-48 relative">
+          <div className="w-full max-w-5xl mx-auto px-4 h-24 sm:h-32 md:h-48 relative overflow-hidden">
             <TextPressure
               text="Why choose this platform?"
               fontUrl=""
@@ -71,7 +71,7 @@ export function FeaturesSection() {
               weight={true}
               italic={true}
               textColor="#111827"
-              minFontSize={36}
+              minFontSize={24}
             />
           </div>
         </motion.div>

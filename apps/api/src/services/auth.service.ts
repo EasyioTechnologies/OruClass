@@ -96,13 +96,18 @@ export async function logout(refreshToken: string) {
 
 // ─── Email Verification ──────────────────────────────────────────────
 
+import crypto from "node:crypto";
+
 export async function createAndSendVerificationEmail(userId: string, email: string, name: string, returnTo?: string) {
   // Clear old tokens for this user
   await db.delete(schema.emailVerificationTokens).where(eq(schema.emailVerificationTokens.userId, userId));
 
   const token = generateToken();
+  const code = crypto.randomInt(100000, 1000000).toString(); // Secure 6-digit code
+  
   await db.insert(schema.emailVerificationTokens).values({
     token,
+    code,
     userId,
     email,
     expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24h
@@ -110,21 +115,37 @@ export async function createAndSendVerificationEmail(userId: string, email: stri
 
   let url = `${WEB_URL}/verify-email?token=${token}`;
   if (returnTo) url += `&returnTo=${encodeURIComponent(returnTo)}`;
-  await sendVerificationEmail({ to: email, name, url });
+  await sendVerificationEmail({ to: email, name, url, code });
 }
 
-export async function verifyEmail(token: string) {
-  const [record] = await db.select()
-    .from(schema.emailVerificationTokens)
-    .where(and(eq(schema.emailVerificationTokens.token, token), gt(schema.emailVerificationTokens.expiresAt, new Date())))
-    .limit(1);
+export async function verifyEmail(payload: { token?: string, code?: string, email?: string }) {
+  let record;
+  
+  if (payload.token) {
+    [record] = await db.select()
+      .from(schema.emailVerificationTokens)
+      .where(and(eq(schema.emailVerificationTokens.token, payload.token), gt(schema.emailVerificationTokens.expiresAt, new Date())))
+      .limit(1);
+  } else if (payload.code && payload.email) {
+    [record] = await db.select()
+      .from(schema.emailVerificationTokens)
+      .where(and(
+        eq(schema.emailVerificationTokens.code, payload.code), 
+        eq(schema.emailVerificationTokens.email, payload.email),
+        gt(schema.emailVerificationTokens.expiresAt, new Date())
+      ))
+      .limit(1);
+  } else {
+    throw new AuthError("INVALID_TOKEN", "Provide either a token or an email and code.");
+  }
 
   if (!record) {
-    throw new AuthError("INVALID_TOKEN", "Invalid or expired verification token.");
+    throw new AuthError("INVALID_TOKEN", "Invalid or expired verification code or token.");
   }
 
   await db.update(schema.users).set({ emailVerified: true }).where(eq(schema.users.id, record.userId));
-  await db.delete(schema.emailVerificationTokens).where(eq(schema.emailVerificationTokens.token, token));
+  // Clean up all tokens for this user to prevent replay
+  await db.delete(schema.emailVerificationTokens).where(eq(schema.emailVerificationTokens.userId, record.userId));
 
   const [user] = await db.select().from(schema.users).where(eq(schema.users.id, record.userId)).limit(1);
   if (!user) {

@@ -366,6 +366,7 @@ export const passwordResetTokens = pgTable("password_reset_tokens", {
 export const emailVerificationTokens = pgTable("email_verification_tokens", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
   token: text("token").notNull().unique(),
+  code: text("code").notNull(),
   userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
   email: text("email").notNull(),
   expiresAt: timestamp("expires_at").notNull(),

@@ -164,11 +164,11 @@ authRouter.post("/reset-password", async (c) => {
 
 authRouter.post("/verify-email", async (c) => {
   try {
-    const { token } = await c.req.json();
-    if (!token) {
-      return c.json({ error: "Token is required." }, 400);
+    const { token, code, email } = await c.req.json();
+    if (!token && (!code || !email)) {
+      return c.json({ error: "Token or both code and email are required." }, 400);
     }
-    const result = await verifyEmail(token);
+    const result = await verifyEmail({ token, code, email });
     setRefreshCookie(c, result.refreshToken);
     return c.json({ success: true, ...result });
   } catch (err) {

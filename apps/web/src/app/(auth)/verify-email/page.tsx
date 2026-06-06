@@ -30,29 +30,59 @@ function VerifyEmailContent() {
   const [error, setError] = useState("");
   const [resending, setResending] = useState(false);
   const [resent, setResent] = useState(false);
+  const [code, setCode] = useState("");
+
+  const processVerificationSuccess = (data: any) => {
+    if (data.accessToken) {
+      setTokens(data.accessToken);
+    }
+    if (data.user) {
+      setUser({
+        id: data.user.id,
+        name: data.user.name,
+        email: data.user.email,
+        avatarUrl: data.user.avatarUrl ?? data.user.image,
+        authProvider: data.user.isAnonymous ? "guest" : "email",
+      });
+    }
+    setVerified(true);
+    setEmailVerified(true);
+  };
 
   useEffect(() => {
     if (!token) return;
     apiClient.post("/api/auth/verify-email", { token })
-      .then(({ data }) => {
-        if (data.accessToken) {
-          setTokens(data.accessToken);
-        }
-        if (data.user) {
-          setUser({
-            id: data.user.id,
-            name: data.user.name,
-            email: data.user.email,
-            avatarUrl: data.user.avatarUrl ?? data.user.image,
-            authProvider: data.user.isAnonymous ? "guest" : "email",
-          });
-        }
-        setVerified(true);
-        setEmailVerified(true);
-      })
+      .then(({ data }) => processVerificationSuccess(data))
       .catch((err) => setError(err.response?.data?.error || "Verification failed. The link may have expired."))
       .finally(() => setVerifying(false));
   }, [token, setEmailVerified]);
+
+  const handleCodeSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (code.length !== 6 || !email) {
+      setError(email ? "Please enter a valid 6-digit code." : "Email is missing from the URL. Please use the link sent to you.");
+      return;
+    }
+    setVerifying(true);
+    setError("");
+    try {
+      const { data } = await apiClient.post("/api/auth/verify-email", { code, email });
+      processVerificationSuccess(data);
+    } catch (err: any) {
+      setError(err.response?.data?.error || "Verification failed. Please check your code.");
+    } finally {
+      setVerifying(false);
+    }
+  };
+
+  useEffect(() => {
+    if (verified) {
+      const timer = setTimeout(() => {
+        router.push(returnTo);
+      }, 1500);
+      return () => clearTimeout(timer);
+    }
+  }, [verified, returnTo, router]);
 
   const handleResend = async () => {
     setResending(true);
@@ -67,7 +97,7 @@ function VerifyEmailContent() {
     }
   };
 
-  if (verifying) {
+  if (verifying && !!token) {
     return (
       <div className="w-full max-w-[400px] mx-auto p-6 sm:p-10 space-y-6 my-4 sm:my-8 text-center">
         <Loader2 className="w-8 h-8 animate-spin text-brand-600 mx-auto" />
@@ -104,9 +134,9 @@ function VerifyEmailContent() {
         </div>
         <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Verify your email</h1>
         <p className="text-sm text-gray-500 leading-relaxed">
-          We sent a verification link to{" "}
+          We sent a verification code to{" "}
           {email ? <strong className="text-gray-700">{email}</strong> : "your email"}.
-          Click the link to activate your account.
+          Enter the code below or click the link in the email to activate your account.
         </p>
       </div>
 
@@ -115,6 +145,33 @@ function VerifyEmailContent() {
           <p className="text-sm text-red-600 text-center">{error}</p>
         </div>
       )}
+
+      <form onSubmit={handleCodeSubmit} className="space-y-4">
+        <div>
+          <label htmlFor="verification-code" className="sr-only">6-digit verification code</label>
+          <input
+            id="verification-code"
+            type="text"
+            inputMode="numeric"
+            autoComplete="one-time-code"
+            aria-label="6-digit verification code"
+            value={code}
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
+            placeholder="Enter 6-digit code"
+            className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-center text-2xl tracking-[0.5em] font-bold text-gray-900 placeholder:text-gray-400 placeholder:tracking-normal placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-gray-200 transition-all"
+            required
+            pattern="\d{6}"
+            maxLength={6}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={verifying || code.length !== 6}
+          className="w-full py-4 bg-brand-600 text-white rounded-2xl text-[16px] font-semibold hover:bg-brand-700 hover:shadow-md transition-all disabled:opacity-50"
+        >
+          {verifying ? "Verifying..." : "Verify Code"}
+        </button>
+      </form>
 
       <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-3">
         <p className="text-xs text-gray-500 text-center">Didn't receive the email?</p>
@@ -152,7 +209,7 @@ function VerifyEmailContent() {
       </div>
 
       <p className="text-xs text-gray-400 text-center">
-        Check your spam folder. The link expires in 24 hours.
+        Check your spam folder. The code expires in 24 hours.
       </p>
     </div>
   );

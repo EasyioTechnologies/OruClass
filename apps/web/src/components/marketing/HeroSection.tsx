@@ -51,9 +51,8 @@ export function HeroSection() {
           transition={{ duration: 1, ease: [0.16, 1, 0.3, 1] }}
           className="space-y-6 max-w-5xl"
         >
-          <h1 className="text-5xl sm:text-6xl md:text-8xl lg:text-9xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 leading-[1.05]">
-            Bring Your Classroom <br className="hidden md:block" />
-            <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 bg-300% animate-gradient-x hover:opacity-80 transition-opacity cursor-default">to Life.</span>
+          <h1 className="text-4xl sm:text-5xl md:text-7xl lg:text-8xl font-bold tracking-tight text-gray-900 leading-[1.05]">
+            Bring Your Classroom <span className="text-gray-400 transition-colors duration-500 hover:text-gray-600">to Life.</span>
           </h1>
 
           <p className="text-base sm:text-lg md:text-2xl text-gray-700 max-w-2xl mx-auto leading-relaxed font-light mt-6 px-4">

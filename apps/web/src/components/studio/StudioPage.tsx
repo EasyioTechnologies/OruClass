@@ -1472,25 +1472,24 @@ function AddModuleDrawer({
   dayId: string | null;
 }) {
   const qc = useQueryClient();
-  const [selectedType, setSelectedType] = useState<string>("quiz");
-  const [title, setTitle] = useState("");
-
-  const def = getModuleDef(selectedType);
-  const effectivePosition = selectedType === "attendance" ? 0 : position;
+  const [selectedType, setSelectedType] = useState<string | null>(null);
 
   const addModule = useMutation({
-    mutationFn: () =>
-      apiClient.post(
+    mutationFn: (type: string) => {
+      const def = getModuleDef(type);
+      const effectivePosition = type === "attendance" ? 0 : position;
+      return apiClient.post(
         `/api/workspaces/${workspaceId}/trainings/${trainingId}/modules`,
         {
-          title: title.trim() || def.label,
-          moduleType: selectedType,
+          title: def.label,
+          moduleType: type,
           position: effectivePosition,
-          isAlwaysOn: selectedType === "attendance",
+          isAlwaysOn: type === "attendance",
           dayId: dayId,
         },
         { headers: { "X-Workspace-ID": workspaceId } },
-      ),
+      );
+    },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["modules", trainingId] });
       qc.invalidateQueries({ queryKey: ["days", trainingId] });
@@ -1516,10 +1515,15 @@ function AddModuleDrawer({
           return (
             <button
               key={t.type}
-              onClick={() => setSelectedType(t.type)}
+              onClick={() => {
+                setSelectedType(t.type);
+                addModule.mutate(t.type);
+              }}
+              disabled={addModule.isPending}
               className={cn(
                 "flex flex-col items-start gap-1.5 p-3 rounded-xl border-2 text-left transition-all",
                 selected ? `${t.bg} ${t.border}` : "border-gray-100 bg-gray-50 hover:border-gray-200",
+                addModule.isPending && !selected && "opacity-50 cursor-not-allowed"
               )}
             >
               <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center", selected ? "bg-white/70" : "bg-white border border-gray-200")}>
@@ -1534,40 +1538,12 @@ function AddModuleDrawer({
         })}
       </div>
 
-      {selectedType === "attendance" && (
-        <div className="flex items-start gap-2 bg-teal-50 border border-teal-200 rounded-xl px-3 py-2.5">
-          <ClipboardList size={14} className="text-teal-600 mt-0.5 shrink-0" />
-          <p className="text-[11px] text-teal-700 leading-snug">
-            Attendance is always the <strong>first module</strong> and always visible to participants.
-          </p>
-        </div>
-      )}
-
-      <div>
-        <label className="text-xs font-semibold text-gray-700 block mb-1.5">Module title</label>
-        <input
-          value={title}
-          onChange={(e) => setTitle(e.target.value)}
-          className="w-full px-3 py-2.5 border border-gray-200 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
-          placeholder={`e.g. Opening ${def.label}`}
-          onKeyDown={(e) => e.key === "Enter" && !addModule.isPending && addModule.mutate()}
-          autoFocus
-        />
-      </div>
-
       <div className="flex gap-2">
         <button
           onClick={onClose}
-          className="flex-1 py-2 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
+          className="w-full py-2 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
         >
           Cancel
-        </button>
-        <button
-          onClick={() => addModule.mutate()}
-          disabled={addModule.isPending}
-          className="flex-1 py-2 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 disabled:opacity-60 transition-colors"
-        >
-          {addModule.isPending ? "Adding…" : "Add Module"}
         </button>
       </div>
     </div>

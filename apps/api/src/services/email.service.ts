@@ -83,7 +83,7 @@ async function send(to: string, subject: string, html: string) {
 
 // ─── Auth emails ────────────────────────────────────────────────────
 
-export async function sendVerificationEmail(opts: { to: string; name: string; url: string }) {
+export async function sendVerificationEmail(opts: { to: string; name: string; url: string; code: string }) {
   return send(
     opts.to,
     "Verify your email address",
@@ -91,11 +91,15 @@ export async function sendVerificationEmail(opts: { to: string; name: string; ur
       <p>Hi ${opts.name},</p>
       <p>Please verify your email address to complete your OruLabs account setup.</p>
       ${btn("Verify Email", opts.url, "#10b981")}
+      <div style="text-align:center;margin:20px 0">
+        <p style="font-size:13px;color:#6b7280;margin-bottom:8px">Or enter this verification code:</p>
+        <div style="display:inline-block;background:#f3f4f6;border:1px solid #e5e7eb;border-radius:8px;padding:12px 24px;font-size:28px;font-weight:800;letter-spacing:0.15em;color:#111827">${opts.code}</div>
+      </div>
       <p style="font-size:13px;color:#6b7280;margin-top:24px;word-break:break-all;">
         If the button doesn't work, copy and paste this link into your browser:<br>
         <a href="${opts.url}" style="color:#10b981;text-decoration:underline;">${opts.url}</a>
       </p>
-      ${muted("This link expires in 24 hours. If you didn't create an account, ignore this email.")}
+      ${muted("This link and code expire in 24 hours. If you didn't create an account, ignore this email.")}
     `),
   );
 }
