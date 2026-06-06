@@ -31,7 +31,7 @@ services:
       context: .
       dockerfile: apps/api/Dockerfile
     ports:
-      - "3001:3001"
+      - "127.0.0.1:5011:3001"
     env_file: .env
     environment:
       DATABASE_URL: postgres://oruclass:oruclass_dev_secret@postgres:5432/oruclass
@@ -52,7 +52,7 @@ services:
       context: .
       dockerfile: apps/web/Dockerfile
     ports:
-      - "3000:3000"
+      - "127.0.0.1:5010:3000"
     env_file: .env
     environment:
       NEXT_PUBLIC_API_URL: http://localhost:3001
