@@ -43,6 +43,13 @@
       "when": 1780649382914,
       "tag": "0005_short_squadron_sinister",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1780710820512,
+      "tag": "0006_orange_killraven",
+      "breakpoints": true
     }
   ]
 }
