@@ -187,9 +187,11 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
             <input
               type="date"
               value={endDate}
+              min={startDate || undefined}
               onChange={(e) => setEndDate(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
+            <p className="text-xs text-gray-400 mt-1">Moving the start date shifts existing days to match.</p>
           </div>
         </div>
         {type === "in_person" || type === "hybrid" ? (

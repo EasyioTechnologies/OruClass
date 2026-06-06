@@ -32,6 +32,21 @@ function generateJoinToken(): string {
   return randomBytes(12).toString("base64url");
 }
 
+const DAY_MS = 86_400_000;
+const MAX_AUTO_DAYS = 60; // safety cap so a huge/typo'd range can't spawn thousands of days
+
+/** Inclusive whole-day span between two UTC-midnight dates, clamped to [1, MAX_AUTO_DAYS]. */
+function spanDays(start: Date, end: Date | null): number {
+  if (!end) return 1;
+  const diff = Math.floor((end.getTime() - start.getTime()) / DAY_MS) + 1;
+  return Math.min(Math.max(diff, 1), MAX_AUTO_DAYS);
+}
+
+/** start + n calendar days, preserving the UTC-midnight anchor the date inputs produce. */
+function addDays(start: Date, n: number): Date {
+  return new Date(start.getTime() + n * DAY_MS);
+}
+
 // GET /trainings
 trainingsRouter.get("/", async (c) => {
   const workspaceId = c.get("workspaceId") as string;
@@ -80,23 +95,36 @@ trainingsRouter.post("/", async (c) => {
     assignedModules: [],
   });
 
-  const [day1] = await db.insert(trainingDays).values({
-    trainingId: training.id,
-    dayNumber: 1,
-    title: "Day 1",
-    date: training.startDate,
-  }).returning();
+  // Auto-generate one dated day per calendar date in the range so a multi-day
+  // training is ready to plan without manual "Add Day" clicks. Each day inherits
+  // the training's delivery mode and owns its own Attendance module. Falls back
+  // to a single Day 1 when no start date was given.
+  const start = training.startDate;
+  const dayCount = start ? spanDays(start, training.endDate) : 1;
 
-  // Every training gets a default Attendance module — editable/deletable
-  await db.insert(trainingModules).values({
-    trainingId: training.id,
-    dayId: day1.id,
-    title: "Attendance",
-    moduleType: "attendance",
-    position: 0,
-    isAlwaysOn: true,
-    config: {},
-  });
+  for (let i = 0; i < dayCount; i++) {
+    const [day] = await db
+      .insert(trainingDays)
+      .values({
+        trainingId: training.id,
+        dayNumber: i + 1,
+        title: `Day ${i + 1}`,
+        date: start ? addDays(start, i) : null,
+        deliveryMode: training.type,
+      })
+      .returning();
+
+    // Every day owns a default Attendance module — editable/deletable.
+    await db.insert(trainingModules).values({
+      trainingId: training.id,
+      dayId: day.id,
+      title: "Attendance",
+      moduleType: "attendance",
+      position: 0,
+      isAlwaysOn: true,
+      config: {},
+    });
+  }
 
   return c.json(training, 201);
 });
@@ -142,6 +170,24 @@ trainingsRouter.patch(
       .returning();
 
     if (!updated) return c.json({ error: "Not found" }, 404);
+
+    // When the start date moves, shift each existing day's date to keep the
+    // sequence aligned (Day N → start + (N-1)). Non-destructive: only re-dates
+    // existing days, never adds/removes them or touches titles/modules — so a
+    // trainer never loses planned content by editing the date.
+    if (body.startDate && updated.startDate) {
+      const days = await db.query.trainingDays.findMany({
+        where: eq(trainingDays.trainingId, id),
+        orderBy: (d, { asc }) => [asc(d.dayNumber)],
+      });
+      for (const [i, day] of days.entries()) {
+        await db
+          .update(trainingDays)
+          .set({ date: addDays(updated.startDate, i), updatedAt: new Date() })
+          .where(eq(trainingDays.id, day.id));
+      }
+    }
+
     return c.json(updated);
   },
 );

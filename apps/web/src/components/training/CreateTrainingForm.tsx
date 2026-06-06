@@ -149,25 +149,31 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
           <input
+            id="startDate"
             {...register("startDate")}
             type="date"
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
         </div>
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+          <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
           <input
+            id="endDate"
             {...register("endDate")}
             type="date"
+            min={startDateStr || undefined}
             className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           />
+          <p className="text-xs text-gray-400 mt-1">Each day in this range becomes a planned day automatically.</p>
         </div>
       </div>
-      
+
+      {errors.endDate && <p className="text-xs text-red-500 -mt-2">{errors.endDate.message as string}</p>}
+
       {duration && (
-        <div className="bg-brand-50 border border-brand-100 rounded-lg p-3 flex justify-between items-center text-sm text-brand-800">
+        <div aria-live="polite" className="bg-brand-50 border border-brand-100 rounded-lg p-3 flex justify-between items-center text-sm text-brand-800">
           <span><strong>Duration:</strong> {duration.days} Day{duration.days !== 1 ? 's' : ''}</span>
           <span className="opacity-70">{duration.hours} Total Hours</span>
         </div>

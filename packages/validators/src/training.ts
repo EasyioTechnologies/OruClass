@@ -10,7 +10,7 @@ export const TrainingRoleSchema = z.enum([
   "facilitation_support",
 ]);
 
-export const CreateTrainingSchema = z.object({
+const TrainingFields = {
   title: z.string().min(3).max(200),
   labels: z.preprocess(
     (v) => (typeof v === "string" ? v.split(",").map(s => s.trim()).filter(Boolean) : v),
@@ -28,9 +28,16 @@ export const CreateTrainingSchema = z.object({
     (v) => (v === "" || v == null ? undefined : typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v}T00:00:00.000Z` : v),
     z.string().datetime({ offset: true }).optional(),
   ),
-});
+} as const;
 
-export const UpdateTrainingSchema = CreateTrainingSchema.partial();
+// A range is only valid when end is on/after start; either side may be absent.
+const endOnOrAfterStart = (d: { startDate?: string; endDate?: string }) =>
+  !d.startDate || !d.endDate || new Date(d.endDate) >= new Date(d.startDate);
+const rangeError = { message: "End date must be on or after the start date", path: ["endDate"] };
+
+export const CreateTrainingSchema = z.object(TrainingFields).refine(endOnOrAfterStart, rangeError);
+
+export const UpdateTrainingSchema = z.object(TrainingFields).partial().refine(endOnOrAfterStart, rangeError);
 
 export const CreateDaySchema = z.object({
   dayNumber: z.number().int().min(1),

@@ -2286,6 +2286,7 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
     rawRole && rawRole !== "participant" ? rawRole : undefined;
   const { data: days = [], isLoading: daysLoading } = useDays(workspaceId, trainingId);
   const { data: allModules = [] } = useModules(workspaceId, trainingId);
+  const { data: training } = useTraining(workspaceId, trainingId);
   const createDay = useCreateDay(workspaceId, trainingId);
   const searchParams = useSearchParams();
   const initialTab = searchParams.get("dayId") ?? "general";
@@ -2310,8 +2311,17 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
 
   const handleAddDay = () => {
     const newDayNumber = days.length + 1;
+    // Derive the new day's date from the training start so manually-added days
+    // stay dated like the auto-generated ones. UTC-anchored to match the backend.
+    let date: string | undefined;
+    if (training?.startDate) {
+      const start = new Date(training.startDate);
+      if (!isNaN(start.getTime())) {
+        date = new Date(start.getTime() + (newDayNumber - 1) * 86_400_000).toISOString();
+      }
+    }
     createDay.mutate(
-      { dayNumber: newDayNumber, title: `Day ${newDayNumber}` },
+      { dayNumber: newDayNumber, title: `Day ${newDayNumber}`, date },
       {
         onSuccess: (res: any) => {
           const newDay = res.data;
