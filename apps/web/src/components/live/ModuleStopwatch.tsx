@@ -12,9 +12,13 @@ import { cn } from "@oruclass/utils";
 // server rejects their stopwatch:action, so showing them the buttons is a lie.
 export function ModuleStopwatch({ canControl = false }: { canControl?: boolean }) {
   const stopwatch = useLiveSessionStore((s) => s.stopwatch);
+  const activeModule = useLiveSessionStore((s) => s.activeModule);
   const trainingId = useLiveSessionStore((s) => s.trainingId);
   const socket = useSocket();
   const [displaySeconds, setDisplaySeconds] = useState(0);
+
+  const timeLimit = activeModule?.config?.timeLimitSeconds ?? 0;
+  const isCountdown = timeLimit > 0;
 
   useEffect(() => {
     if (!stopwatch) {
@@ -46,18 +50,25 @@ export function ModuleStopwatch({ canControl = false }: { canControl?: boolean }
   };
 
   const formatTime = (totalSeconds: number) => {
-    const m = Math.floor(totalSeconds / 60);
-    const s = totalSeconds % 60;
+    const timeToFormat = isCountdown ? Math.max(0, timeLimit - totalSeconds) : totalSeconds;
+    const m = Math.floor(timeToFormat / 60);
+    const s = timeToFormat % 60;
     return `${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
+  const remaining = isCountdown ? Math.max(0, timeLimit - displaySeconds) : null;
+  const timeUp = isCountdown && remaining === 0;
+
   return (
-    <div className="flex items-center gap-2 bg-white/80 backdrop-blur border border-brand-200/50 shadow-sm px-3 py-1.5 rounded-full text-brand-900 absolute top-4 right-4 z-50">
-      <Timer className="w-4 h-4 text-brand-500" />
-      <span className="font-mono font-bold text-sm tracking-widest">{formatTime(displaySeconds)}</span>
+    <div className={cn(
+      "flex items-center gap-2 backdrop-blur shadow-sm px-3 py-1.5 rounded-full absolute top-4 right-4 z-50 transition-colors duration-300",
+      timeUp ? "bg-red-50/90 border border-red-200 text-red-600" : "bg-white/80 border border-brand-200/50 text-brand-900"
+    )}>
+      <Timer className={cn("w-4 h-4", timeUp ? "text-red-500" : "text-brand-500")} />
+      <span className="font-mono font-bold text-sm tracking-widest">{timeUp ? "Time's up!" : formatTime(displaySeconds)}</span>
       
       {canControl && (
-        <div className="flex items-center gap-1 ml-2 border-l border-brand-200 pl-2">
+        <div className={cn("flex items-center gap-1 ml-2 border-l pl-2", timeUp ? "border-red-200" : "border-brand-200")}>
           {stopwatch.isRunning ? (
             <button
               onClick={() => handleAction("pause")}

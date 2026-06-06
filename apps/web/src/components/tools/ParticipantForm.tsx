@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
+import { useIsTimeUp } from "@/hooks/useIsTimeUp";
 import type { TrainingModule, FormField } from "@oruclass/types";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 
 export function ParticipantForm({ module, trainingId }: Props) {
   const { submit: submitResponse } = useResponseSubmit(trainingId);
+  const isTimeUp = useIsTimeUp();
   const fields = module.config.formFields ?? [];
   const title = module.config.formTitle ?? module.title;
   const description = module.config.formDescription;
@@ -191,10 +193,10 @@ export function ParticipantForm({ module, trainingId }: Props) {
         <div className="pt-6 border-t">
           <button
             onClick={submit}
-            disabled={isPending}
-            className="w-full py-3 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors shadow-sm"
+            disabled={isPending || isTimeUp}
+            className="w-full py-3 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
-            {isPending ? "Submitting..." : "Submit Form"}
+            {isTimeUp ? "Time's up!" : isPending ? "Submitting..." : "Submit Form"}
           </button>
         </div>
       )}

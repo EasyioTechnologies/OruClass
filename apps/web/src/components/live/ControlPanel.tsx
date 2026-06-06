@@ -1,6 +1,8 @@
 "use client";
 
+import { useSearchParams } from "next/navigation";
 import { useModules, useUnlockModule } from "@/hooks/useModules";
+import { useDays } from "@/hooks/useDays";
 import { useUpdateTrainingStatus, useResetSession, useTrainings } from "@/hooks/useTrainings";
 import { useLiveSessionStore } from "@/store/liveSession";
 import { RoleGate } from "@/components/shared/RoleGate";
@@ -16,17 +18,27 @@ interface Props {
 }
 
 export function ControlPanel({ trainingId, workspaceId, training, userTrainingRole }: Props) {
-  const { data: modules } = useModules(workspaceId, trainingId);
+  const { data: allModules } = useModules(workspaceId, trainingId);
+  const searchParams = useSearchParams();
+  const dayParam = searchParams.get("dayId");
+  // Scope the module list to the day picked at go-live ("all"/absent = no filter)
+  const modules =
+    dayParam && dayParam !== "all"
+      ? allModules?.filter((m) => m.dayId === dayParam)
+      : allModules;
   const unlockModule = useUnlockModule(workspaceId, trainingId);
   const updateStatus = useUpdateTrainingStatus(workspaceId, trainingId);
   const resetSession = useResetSession(workspaceId, trainingId);
   const clearActiveModule = useLiveSessionStore((s) => s.setActiveModule);
   const { data: allTrainings } = useTrainings(workspaceId);
+  const { data: days = [] } = useDays(workspaceId, trainingId);
 
   const status = training.sessionStatus;
   const hasOtherActiveSession = allTrainings?.some(
     (t) => t.id !== trainingId && ["connecting", "live", "paused"].includes(t.sessionStatus)
   );
+  // Multi-day training must have a day chosen before opening for joining
+  const needsDayPick = status === "draft" && days.length > 0 && !dayParam;
 
   return (
     <div className="p-4 space-y-5">
@@ -60,9 +72,15 @@ export function ControlPanel({ trainingId, workspaceId, training, userTrainingRo
                     Another session is currently active. Stop it before opening a new one.
                   </div>
                 )}
+                {needsDayPick && (
+                  <div className="flex items-start gap-1.5 p-2 bg-blue-50 text-blue-700 rounded-lg text-[11px] leading-tight font-medium">
+                    <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                    Choose which day to run from the canvas before opening.
+                  </div>
+                )}
                 <button
                   onClick={() => updateStatus.mutate("connecting")}
-                  disabled={updateStatus.isPending || hasOtherActiveSession}
+                  disabled={updateStatus.isPending || hasOtherActiveSession || needsDayPick}
                   className="w-full flex items-center justify-center gap-2 py-2.5 bg-brand-600 text-white text-[13px] font-semibold rounded-xl hover:bg-brand-700 active:scale-[.98] transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <Users size={14} strokeWidth={2.5} />

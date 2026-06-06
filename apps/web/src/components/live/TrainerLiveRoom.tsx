@@ -1,12 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useSearchParams, useRouter, usePathname } from "next/navigation";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useAuthStore } from "@/store/auth";
 import { useLiveSessionStore } from "@/store/liveSession";
 import { useSocketSession } from "@/hooks/useSocket";
 import type { TrainingRole } from "@oruclass/types";
 import { useTraining, useMyTrainingRole } from "@/hooks/useTrainings";
+import { useDays } from "@/hooks/useDays";
 import { ParticipantGrid } from "./ParticipantGrid";
 import { ControlPanel } from "./ControlPanel";
 import { AgendaPane } from "./AgendaPane";
@@ -14,6 +16,7 @@ import { PulseMonitor } from "./PulseMonitor";
 import { JoinSlide } from "./JoinSlide";
 import { CompletedSlide } from "./CompletedSlide";
 import { SelectModuleSlide } from "./SelectModuleSlide";
+import { SelectDaySlide } from "./SelectDaySlide";
 import { SessionDashboard } from "./SessionDashboard";
 import { TrainerModuleRenderer } from "../tools/TrainerModuleRenderer";
 import { ModuleStopwatch } from "./ModuleStopwatch";
@@ -29,6 +32,7 @@ import {
   BarChart2,
   WifiOff,
   RefreshCw,
+  CalendarDays,
 } from "lucide-react";
 
 type RightTab = "control" | "agenda" | "participants" | "responses";
@@ -47,7 +51,24 @@ export function TrainerLiveRoom({ trainingId }: { trainingId: string }) {
   const user = useAuthStore((s) => s.user);
   const activeWorkspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const { data: training } = useTraining(activeWorkspaceId, trainingId);
+  const { data: days = [] } = useDays(activeWorkspaceId, trainingId);
   const role = useMyTrainingRole(activeWorkspaceId, trainingId);
+
+  // Day-wise go-live: ?dayId scopes the session to one day's modules.
+  // "all" (or absent for single-day trainings) runs the whole training.
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const pathname = usePathname();
+  const dayParam = searchParams.get("dayId");
+  const selectedDay =
+    dayParam && dayParam !== "all" ? days.find((d) => d.id === dayParam) : null;
+
+  const clearDay = () => {
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete("dayId");
+    const qs = params.toString();
+    router.replace(qs ? `${pathname}?${qs}` : pathname);
+  };
   const socket = useSocketSession(trainingId);
   const activeModule = useLiveSessionStore((s) => s.activeModule);
   const setActiveModule = useLiveSessionStore((s) => s.setActiveModule);
@@ -116,9 +137,25 @@ export function TrainerLiveRoom({ trainingId }: { trainingId: string }) {
     );
   }
 
+  // Before opening a multi-day training for joining, make the trainer pick
+  // which day to run. Skip once a day (or "all") is chosen, and never block a
+  // session that's already past draft.
+  const needsDayPick =
+    training.sessionStatus === "draft" && days.length > 0 && !dayParam;
+
   const renderModuleArea = () => {
     if (training.sessionStatus === "completed") {
       return <CompletedSlide training={training} isTrainer={true} />;
+    }
+    if (needsDayPick) {
+      return (
+        <SelectDaySlide
+          days={days}
+          moduleCountForDay={(dayId) =>
+            training.modules?.filter((m) => m.dayId === dayId).length ?? 0
+          }
+        />
+      );
     }
     if (activeModule) {
       return <TrainerModuleRenderer key={activeModule.id} module={activeModule} trainingId={trainingId} />;
@@ -160,6 +197,22 @@ export function TrainerLiveRoom({ trainingId }: { trainingId: string }) {
 
             <div className="flex items-center gap-2 min-w-0">
               <h2 className="font-semibold text-gray-900 text-sm truncate">{training.title}</h2>
+              {selectedDay && (
+                <button
+                  onClick={training.sessionStatus === "draft" ? clearDay : undefined}
+                  disabled={training.sessionStatus !== "draft"}
+                  title={training.sessionStatus === "draft" ? "Change day" : `Running Day ${selectedDay.dayNumber}`}
+                  className={cn(
+                    "flex items-center gap-1.5 shrink-0 rounded-full border px-2.5 py-1 text-[11px] font-semibold",
+                    "bg-brand-50 border-brand-200 text-brand-700",
+                    training.sessionStatus === "draft" ? "hover:bg-brand-100 transition-colors" : "cursor-default",
+                  )}
+                >
+                  <CalendarDays size={12} />
+                  <span className="truncate max-w-[120px]">Day {selectedDay.dayNumber} · {selectedDay.title}</span>
+                  {training.sessionStatus === "draft" && <X size={11} className="opacity-60" />}
+                </button>
+              )}
               {activeModule && (
                 <>
                   <ChevronRight size={13} className="text-gray-300 shrink-0" />

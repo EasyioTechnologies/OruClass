@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
+import { useIsTimeUp } from "@/hooks/useIsTimeUp";
 import type { TrainingModule } from "@oruclass/types";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 
 export function ParticipantWordCloud({ module, trainingId }: Props) {
   const { submit: submitResponse } = useResponseSubmit(trainingId);
+  const isTimeUp = useIsTimeUp();
   const maxWords = module.config.maxWords ?? 5;
   const [input, setInput] = useState("");
   const [words, setWords] = useState<string[]>([]);
@@ -59,12 +61,13 @@ export function ParticipantWordCloud({ module, trainingId }: Props) {
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addWord()}
           maxLength={40}
-          className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          disabled={isTimeUp}
+          className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60 disabled:cursor-not-allowed"
           placeholder="Type a word…"
         />
         <button
           onClick={addWord}
-          disabled={!input.trim() || words.length >= maxWords}
+          disabled={!input.trim() || words.length >= maxWords || isTimeUp}
           className="px-4 py-2.5 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors"
         >
           Add
@@ -84,10 +87,10 @@ export function ParticipantWordCloud({ module, trainingId }: Props) {
 
       <button
         onClick={submit}
-        disabled={words.length === 0 || isPending}
-        className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors"
+        disabled={words.length === 0 || isPending || isTimeUp}
+        className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >
-        {isPending ? "Submitting…" : "Submit Words"}
+        {isTimeUp ? "Time's up!" : isPending ? "Submitting…" : "Submit Words"}
       </button>
     </div>
   );

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { SafeHTML } from "@/components/ui/SafeHTML";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
+import { useIsTimeUp } from "@/hooks/useIsTimeUp";
 import { useMyModuleResponse } from "@/hooks/useMyModuleResponse";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { responseDataOf, type TrainingModule, type ReflectionComment } from "@oruclass/types";
@@ -15,6 +16,7 @@ interface Props {
 
 export function ParticipantReflectionJournal({ module, trainingId }: Props) {
   const { submit: submitResponse } = useResponseSubmit(trainingId);
+  const isTimeUp = useIsTimeUp();
   const { data: myResponse, isLoading } = useMyModuleResponse(trainingId, module.id);
   const queryClient = useQueryClient();
 
@@ -65,7 +67,8 @@ export function ParticipantReflectionJournal({ module, trainingId }: Props) {
             <div className="mt-4 pt-4 border-t border-gray-100 flex justify-end">
               <button
                 onClick={() => setIsEditing(true)}
-                className="text-sm font-medium text-brand-600 hover:text-brand-700"
+                disabled={isTimeUp}
+                className="text-sm font-medium text-brand-600 hover:text-brand-700 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Edit Entry
               </button>
@@ -99,10 +102,10 @@ export function ParticipantReflectionJournal({ module, trainingId }: Props) {
           <div className="flex items-center gap-3">
             <button
               onClick={submit}
-              disabled={!text.trim() || isPending}
-              className="flex-1 py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors"
+              disabled={!text.trim() || isPending || isTimeUp}
+              className="flex-1 py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
             >
-              {isPending ? "Saving…" : "Save Reflection"}
+              {isTimeUp ? "Time's up!" : isPending ? "Saving…" : "Save Reflection"}
             </button>
             {myResponse && (
               <button

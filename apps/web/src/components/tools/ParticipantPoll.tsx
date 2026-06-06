@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
+import { useIsTimeUp } from "@/hooks/useIsTimeUp";
 import type { TrainingModule } from "@oruclass/types";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 
 export function ParticipantPoll({ module, trainingId }: Props) {
   const { submit: submitResponse } = useResponseSubmit(trainingId);
+  const isTimeUp = useIsTimeUp();
   const options = module.config.pollOptions ?? [];
   const allowMultiple = module.config.allowMultiple ?? false;
   const [selected, setSelected] = useState<string[]>([]);
@@ -58,7 +60,8 @@ export function ParticipantPoll({ module, trainingId }: Props) {
           <button
             key={opt}
             onClick={() => toggle(opt)}
-            className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all ${
+            disabled={isTimeUp}
+            className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
               selected.includes(opt)
                 ? "border-brand-500 bg-brand-50 text-brand-700"
                 : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
@@ -71,10 +74,10 @@ export function ParticipantPoll({ module, trainingId }: Props) {
 
       <button
         onClick={submit}
-        disabled={selected.length === 0 || isPending}
-        className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors"
+        disabled={selected.length === 0 || isPending || isTimeUp}
+        className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >
-        {isPending ? "Submitting…" : "Submit Vote"}
+        {isTimeUp ? "Time's up!" : isPending ? "Submitting…" : "Submit Vote"}
       </button>
     </div>
   );

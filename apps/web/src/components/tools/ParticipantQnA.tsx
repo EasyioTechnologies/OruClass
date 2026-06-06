@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
+import { useIsTimeUp } from "@/hooks/useIsTimeUp";
 import type { TrainingModule } from "@oruclass/types";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 
 export function ParticipantQnA({ module, trainingId }: Props) {
   const { submit: submitResponse } = useResponseSubmit(trainingId);
+  const isTimeUp = useIsTimeUp();
   const [question, setQuestion] = useState("");
   const [submitted, setSubmitted] = useState(false);
   const [isPending, setIsPending] = useState(false);
@@ -55,16 +57,17 @@ export function ParticipantQnA({ module, trainingId }: Props) {
         onChange={(e) => setQuestion(e.target.value)}
         rows={4}
         maxLength={500}
-        className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+        disabled={isTimeUp}
+        className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none disabled:opacity-60 disabled:cursor-not-allowed"
         placeholder="Type your question here…"
       />
 
       <button
         onClick={submit}
-        disabled={!question.trim() || isPending}
-        className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors"
+        disabled={!question.trim() || isPending || isTimeUp}
+        className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >
-        {isPending ? "Submitting…" : "Submit Question"}
+        {isTimeUp ? "Time's up!" : isPending ? "Submitting…" : "Submit Question"}
       </button>
     </div>
   );

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
+import { useIsTimeUp } from "@/hooks/useIsTimeUp";
 import type { TrainingModule, QuizQuestion } from "@oruclass/types";
 import { cn } from "@oruclass/utils";
 
@@ -16,6 +17,7 @@ export function ParticipantQuiz({ module, trainingId }: Props) {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
   const [isPending, setIsPending] = useState(false);
+  const isTimeUp = useIsTimeUp();
 
   const set = (qid: string, val: string) =>
     setAnswers((prev) => ({ ...prev, [qid]: val }));
@@ -130,10 +132,10 @@ export function ParticipantQuiz({ module, trainingId }: Props) {
 
       <button
         onClick={submit}
-        disabled={isPending || !allAnswered || questions.length === 0}
+        disabled={isPending || !allAnswered || questions.length === 0 || isTimeUp}
         className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >
-        {isPending ? "Submitting…" : allAnswered ? "Submit" : "Answer all questions"}
+        {isTimeUp ? "Time's up!" : isPending ? "Submitting…" : allAnswered ? "Submit" : "Answer all questions"}
       </button>
     </div>
   );

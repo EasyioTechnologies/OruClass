@@ -48,6 +48,18 @@ function isSameDay(a: Date, b: Date) {
     a.getDate() === b.getDate();
 }
 
+const DATE_FMT: Intl.DateTimeFormatOptions = { weekday: "short", month: "short", day: "numeric" };
+
+/** "Mon, Jun 8" or "Mon, Jun 8 → Wed, Jun 10" when the training spans multiple days. */
+function formatRange(startStr: string, endStr?: string) {
+  const start = new Date(startStr);
+  const startLabel = start.toLocaleDateString(undefined, DATE_FMT);
+  if (!endStr) return startLabel;
+  const end = new Date(endStr);
+  if (isSameDay(start, end)) return startLabel;
+  return `${startLabel} → ${end.toLocaleDateString(undefined, DATE_FMT)}`;
+}
+
 export function CalendarView() {
   const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const { data: trainings = [], isLoading } = useTrainings(workspaceId);
@@ -66,11 +78,20 @@ export function CalendarView() {
     const map = new Map<string, Training[]>();
     trainings.forEach((t) => {
       if (!t.startDate) return;
-      const d = new Date(t.startDate);
-      const key = `${d.getFullYear()}-${d.getMonth()}-${d.getDate()}`;
-      const list = map.get(key) ?? [];
-      list.push(t);
-      map.set(key, list);
+      // Mark every day the training spans (startDate → endDate inclusive) as occupied.
+      const start = new Date(t.startDate);
+      const end = t.endDate ? new Date(t.endDate) : start;
+      const cursor = new Date(start.getFullYear(), start.getMonth(), start.getDate());
+      const last = new Date(end.getFullYear(), end.getMonth(), end.getDate());
+      // Guard against an end date earlier than the start.
+      if (last < cursor) last.setTime(cursor.getTime());
+      while (cursor <= last) {
+        const key = `${cursor.getFullYear()}-${cursor.getMonth()}-${cursor.getDate()}`;
+        const list = map.get(key) ?? [];
+        list.push(t);
+        map.set(key, list);
+        cursor.setDate(cursor.getDate() + 1);
+      }
     });
     return map;
   }, [trainings]);
@@ -269,9 +290,7 @@ export function CalendarView() {
                 <div className="mt-2 pt-2 border-t border-gray-100 space-y-2">
                   {t.startDate && (
                     <p className="text-xs text-gray-500">
-                      {new Date(t.startDate).toLocaleString(undefined, {
-                        weekday: "short", month: "short", day: "numeric",
-                      })}
+                      {formatRange(t.startDate, t.endDate)}
                     </p>
                   )}
                   {t.description && <SafeHTML html={t.description} className="text-xs text-gray-500 line-clamp-2" />}
@@ -323,9 +342,7 @@ function TrainingDetail({ training, onClose }: { training: Training | null; onCl
       </div>
       {training.startDate && (
         <p className="text-xs text-gray-500">
-          {new Date(training.startDate).toLocaleString(undefined, {
-            weekday: "short", month: "short", day: "numeric",
-          })}
+          {formatRange(training.startDate, training.endDate)}
         </p>
       )}
       <div className="flex items-center gap-1.5">

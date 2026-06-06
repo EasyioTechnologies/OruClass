@@ -115,6 +115,8 @@ export interface ModuleConfig {
   formTitle?: string;
   formDescription?: string;
   formFields?: FormField[];
+  // Time limit for interactive modules
+  timeLimitSeconds?: number;
   // Embed
   embeds?: { id: string; url: string; title?: string; description?: string; type?: string }[];
   // Legacy single-embed fields (pre-multi-embed migration); read as fallback.

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
+import { useIsTimeUp } from "@/hooks/useIsTimeUp";
 import type { TrainingModule } from "@oruclass/types";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 
 export function ParticipantMapping({ module, trainingId }: Props) {
   const { submit: submitResponse } = useResponseSubmit(trainingId);
+  const isTimeUp = useIsTimeUp();
   const focusAreas = module.config.mappingFocusAreas ?? [];
   const [answers, setAnswers] = useState<Record<string, string[]>>({});
   const [submitted, setSubmitted] = useState(false);
@@ -68,7 +70,8 @@ export function ParticipantMapping({ module, trainingId }: Props) {
                   placeholder={`Idea ${index + 1}`}
                   value={answers[area.id]?.[index] ?? ""}
                   onChange={(e) => handleInputChange(area.id, index, e.target.value)}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm"
+                  disabled={isTimeUp}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-brand-500 focus:border-brand-500 text-sm disabled:opacity-60 disabled:cursor-not-allowed"
                 />
               ))}
             </div>
@@ -86,10 +89,10 @@ export function ParticipantMapping({ module, trainingId }: Props) {
         <div className="w-full max-w-4xl px-2">
           <button
             onClick={submit}
-            disabled={!isFormValid() || isPending}
-            className="w-full py-3 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors shadow-sm"
+            disabled={!isFormValid() || isPending || isTimeUp}
+            className="w-full py-3 bg-brand-600 text-white rounded-xl font-medium hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors shadow-sm"
           >
-            {isPending ? "Submitting..." : "Submit Mapping"}
+            {isTimeUp ? "Time's up!" : isPending ? "Submitting..." : "Submit Mapping"}
           </button>
         </div>
       </div>

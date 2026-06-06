@@ -17,10 +17,11 @@ export function AgendaPane({ trainingId, workspaceId }: Props) {
   const activeModule = useLiveSessionStore((s) => s.activeModule);
   const searchParams = useSearchParams();
   const dayId = searchParams.get("dayId");
-  
-  const modules = dayId 
-    ? allModules?.filter((m) => m.dayId === dayId)
-    : allModules;
+
+  const modules =
+    dayId && dayId !== "all"
+      ? allModules?.filter((m) => m.dayId === dayId)
+      : allModules;
 
   return (
     <div className="p-4 space-y-4">

@@ -244,7 +244,8 @@ function ModuleConfigEditor({
   config: ModuleConfig;
   onChange: (c: ModuleConfig) => void;
 }) {
-  if (module.moduleType === "quiz") {
+  const content = (() => {
+    if (module.moduleType === "quiz") {
     const questions = config.questions ?? [];
     return (
       <div className="space-y-3 mt-4">
@@ -1170,7 +1171,55 @@ function ModuleConfigEditor({
     );
   }
 
-  return null;
+    return null;
+  })();
+
+  const supportsTimeLimit = ["quiz", "poll", "wordcloud", "qna", "reflection", "custom", "form", "pulse", "mapping", "matrix"].includes(module.moduleType);
+
+  return (
+    <div className="space-y-4">
+      {content}
+      {supportsTimeLimit && (
+        <div className="pt-4 border-t border-gray-100">
+          <div className="flex items-center justify-between mb-2">
+            <div>
+              <label className="text-xs font-semibold text-gray-700 block mb-0.5">Time Limit</label>
+              <p className="text-[10px] text-gray-500">Lock submissions after this time</p>
+            </div>
+            <div className="flex items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                value={config.timeLimitSeconds ? Math.floor(config.timeLimitSeconds / 60) : ""}
+                onChange={(e) => {
+                  const m = Number(e.target.value);
+                  const s = config.timeLimitSeconds ? config.timeLimitSeconds % 60 : 0;
+                  onChange({ ...config, timeLimitSeconds: m === 0 && s === 0 ? undefined : m * 60 + s });
+                }}
+                className="w-16 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 text-center"
+                placeholder="0"
+              />
+              <span className="text-xs text-gray-500">m</span>
+              <input
+                type="number"
+                min={0}
+                max={59}
+                value={config.timeLimitSeconds !== undefined && config.timeLimitSeconds > 0 ? config.timeLimitSeconds % 60 : ""}
+                onChange={(e) => {
+                  const s = Number(e.target.value);
+                  const m = config.timeLimitSeconds ? Math.floor(config.timeLimitSeconds / 60) : 0;
+                  onChange({ ...config, timeLimitSeconds: m === 0 && s === 0 ? undefined : m * 60 + s });
+                }}
+                className="w-16 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 text-center"
+                placeholder="0"
+              />
+              <span className="text-xs text-gray-500">s</span>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 }
 
 // ─── Sortable module card ────────────────────────────────────────────────────

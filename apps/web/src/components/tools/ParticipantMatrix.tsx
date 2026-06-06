@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
+import { useIsTimeUp } from "@/hooks/useIsTimeUp";
 import type { TrainingModule } from "@oruclass/types";
 
 interface Props {
@@ -11,6 +12,7 @@ interface Props {
 
 export function ParticipantMatrix({ module, trainingId }: Props) {
   const { submit: submitResponse } = useResponseSubmit(trainingId);
+  const isTimeUp = useIsTimeUp();
   const rows = (module.config?.rows as string[]) ?? ["Row 1", "Row 2"];
   const cols = (module.config?.columns as string[]) ?? ["Column 1", "Column 2"];
   const [cells, setCells] = useState<Record<string, string>>({});
@@ -66,7 +68,8 @@ export function ParticipantMatrix({ module, trainingId }: Props) {
                       onChange={(e) =>
                         setCells((prev) => ({ ...prev, [`${r}__${c}`]: e.target.value }))
                       }
-                      className="w-full px-3 py-2 text-sm focus:outline-none focus:ring-inset focus:ring-1 focus:ring-brand-400"
+                      disabled={isTimeUp}
+                      className="w-full px-3 py-2 text-sm focus:outline-none focus:ring-inset focus:ring-1 focus:ring-brand-400 disabled:opacity-60 disabled:cursor-not-allowed"
                       placeholder="…"
                     />
                   </td>
@@ -79,10 +82,10 @@ export function ParticipantMatrix({ module, trainingId }: Props) {
 
       <button
         onClick={submit}
-        disabled={isPending}
-        className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors"
+        disabled={isPending || isTimeUp}
+        className="w-full py-3 bg-brand-600 text-white rounded-lg font-medium hover:bg-brand-700 disabled:opacity-60 disabled:cursor-not-allowed transition-colors"
       >
-        {isPending ? "Submitting…" : "Submit Matrix"}
+        {isTimeUp ? "Time's up!" : isPending ? "Submitting…" : "Submit Matrix"}
       </button>
     </div>
   );
