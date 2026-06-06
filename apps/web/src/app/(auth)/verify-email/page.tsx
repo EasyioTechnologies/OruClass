@@ -35,8 +35,8 @@ function VerifyEmailContent() {
     if (!token) return;
     apiClient.post("/api/auth/verify-email", { token })
       .then(({ data }) => {
-        if (data.accessToken && data.refreshToken) {
-          setTokens(data.accessToken, data.refreshToken);
+        if (data.accessToken) {
+          setTokens(data.accessToken);
         }
         if (data.user) {
           setUser({
@@ -45,7 +45,7 @@ function VerifyEmailContent() {
             email: data.user.email,
             avatarUrl: data.user.avatarUrl ?? data.user.image,
             authProvider: data.user.isAnonymous ? "guest" : "email",
-          } as any);
+          });
         }
         setVerified(true);
         setEmailVerified(true);

@@ -1,7 +1,7 @@
 "use client";
 
 import { useModuleResponses } from "@/hooks/useModuleResponses";
-import type { TrainingModule } from "@oruclass/types";
+import { responseDataOf, type TrainingModule } from "@oruclass/types";
 
 interface Props {
   module: TrainingModule;
@@ -28,7 +28,7 @@ export function TrainerQnA({ module, trainingId }: Props) {
           </div>
         ) : (
           responses?.map((r) => {
-            const question = (r.responseData as any).question ?? "";
+            const question = responseDataOf(r.responseData, "qna")?.question ?? "";
             const when = r.createdAt ?? r.submittedAt;
             return (
               <div key={r.id} className="bg-white p-4 rounded-lg shadow-sm border border-gray-100 flex items-start gap-3">

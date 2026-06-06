@@ -15,7 +15,7 @@ import {
 } from "../db/schema";
 import { getOrCreateState, removeParticipant, persistState, restoreState } from "./state";
 import { logger } from "../utils/logger";
-import { DrawUpdateSchema, ParticipantJoinSchema, ModuleUnlockSchema, ResponseSubmitSchema, StopwatchActionSchema } from "@oruclass/validators";
+import { DrawUpdateSchema, DrawClearSchema, DrawSyncSchema, NoteCreateSchema, NotePositionSchema, TimerSyncSchema, ParticipantJoinSchema, ModuleUnlockSchema, ResponseSubmitSchema, StopwatchActionSchema } from "@oruclass/validators";
 import { USER_NAME_CACHE_TTL_MS, USER_NAME_CACHE_MAX } from "../config/limits";
 
 // Small in-process cache for socket-join user lookups. Avoids hammering the
@@ -649,35 +649,65 @@ export function registerSocketHandlers(io: IO): void {
 
     socket.on(
       "draw:clear",
-      guard("draw:clear", ({ trainingId, moduleId }: { trainingId: string; moduleId: string }) => {
+      guard("draw:clear", (payload: unknown) => {
+        const parsed = DrawClearSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid draw:clear payload" });
+          return;
+        }
+        const { trainingId, moduleId } = parsed.data;
         socket.to(`training:${trainingId}`).emit("draw:clear", { moduleId, userId });
       }),
     );
 
     socket.on(
       "draw:sync",
-      guard("draw:sync", ({ trainingId, moduleId, strokes }: { trainingId: string; moduleId: string; strokes: unknown[] }) => {
+      guard("draw:sync", (payload: unknown) => {
+        const parsed = DrawSyncSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid draw:sync payload" });
+          return;
+        }
+        const { trainingId, moduleId, strokes } = parsed.data;
         socket.to(`training:${trainingId}`).emit("draw:sync", { moduleId, userId, strokes: strokes as StrokeData[] });
       }),
     );
 
     socket.on(
       "note:create",
-      guard("note:create", ({ trainingId, moduleId, note }: { trainingId: string; moduleId: string; note: unknown }) => {
+      guard("note:create", (payload: unknown) => {
+        const parsed = NoteCreateSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid note:create payload" });
+          return;
+        }
+        const { trainingId, moduleId, note } = parsed.data;
         socket.to(`training:${trainingId}`).emit("note:create", { moduleId, note: note as StickyNote });
       }),
     );
 
     socket.on(
       "note:position",
-      guard("note:position", ({ trainingId, moduleId, noteId, x, y }: { trainingId: string; moduleId: string; noteId: string; x: number; y: number }) => {
+      guard("note:position", (payload: unknown) => {
+        const parsed = NotePositionSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid note:position payload" });
+          return;
+        }
+        const { trainingId, moduleId, noteId, x, y } = parsed.data;
         socket.to(`training:${trainingId}`).emit("note:position", { moduleId, noteId, x, y });
       }),
     );
 
     socket.on(
       "timer:sync",
-      guard("timer:sync", ({ trainingId, moduleId, remaining, running, duration }: { trainingId: string; moduleId: string; remaining: number; running: boolean; duration: number }) => {
+      guard("timer:sync", (payload: unknown) => {
+        const parsed = TimerSyncSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid timer:sync payload" });
+          return;
+        }
+        const { trainingId, moduleId, remaining, running, duration } = parsed.data;
         socket.to(`training:${trainingId}`).emit("timer:sync", { moduleId, remaining, running, duration });
       }),
     );

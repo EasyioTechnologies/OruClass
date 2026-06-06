@@ -5,7 +5,7 @@ import { SafeHTML } from "@/components/ui/SafeHTML";
 import { useResponseSubmit } from "@/hooks/useResponseSubmit";
 import { useMyModuleResponse } from "@/hooks/useMyModuleResponse";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
-import type { TrainingModule, ReflectionComment } from "@oruclass/types";
+import { responseDataOf, type TrainingModule, type ReflectionComment } from "@oruclass/types";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface Props {
@@ -24,15 +24,17 @@ export function ParticipantReflectionJournal({ module, trainingId }: Props) {
 
   // Pre-fill text if we have a past response
   useEffect(() => {
-    if (myResponse && (myResponse.responseData as any).text) {
-      setText((myResponse.responseData as any).text);
+    const reflection = responseDataOf(myResponse?.responseData, "reflection");
+    if (reflection?.text) {
+      setText(reflection.text);
       setIsEditing(false);
     }
   }, [myResponse]);
 
   const submit = async () => {
     setIsPending(true);
-    await submitResponse(module.id, { type: "reflection", text, comments: (myResponse?.responseData as any)?.comments ?? [] });
+    const prior = responseDataOf(myResponse?.responseData, "reflection");
+    await submitResponse(module.id, { type: "reflection", text, comments: prior?.comments ?? [] });
     // Invalidate the query to fetch the new updated response
     queryClient.invalidateQueries({ queryKey: ["my-module-response", trainingId, module.id] });
     setIsEditing(false);
@@ -43,7 +45,7 @@ export function ParticipantReflectionJournal({ module, trainingId }: Props) {
     return <div className="p-6 text-center text-gray-400">Loading your journal...</div>;
   }
 
-  const existingComments: ReflectionComment[] = myResponse ? (myResponse.responseData as any).comments ?? [] : [];
+  const existingComments: ReflectionComment[] = responseDataOf(myResponse?.responseData, "reflection")?.comments ?? [];
 
   return (
     <div className="p-6 space-y-4 max-w-2xl mx-auto flex flex-col h-full">
@@ -105,7 +107,7 @@ export function ParticipantReflectionJournal({ module, trainingId }: Props) {
             {myResponse && (
               <button
                 onClick={() => {
-                  setText((myResponse.responseData as any).text || "");
+                  setText(responseDataOf(myResponse.responseData, "reflection")?.text || "");
                   setIsEditing(false);
                 }}
                 disabled={isPending}

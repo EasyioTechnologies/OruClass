@@ -6,7 +6,7 @@ import {
   trainingAnalytics,
   users,
 } from "../db/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, inArray } from "drizzle-orm";
 import ExcelJS from "exceljs";
 
 export async function getTrainingAnalytics(trainingId: string) {

@@ -134,9 +134,11 @@ responsesRouter.post("/:trainingId/modules/:moduleId/responses/:responseId/comme
     return c.json({ error: "Response not found" }, 404);
   }
 
-  const existingData = response.responseData as any;
-  const comments = existingData.comments || [];
-  
+  const existingData = response.responseData as Record<string, unknown> & {
+    comments?: { id: string; text: string; trainerName: string; createdAt: string }[];
+  };
+  const comments = existingData.comments ?? [];
+
   comments.push({
     id: crypto.randomUUID(),
     text: body.text,

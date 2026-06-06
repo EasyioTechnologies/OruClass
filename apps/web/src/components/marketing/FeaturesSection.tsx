@@ -45,7 +45,7 @@ export function FeaturesSection() {
     <>
       <section 
         id="features-intro" 
-        className="min-h-[100dvh] w-full  relative flex flex-col items-center justify-center overflow-hidden bg-white py-20"
+        className="w-full relative flex flex-col items-center justify-center overflow-hidden bg-white pt-20 pb-4"
       >
         <motion.div 
           initial={{ opacity: 0, y: 40, scale: 0.95 }}

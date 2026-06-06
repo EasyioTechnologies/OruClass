@@ -2,7 +2,7 @@ import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq } from "drizzle-orm";
 import { db } from "../db/client";
-import { trainingAnalytics, trainingParticipants } from "../db/schema";
+import { trainingAnalytics } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { requireTrainingPermission } from "../middleware/roleGuard";

@@ -33,14 +33,14 @@ export default function JoinPage() {
     setNameLoading(true);
     try {
       const { data } = await apiClient.post("/api/auth/guest", { name: participantName });
-      setTokens(data.accessToken, data.refreshToken);
+      setTokens(data.accessToken);
       setUser({
         id: data.user.id,
         name: participantName,
         email: data.user.email,
         avatarUrl: data.user.avatarUrl ?? data.user.image,
         authProvider: "guest",
-      } as any);
+      });
       setStep("code");
     } catch (err) {
       console.error(err);

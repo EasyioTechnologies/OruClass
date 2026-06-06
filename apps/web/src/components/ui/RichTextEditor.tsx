@@ -1,6 +1,6 @@
 "use client";
 
-import { useEditor, EditorContent } from "@tiptap/react";
+import { useEditor, EditorContent, type Editor } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
 import Underline from "@tiptap/extension-underline";
 import Link from "@tiptap/extension-link";
@@ -18,12 +18,9 @@ interface RichTextEditorProps {
   minHeight?: string;
 }
 
-const MenuBar = ({ editor }: { editor: any }) => {
-  if (!editor) {
-    return null;
-  }
-
+const MenuBar = ({ editor }: { editor: Editor | null }) => {
   const toggleLink = useCallback(() => {
+    if (!editor) return
     const previousUrl = editor.getAttributes('link').href
     const url = window.prompt('URL', previousUrl)
 
@@ -41,6 +38,10 @@ const MenuBar = ({ editor }: { editor: any }) => {
     // update link
     editor.chain().focus().extendMarkRange('link').setLink({ href: url }).run()
   }, [editor])
+
+  if (!editor) {
+    return null;
+  }
 
   const colors = ["#000000", "#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#6366f1", "#a855f7"];
 

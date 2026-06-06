@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useModuleResponses } from "@/hooks/useModuleResponses";
-import type { TrainingModule, ReflectionComment } from "@oruclass/types";
+import { responseDataOf, type TrainingModule, type ReflectionComment } from "@oruclass/types";
 import { apiClient } from "@/lib/api-client";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useQueryClient } from "@tanstack/react-query";
@@ -65,8 +65,9 @@ export function TrainerReflectionJournal({ module, trainingId }: Props) {
         ) : (
           <div className="grid gap-4 md:grid-cols-2">
             {responses?.map((r) => {
-              const text = (r.responseData as any).text ?? "";
-              const comments: ReflectionComment[] = (r.responseData as any).comments ?? [];
+              const reflection = responseDataOf(r.responseData, "reflection");
+              const text = reflection?.text ?? "";
+              const comments: ReflectionComment[] = reflection?.comments ?? [];
               const when = r.createdAt ?? r.submittedAt;
               return (
                 <div key={r.id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 flex flex-col gap-4">

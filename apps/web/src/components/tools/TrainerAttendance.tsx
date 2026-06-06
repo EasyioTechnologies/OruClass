@@ -1,7 +1,7 @@
 "use client";
 
 import { useModuleResponses } from "@/hooks/useModuleResponses";
-import type { TrainingModule, AttendanceField } from "@oruclass/types";
+import { responseDataOf, type TrainingModule, type AttendanceField } from "@oruclass/types";
 import { ClipboardList, Users, Clock } from "lucide-react";
 
 interface Props {
@@ -71,7 +71,7 @@ export function TrainerAttendance({ module, trainingId }: Props) {
             </thead>
             <tbody className="divide-y divide-gray-100 bg-white">
               {responses?.map((r, i) => {
-                const data: Record<string, string> = (r.responseData as any).fields ?? {};
+                const data: Record<string, string> = responseDataOf(r.responseData, "attendance")?.fields ?? {};
                 return (
                   <tr key={r.id ?? i} className="hover:bg-gray-50 transition-colors">
                     <td className="px-4 py-3 text-gray-400 text-[12px] font-medium">{i + 1}</td>

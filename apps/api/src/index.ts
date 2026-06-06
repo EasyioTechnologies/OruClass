@@ -20,12 +20,14 @@ import { registerSocketHandlers } from "./socket/handlers";
 import { setIO } from "./socket/io-instance";
 import { startExportWorker } from "./jobs/exportAnalytics.job";
 import { startDigestWorker } from "./jobs/sendSessionDigest.job";
-import { connectRedis } from "./db/redis";
+import { connectRedis, pubClient, subClient } from "./db/redis";
+import { createAdapter } from "@socket.io/redis-adapter";
 import { logger } from "./utils/logger";
 import type { AppEnv } from "./types/hono";
 
 const PORT = Number(process.env.PORT ?? 3001);
 const ALLOWED_ORIGIN = process.env.WEB_URL ?? "http://localhost:3000";
+const MAX_BODY_BYTES = Number(process.env.MAX_BODY_BYTES ?? 10 * 1024 * 1024); // 10MB
 
 // ─── Hono App ─────────────────────────────────────────────────────────────────
 const app = new Hono<AppEnv>();
@@ -44,6 +46,8 @@ app.use(
       return ALLOWED_ORIGIN;
     },
     allowHeaders: ["Content-Type", "Authorization", "X-Workspace-ID"],
+    // Required so the browser sends/receives the httpOnly refresh-token cookie.
+    credentials: true,
   }),
 );
 
@@ -73,15 +77,31 @@ app.onError(errorHandler);
 // ─── HTTP Server + Socket.IO ──────────────────────────────────────────────────
 const httpServer = createServer(async (req, res) => {
   try {
+    let tooLarge = false;
     const bodyBuffer = await new Promise<Buffer | undefined>((resolve, reject) => {
       if (req.method === "GET" || req.method === "HEAD") {
         return resolve(undefined);
       }
       const chunks: Buffer[] = [];
-      req.on("data", (chunk) => chunks.push(chunk));
+      let received = 0;
+      req.on("data", (chunk: Buffer) => {
+        received += chunk.length;
+        // Guard against unbounded in-memory buffering of request bodies.
+        if (received > MAX_BODY_BYTES) {
+          tooLarge = true;
+          req.destroy();
+          return resolve(undefined);
+        }
+        chunks.push(chunk);
+      });
       req.on("end", () => resolve(Buffer.concat(chunks)));
       req.on("error", reject);
     });
+
+    if (tooLarge) {
+      if (!res.headersSent) res.writeHead(413, { "Content-Type": "application/json" });
+      return res.end(JSON.stringify({ error: "Payload too large" }));
+    }
 
     const response = await app.fetch(
       new Request(`http://localhost${req.url}`, {
@@ -159,7 +179,16 @@ registerSocketHandlers(io);
 
 startExportWorker();
 startDigestWorker();
-connectRedis().catch((err) => logger.error(err, "Redis connect failed"));
+
+// Connect Redis (app data + adapter pub/sub) before accepting traffic so the Socket.IO
+// Redis adapter can fan-out events across instances. If Redis is unreachable we still
+// boot single-instance rather than crash — a solo node needs no cross-node fan-out.
+await connectRedis()
+  .then(() => {
+    io.adapter(createAdapter(pubClient, subClient));
+    logger.info("Socket.IO Redis adapter attached");
+  })
+  .catch((err) => logger.error(err, "Redis connect failed — running single-instance (no adapter)"));
 
 httpServer.listen(PORT, "0.0.0.0", () => {
   logger.info(`API server running on http://0.0.0.0:${PORT}`);

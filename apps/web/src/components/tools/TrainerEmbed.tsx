@@ -49,7 +49,7 @@ export function TrainerEmbed({ module, trainingId }: Props) {
     <div className="h-full flex flex-col md:flex-row overflow-hidden bg-gray-50">
       {/* Left side: The Embed */}
       <div className="flex-1 h-full border-r border-gray-200 relative bg-gray-100 overflow-y-auto p-4 md:p-8 space-y-8">
-        {embeds.map((embed: any, index: number) => (
+        {embeds.map((embed, index) => (
           <div key={embed.id || index} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
             {(embed.title || embed.description) && (
               <div className="p-4 border-b border-gray-100 bg-gray-50/50">

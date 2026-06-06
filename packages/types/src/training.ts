@@ -205,6 +205,18 @@ export type ResponseData =
   | { type: "form"; answers: Record<string, string | string[]> }
   | { type: "embed"; viewed: boolean };
 
+/**
+ * Narrow a stored ResponseData to a specific module type. Returns undefined when
+ * the discriminant doesn't match (or data is absent), so callers fall back to
+ * defaults instead of reaching through `as any`.
+ */
+export function responseDataOf<T extends ResponseData["type"]>(
+  data: ResponseData | null | undefined,
+  type: T,
+): Extract<ResponseData, { type: T }> | undefined {
+  return data?.type === type ? (data as Extract<ResponseData, { type: T }>) : undefined;
+}
+
 export interface StrokeData {
   points: { x: number; y: number }[];
   color: string;

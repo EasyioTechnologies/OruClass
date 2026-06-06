@@ -7,7 +7,6 @@ import {
   trainingParticipants,
   participantResponses,
   trainings,
-  trainingModules,
 } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";

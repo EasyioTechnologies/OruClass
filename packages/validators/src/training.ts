@@ -89,6 +89,49 @@ export const DrawUpdateSchema = z.object({
   stroke: StrokeSchema,
 });
 
+export const DrawClearSchema = z.object({
+  trainingId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+});
+
+export const DrawSyncSchema = z.object({
+  trainingId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  strokes: z.array(StrokeSchema).max(5_000),
+});
+
+export const StickyNoteSchema = z.object({
+  id: z.string().max(64),
+  text: z.string().max(10_000),
+  color: z.string().max(32).optional(),
+  authorId: z.string().max(128).optional(),
+  authorName: z.string().max(256).optional(),
+  x: z.number().finite().min(-100_000).max(100_000),
+  y: z.number().finite().min(-100_000).max(100_000),
+});
+
+export const NoteCreateSchema = z.object({
+  trainingId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  note: StickyNoteSchema,
+});
+
+export const NotePositionSchema = z.object({
+  trainingId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  noteId: z.string().max(64),
+  x: z.number().finite().min(-100_000).max(100_000),
+  y: z.number().finite().min(-100_000).max(100_000),
+});
+
+export const TimerSyncSchema = z.object({
+  trainingId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  remaining: z.number().finite().min(0).max(86_400),
+  running: z.boolean(),
+  duration: z.number().finite().min(0).max(86_400),
+});
+
 // Socket payloads for the DB-writing live handlers. Client-sent, so validated
 // before any insert/upsert — rejects malformed trainingId/moduleId early with a
 // clear BAD_PAYLOAD instead of letting bad data reach a FK/insert error.
@@ -169,4 +212,10 @@ export type AssignModuleToDayInput = z.infer<typeof AssignModuleToDaySchema>;
 export type DuplicateModuleInput = z.infer<typeof DuplicateModuleSchema>;
 export type StrokeInput = z.infer<typeof StrokeSchema>;
 export type DrawUpdateInput = z.infer<typeof DrawUpdateSchema>;
+export type DrawClearInput = z.infer<typeof DrawClearSchema>;
+export type DrawSyncInput = z.infer<typeof DrawSyncSchema>;
+export type StickyNoteInput = z.infer<typeof StickyNoteSchema>;
+export type NoteCreateInput = z.infer<typeof NoteCreateSchema>;
+export type NotePositionInput = z.infer<typeof NotePositionSchema>;
+export type TimerSyncInput = z.infer<typeof TimerSyncSchema>;
 export type StopwatchActionInput = z.infer<typeof StopwatchActionSchema>;

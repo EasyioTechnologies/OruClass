@@ -1,13 +1,12 @@
 import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
-import { eq, and, inArray, desc } from "drizzle-orm";
+import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db/client";
 import { workspaces, workspaceMembers, trainings, participantResponses } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { CreateWorkspaceSchema, UpdateWorkspaceSchema } from "@oruclass/validators";
 import { parseBody } from "../utils/validators";
-import { nanoid } from "nanoid";
 
 export const workspacesRouter = new Hono<AppEnv>();
 

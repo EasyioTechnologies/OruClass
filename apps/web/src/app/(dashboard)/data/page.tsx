@@ -96,7 +96,7 @@ export default function DataPage() {
     }
     acc[trainingId].responses.push(response);
     return acc;
-  }, {} as Record<string, { training: any; responses: typeof filteredResponses }>);
+  }, {} as Record<string, { training: (typeof filteredResponses)[number]["training"]; responses: typeof filteredResponses }>);
 
   // If a training is selected, show details
   if (activeTrainingId && groupedByTraining[activeTrainingId]) {

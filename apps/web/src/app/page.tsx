@@ -6,7 +6,7 @@ import { DashboardPreview } from "@/components/marketing/DashboardPreview";
 import { HowItWorksSection } from "@/components/marketing/HowItWorksSection";
 import { FinalCTASection } from "@/components/marketing/FinalCTASection";
 import { Footer } from "@/components/marketing/Footer";
-import { DirectAnswer } from "@/components/marketing/DirectAnswer";
+
 import { FAQSection } from "@/components/marketing/FAQSection";
 import { SchemaMarkup } from "@/components/seo/SchemaMarkup";
 import { QuoteSection } from "@/components/marketing/QuoteSection";
@@ -48,11 +48,6 @@ export default function LandingPage() {
       <MarketingNavbar />
       <HeroSection />
       
-      <DirectAnswer 
-        question="What is OruLabs?" 
-        answer="OruLabs is a specialized real-time live training platform designed exclusively to enhance teacher professional development through interactive virtual classrooms and data-driven insights."
-      />
-
       <FeaturesSection />
       <LearnByBuildingSection />
       <DashboardPreview />

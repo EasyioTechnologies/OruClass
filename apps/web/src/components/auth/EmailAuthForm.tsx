@@ -4,6 +4,7 @@ import { useState, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { useAuthStore } from "@/store/auth";
 import { apiClient } from "@/lib/api-client";
+import { isAxiosError } from "axios";
 import { setTokens } from "@/lib/token-storage";
 import { UserCircle2, Eye, EyeOff } from "lucide-react";
 import Link from "next/link";
@@ -53,7 +54,7 @@ function EmailAuthFormInner({
     try {
       if (isLogin) {
         const { data } = await apiClient.post("/api/auth/login", { email, password });
-        setTokens(data.accessToken, data.refreshToken);
+        setTokens(data.accessToken);
         try { localStorage.setItem("oru_return", effectiveReturnTo); } catch {}
         setUser({
           id: data.user.id,
@@ -61,7 +62,7 @@ function EmailAuthFormInner({
           email: data.user.email,
           avatarUrl: data.user.avatarUrl ?? data.user.image,
           authProvider: data.user.isAnonymous ? "guest" : "email",
-        } as any);
+        });
         setEmailVerified(data.user.emailVerified ?? true);
         router.push(effectiveReturnTo);
       } else {
@@ -72,7 +73,7 @@ function EmailAuthFormInner({
         }
 
         const { data } = await apiClient.post("/api/auth/signup", { email, password, name, returnTo: effectiveReturnTo });
-        setTokens(data.accessToken, data.refreshToken);
+        setTokens(data.accessToken);
         try { localStorage.setItem("oru_return", effectiveReturnTo); } catch {}
         setUser({
           id: data.user.id,
@@ -80,13 +81,13 @@ function EmailAuthFormInner({
           email: data.user.email,
           avatarUrl: data.user.avatarUrl ?? data.user.image,
           authProvider: "email",
-        } as any);
+        });
         setEmailVerified(false);
         router.push(`/verify-email?email=${encodeURIComponent(email)}&returnTo=${encodeURIComponent(effectiveReturnTo)}`);
       }
-    } catch (err: any) {
-      const errMsg = err.response?.data?.error || err.message || "";
-      const errCode = err.response?.data?.code || "";
+    } catch (err: unknown) {
+      const errMsg = isAxiosError(err) ? err.response?.data?.error || err.message || "" : "";
+      const errCode = isAxiosError(err) ? err.response?.data?.code || "" : "";
 
       if (errCode === "INVALID_CREDENTIALS" || errMsg.toLowerCase().includes("invalid")) {
         setError("No account found with this email, or incorrect password. Please check your details or sign up.");
@@ -94,7 +95,7 @@ function EmailAuthFormInner({
         setError("An account with this email already exists. Please sign in instead.");
       } else if (errCode === "WEAK_PASSWORD") {
         setError("Password is too weak. Use at least 8 characters with uppercase, lowercase, and a number.");
-      } else if (err.response?.status === 429) {
+      } else if (isAxiosError(err) && err.response?.status === 429) {
         setError("Too many attempts. Please wait a moment and try again.");
       } else {
         setError(errMsg || "An unexpected error occurred.");

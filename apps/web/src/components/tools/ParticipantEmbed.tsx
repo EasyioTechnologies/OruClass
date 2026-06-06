@@ -64,7 +64,7 @@ export function ParticipantEmbed({ module, trainingId }: Props) {
       </div>
       
       <div className="flex-1 w-full bg-gray-100 overflow-y-auto p-4 md:p-8 space-y-8">
-        {embeds.map((embed: any, index: number) => (
+        {embeds.map((embed, index) => (
           <div key={embed.id || index} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
             {(embed.title || embed.description) && (
               <div className="p-4 border-b border-gray-100 bg-gray-50/50">

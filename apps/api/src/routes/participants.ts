@@ -2,7 +2,7 @@ import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and, inArray } from "drizzle-orm";
 import { db } from "../db/client";
-import { trainingParticipants, trainings, participantResponses, trainingFacilitators, users } from "../db/schema";
+import { trainingParticipants, trainings, participantResponses, users } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { joinTokenToCode } from "@oruclass/utils";

@@ -2,7 +2,7 @@
 
 import { useMemo, useRef, useState } from "react";
 import { useModuleResponses } from "@/hooks/useModuleResponses";
-import type { TrainingModule } from "@oruclass/types";
+import { responseDataOf, type TrainingModule } from "@oruclass/types";
 import html2canvas from "html2canvas";
 import { Download } from "lucide-react";
 
@@ -19,7 +19,7 @@ export function TrainerWordCloud({ module, trainingId }: Props) {
   const wordFreq = useMemo(() => {
     const freq: Record<string, number> = {};
     responses?.forEach((r) => {
-      const words: string[] = (r.responseData as any).words ?? [];
+      const words = responseDataOf(r.responseData, "wordcloud")?.words ?? [];
       words.forEach((w) => {
         const key = w.toLowerCase().trim();
         if (key) freq[key] = (freq[key] ?? 0) + 1;

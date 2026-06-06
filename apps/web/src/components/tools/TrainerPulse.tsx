@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { useModuleResponses } from "@/hooks/useModuleResponses";
-import type { TrainingModule } from "@oruclass/types";
+import { responseDataOf, type TrainingModule } from "@oruclass/types";
 
 interface Props {
   module: TrainingModule;
@@ -20,7 +20,7 @@ export function TrainerPulse({ module, trainingId }: Props) {
     const counts: Record<string, number> = {};
     emojis.forEach((e) => (counts[e] = 0));
     responses?.forEach((r) => {
-      const emoji = (r.responseData as any).emoji;
+      const emoji = responseDataOf(r.responseData, "pulse")?.emoji;
       if (emoji && emoji in counts) counts[emoji]++;
     });
     return counts;
@@ -34,8 +34,8 @@ export function TrainerPulse({ module, trainingId }: Props) {
     // For a generic scale, we'll assign (emojis.length - index) so index 0 = N points.
     let totalScore = 0;
     responses?.forEach((r) => {
-      const emoji = (r.responseData as any).emoji;
-      const idx = emojis.indexOf(emoji);
+      const emoji = responseDataOf(r.responseData, "pulse")?.emoji;
+      const idx = emoji ? emojis.indexOf(emoji) : -1;
       if (idx >= 0) totalScore += (emojis.length - idx);
     });
     return totalScore / totalResponses;

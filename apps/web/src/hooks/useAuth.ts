@@ -3,7 +3,7 @@
 import { useCallback, useEffect, useState } from "react";
 import { useAuthStore } from "@/store/auth";
 import { apiClient } from "@/lib/api-client";
-import { getAccessToken, getRefreshToken, clearTokens, isTokenExpired, setTokens } from "@/lib/token-storage";
+import { getAccessToken, clearTokens, isTokenExpired, setTokens } from "@/lib/token-storage";
 
 export function useAuth() {
   const { user, isAuthenticated, isSessionExpired, emailVerified, setUser, setEmailVerified, clearUser, setSessionExpired } = useAuthStore();
@@ -18,25 +18,17 @@ export function useAuth() {
     }
 
     if (isTokenExpired(token)) {
-      // Try refreshing
-      const refreshToken = getRefreshToken();
-      if (!refreshToken) {
-        clearUser();
-        clearTokens();
-        setIsPending(false);
-        return;
-      }
-
-      apiClient.post("/api/auth/refresh", { refreshToken })
+      // Try refreshing — refresh token is sent via the httpOnly cookie.
+      apiClient.post("/api/auth/refresh", {})
         .then(({ data }) => {
-          setTokens(data.accessToken, data.refreshToken);
+          setTokens(data.accessToken);
           setUser({
             id: data.user.id,
             name: data.user.name,
             email: data.user.email,
             avatarUrl: data.user.avatarUrl ?? data.user.image,
             authProvider: data.user.isAnonymous ? "guest" : "email",
-          } as any);
+          });
           setEmailVerified(data.user.emailVerified ?? false);
         })
         .catch((err) => {
@@ -61,7 +53,7 @@ export function useAuth() {
             email: data.user.email,
             avatarUrl: data.user.avatarUrl ?? data.user.image,
             authProvider: data.user.isAnonymous ? "guest" : "email",
-          } as any);
+          });
           setEmailVerified(data.user.emailVerified ?? false);
         })
         .catch((err) => {
@@ -78,9 +70,9 @@ export function useAuth() {
   }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleSignOut = useCallback(async () => {
-    const refreshToken = getRefreshToken();
     try {
-      await apiClient.post("/api/auth/logout", { refreshToken });
+      // Refresh token is read from / cleared via the httpOnly cookie server-side.
+      await apiClient.post("/api/auth/logout", {});
     } catch { /* ignore */ }
     clearUser();
     clearTokens();

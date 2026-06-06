@@ -15,6 +15,7 @@ import { useAssignFacilitator, useTraining, useInviteFacilitator, useTrainings, 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { apiClient } from "@/lib/api-client";
+import { isAxiosError } from "axios";
 import { canDo } from "@/lib/permissions";
 import type { TrainingModule, TrainingRole, ModuleConfig, AttendanceField, TrainingDay, FormField, FormFieldType } from "@oruclass/types";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
@@ -1084,16 +1085,17 @@ function ModuleConfigEditor({
   if (module.moduleType === "embed") {
     // Migration from old single-embed structure
     const embeds = config.embeds || (config.embedUrl ? [{ id: crypto.randomUUID(), url: config.embedUrl, title: config.embedTitle, description: config.embedDescription }] : []);
+    type Embed = (typeof embeds)[number];
 
     const addEmbed = () => onChange({ ...config, embeds: [...embeds, { id: crypto.randomUUID(), url: "" }] });
-    
-    const updateEmbed = (i: number, patch: any) => {
-      const updated = embeds.map((e: any, j: number) => j === i ? { ...e, ...patch } : e);
+
+    const updateEmbed = (i: number, patch: Partial<Embed>) => {
+      const updated = embeds.map((e, j) => j === i ? { ...e, ...patch } : e);
       onChange({ ...config, embeds: updated });
     };
 
     const removeEmbed = (i: number) => {
-      onChange({ ...config, embeds: embeds.filter((_: any, j: number) => j !== i) });
+      onChange({ ...config, embeds: embeds.filter((_, j) => j !== i) });
     };
 
     const moveEmbed = (i: number, dir: -1 | 1) => {
@@ -1123,7 +1125,7 @@ function ModuleConfigEditor({
           </div>
         )}
 
-        {embeds.map((embed: any, i: number) => (
+        {embeds.map((embed, i) => (
           <div key={embed.id} className="bg-gray-50 rounded-xl border border-gray-200 p-3 space-y-3 relative group">
             <div className="flex items-center justify-between">
               <span className="text-[10px] font-bold text-gray-500 uppercase">Embed {i + 1}</span>
@@ -1821,7 +1823,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
   const [assignMode, setAssignMode] = useState<"member" | "email">("member");
 
   const facilitators: Array<{ userId: string; role: TrainingRole; user?: { name: string } }> =
-    (training as any)?.facilitators ?? [];
+    (training as { facilitators?: Array<{ userId: string; role: TrainingRole; user?: { name: string } }> })?.facilitators ?? [];
 
   const unassigned = members.filter((m) => !facilitators.some((f) => f.userId === m.userId));
   const roleLabel = (role: TrainingRole) =>
@@ -1958,7 +1960,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                     </div>
                     {assignFacilitator.isError && (
                       <p className="text-xs text-red-500 mt-2 text-center">
-                        {(assignFacilitator.error as any)?.response?.data?.error || "Failed to assign facilitator."}
+                        {(isAxiosError(assignFacilitator.error) ? assignFacilitator.error.response?.data?.error : null) || "Failed to assign facilitator."}
                       </p>
                     )}
                   </>
@@ -2010,7 +2012,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                 </div>
                 {inviteFacilitator.isError && (
                   <p className="text-xs text-red-500 mt-2 text-center">
-                    {(inviteFacilitator.error as any)?.response?.data?.error || "Failed to invite facilitator."}
+                    {(isAxiosError(inviteFacilitator.error) ? inviteFacilitator.error.response?.data?.error : null) || "Failed to invite facilitator."}
                   </p>
                 )}
               </div>

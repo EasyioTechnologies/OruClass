@@ -4,6 +4,7 @@ import { useState, useEffect, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { apiClient } from "@/lib/api-client";
+import { isAxiosError } from "axios";
 import { ArrowLeft, CheckCircle2, XCircle, Eye, EyeOff } from "lucide-react";
 
 export default function ResetPasswordPage() {
@@ -56,8 +57,8 @@ function ResetPasswordForm() {
     try {
       await apiClient.post("/api/auth/reset-password", { token, newPassword: password });
       setSuccess(true);
-    } catch (err: any) {
-      const msg = err.response?.data?.error || "";
+    } catch (err: unknown) {
+      const msg = isAxiosError(err) ? err.response?.data?.error || "" : "";
       if (msg.includes("expired") || msg.includes("invalid")) {
         setError("This reset link has expired. Please request a new one.");
       } else {

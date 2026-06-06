@@ -1,7 +1,7 @@
 "use client";
 
 import { useModuleResponses } from "@/hooks/useModuleResponses";
-import type { TrainingModule } from "@oruclass/types";
+import { responseDataOf, type TrainingModule } from "@oruclass/types";
 
 interface Props {
   module: TrainingModule;
@@ -33,7 +33,7 @@ export function TrainerMatrix({ module, trainingId }: Props) {
         ) : (
           <div className="space-y-6">
             {responses?.map((r) => {
-              const cells: Record<string, string> = (r.responseData as any).cells ?? {};
+              const cells: Record<string, string> = responseDataOf(r.responseData, "matrix")?.cells ?? {};
               return (
                 <div key={r.id} className="bg-white p-5 rounded-lg shadow-sm border border-gray-100 overflow-x-auto">
                   <div className="font-semibold text-sm mb-4 text-brand-600">

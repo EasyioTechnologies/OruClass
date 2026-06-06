@@ -44,3 +44,20 @@
     display: none;
   }
 }
+
+@keyframes gradient-x {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@utility animate-gradient-x {
+  animation: gradient-x 10s ease infinite;
+}
+
+@utility bg-300% {
+  background-size: 300% 300%;
+}

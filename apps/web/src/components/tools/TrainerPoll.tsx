@@ -1,7 +1,7 @@
 "use client";
 
 import { useModuleResponses } from "@/hooks/useModuleResponses";
-import type { TrainingModule } from "@oruclass/types";
+import { responseDataOf, type TrainingModule } from "@oruclass/types";
 
 interface Props {
   module: TrainingModule;
@@ -17,7 +17,7 @@ export function TrainerPoll({ module, trainingId }: Props) {
   for (const opt of options) tally[opt] = 0;
   const totalVoters = responses?.length ?? 0;
   responses?.forEach((r) => {
-    const selected: string[] = (r.responseData as any).selected ?? [];
+    const selected = responseDataOf(r.responseData, "poll")?.selected ?? [];
     selected.forEach((s) => {
       if (s in tally) tally[s]++;
     });
