@@ -1810,7 +1810,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
       <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users size={15} className="text-gray-500" />
-          <h2 className="text-sm font-bold text-gray-900">Facilitators</h2>
+          <h2 className="text-sm font-bold text-gray-900">Training Team</h2>
           {facilitators.length > 0 && (
             <span className="text-[10px] font-semibold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full">
               {facilitators.length}
@@ -1832,7 +1832,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
         {facilitators.length === 0 && !showAssign && (
           <div className="py-5 text-center">
             <Users size={24} className="text-gray-200 mx-auto mb-2" />
-            <p className="text-xs text-gray-400 font-medium">No facilitators assigned</p>
+            <p className="text-xs text-gray-400 font-medium">No team members assigned</p>
             <p className="text-[10px] text-gray-300 mt-0.5">Add workspace members to help run this session</p>
           </div>
         )}
@@ -1845,7 +1845,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
               </div>
               <span className="text-sm text-gray-800 font-medium">{f.user?.name ?? f.userId}</span>
             </div>
-            {canManage ? (
+            {canManage && f.userId !== training?.createdBy ? (
               <select
                 value={f.role}
                 onChange={(e) => assignFacilitator.mutate({ userId: f.userId, role: e.target.value as TrainingRole })}
