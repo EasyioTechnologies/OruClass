@@ -12,6 +12,7 @@ import { SelectModuleSlide } from "./SelectModuleSlide";
 import { ParticipantModuleRenderer } from "../tools/ParticipantModuleRenderer";
 import { ParticipantScratchpad } from "./ParticipantScratchpad";
 import { ModuleStopwatch } from "./ModuleStopwatch";
+import { GuestUpgradeBanner } from "./GuestUpgradeBanner";
 import { cn } from "@oruclass/utils";
 import { WifiOff, RefreshCw } from "lucide-react";
 
@@ -150,6 +151,9 @@ export function ParticipantLiveRoom({ trainingId }: { trainingId: string }) {
           {training.sessionStatus}
         </span>
       </div>
+
+      {/* Guest → account upgrade nudge (only for guest participants) */}
+      <GuestUpgradeBanner />
 
       {/* Socket status banner */}
       {socketStatus !== "connected" && (

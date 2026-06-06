@@ -44,7 +44,9 @@ function EmailAuthFormInner({
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const effectiveReturnTo = returnTo !== "/dashboard" ? returnTo : (searchParams.get("returnTo") ?? returnTo);
+  // An explicit ?returnTo= always wins (e.g. a guest upgrading mid-session needs to land
+  // back in the live room, not the generic participant home); otherwise fall back to the prop.
+  const effectiveReturnTo = searchParams.get("returnTo") ?? returnTo;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();

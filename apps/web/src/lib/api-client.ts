@@ -75,14 +75,16 @@ apiClient.interceptors.response.use(
       return apiClient(originalRequest);
     } catch (refreshError) {
       processQueue(refreshError, null);
-      // Only nuke the session + redirect when the refresh token is genuinely rejected (401).
-      // Network errors / API restarts (no response, or 5xx) must NOT log out a live participant —
-      // the original call fails this once and retries naturally once the API is back.
-      if (axios.isAxiosError(refreshError) && refreshError.response?.status === 401) {
+      // A definitively unauthenticated refresh (401 = bad token, 400 = no cookie at all,
+      // e.g. a first-time visitor or a returning guest whose session lapsed) means the
+      // stale access token is useless — purge it so the app treats them as logged-out and
+      // can offer the guest-join path. We do NOT redirect here: a hard bounce to /login
+      // would kick a live participant out of their session. Pages decide what to show.
+      // Network errors / API restarts (no response, or 5xx) leave tokens intact so the
+      // original call retries naturally once the API is back.
+      const status = axios.isAxiosError(refreshError) ? refreshError.response?.status : undefined;
+      if (status === 401 || status === 400) {
         clearTokens();
-        if (typeof window !== "undefined") {
-          window.location.href = "/login";
-        }
       }
       return Promise.reject(refreshError);
     } finally {

@@ -13,7 +13,7 @@ type Step = "auth" | "code";
 
 export default function JoinPage() {
   const router = useRouter();
-  const { user, setUser } = useAuthStore();
+  const { user, setUser, clearUser } = useAuthStore();
   const [step, setStep] = useState<Step>("auth");
   const [participantName, setParticipantName] = useState("");
   const [nameLoading, setNameLoading] = useState(false);
@@ -84,6 +84,15 @@ export default function JoinPage() {
       const { data: { training } } = await apiClient.post<{ training: { id: string } }>(`/api/join/${joinToken}`);
       router.replace(`/trainings/${training.id}/live?role=participant`);
     } catch (err: unknown) {
+      const status = (err as { response?: { status?: number } })?.response?.status;
+      // 401/400 = our guest session lapsed (interceptor already purged the dead token).
+      // Send them back to re-enter their name rather than surfacing "Refresh token is required".
+      if (status === 401 || status === 400) {
+        clearUser();
+        setStep("auth");
+        setCodeError(null);
+        return;
+      }
       setCodeError(
         (err as { response?: { data?: { error?: string } } })?.response?.data?.error ??
           "No live session found with that code",
