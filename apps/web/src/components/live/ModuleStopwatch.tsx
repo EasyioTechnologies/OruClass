@@ -82,76 +82,92 @@ export function ModuleStopwatch({ canControl = false }: { canControl?: boolean }
 
   return (
     <div className={cn(
-      "flex items-center gap-2 backdrop-blur shadow-sm px-3 py-1.5 rounded-full absolute top-4 right-4 z-50 transition-colors duration-300",
-      timeUp ? "bg-red-50/90 border border-red-200 text-red-600" : "bg-white/80 border border-brand-200/50 text-brand-900"
+      "flex flex-col items-center gap-3 backdrop-blur shadow-lg px-4 py-3 sm:px-6 sm:py-4 rounded-2xl absolute top-4 right-4 z-50 transition-colors duration-300",
+      "max-w-xs sm:max-w-md",
+      timeUp ? "bg-red-50/95 border border-red-300 text-red-600" : "bg-white/90 border border-brand-200 text-brand-900"
     )}>
-      <Timer className={cn("w-4 h-4", timeUp ? "text-red-500" : "text-brand-500")} />
+      <div className="flex items-center gap-2 w-full">
+        <Timer className={cn(
+          "shrink-0 transition-all",
+          timeUp ? "text-red-500" : "text-brand-500",
+          "w-5 h-5 sm:w-6 sm:h-6"
+        )} />
 
-      {editing ? (
-        <div className="flex items-center gap-1">
-          <input
-            type="text"
-            inputMode="numeric"
-            autoFocus
-            value={editM}
-            onChange={(e) => setEditM(e.target.value.replace(/\D/g, ""))}
-            onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditing(false); }}
-            className="w-9 px-1 py-0.5 border border-brand-200 rounded text-center text-sm font-mono tabular-nums focus:outline-none focus:ring-1 focus:ring-brand-500"
-            placeholder="00"
-          />
-          <span className="text-brand-400 font-bold">:</span>
-          <input
-            type="text"
-            inputMode="numeric"
-            value={editS}
-            onChange={(e) => setEditS(e.target.value.replace(/\D/g, ""))}
-            onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditing(false); }}
-            className="w-9 px-1 py-0.5 border border-brand-200 rounded text-center text-sm font-mono tabular-nums focus:outline-none focus:ring-1 focus:ring-brand-500"
-            placeholder="00"
-          />
-          <button onClick={saveEdit} className="p-1 hover:bg-green-50 text-green-600 rounded" title="Save time limit">
-            <Check className="w-3.5 h-3.5" />
-          </button>
-          <button onClick={() => setEditing(false)} className="p-1 hover:bg-gray-100 text-gray-500 rounded" title="Cancel">
-            <X className="w-3.5 h-3.5" />
-          </button>
-        </div>
-      ) : (
-        <span className="font-mono font-bold text-sm tracking-widest">{timeUp ? "Time's up!" : formatTime(displaySeconds)}</span>
-      )}
+        {editing ? (
+          <div className="flex items-center gap-1 flex-1">
+            <input
+              type="text"
+              inputMode="numeric"
+              autoFocus
+              value={editM}
+              onChange={(e) => setEditM(e.target.value.replace(/\D/g, ""))}
+              onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditing(false); }}
+              className="flex-1 max-w-[60px] px-2 py-1.5 border border-brand-200 rounded-lg text-center text-base sm:text-lg font-mono font-bold tabular-nums focus:outline-none focus:ring-2 focus:ring-brand-500"
+              placeholder="00"
+            />
+            <span className="text-brand-400 font-bold text-lg">:</span>
+            <input
+              type="text"
+              inputMode="numeric"
+              value={editS}
+              onChange={(e) => setEditS(e.target.value.replace(/\D/g, ""))}
+              onKeyDown={(e) => { if (e.key === "Enter") saveEdit(); if (e.key === "Escape") setEditing(false); }}
+              className="flex-1 max-w-[60px] px-2 py-1.5 border border-brand-200 rounded-lg text-center text-base sm:text-lg font-mono font-bold tabular-nums focus:outline-none focus:ring-2 focus:ring-brand-500"
+              placeholder="00"
+            />
+            <button onClick={saveEdit} className="p-1.5 hover:bg-green-50 text-green-600 rounded-lg transition-colors" title="Save time limit">
+              <Check className="w-5 h-5" />
+            </button>
+            <button onClick={() => setEditing(false)} className="p-1.5 hover:bg-gray-100 text-gray-500 rounded-lg transition-colors" title="Cancel">
+              <X className="w-5 h-5" />
+            </button>
+          </div>
+        ) : (
+          <span className="font-mono font-bold text-xl sm:text-2xl tracking-wider flex-1 text-center">
+            {timeUp ? "Time's up!" : formatTime(displaySeconds)}
+          </span>
+        )}
+      </div>
 
       {canControl && !editing && (
-        <div className={cn("flex items-center gap-1 ml-2 border-l pl-2", timeUp ? "border-red-200" : "border-brand-200")}>
+        <div className={cn(
+          "flex items-center gap-2 w-full pt-2 border-t",
+          timeUp ? "border-red-200" : "border-brand-200/50"
+        )}>
           <button
             onClick={openEdit}
-            className="p-1 hover:bg-brand-50 text-brand-600 rounded"
+            className="flex-1 flex items-center justify-center gap-2 p-2 hover:bg-brand-50 text-brand-600 rounded-lg transition-colors text-sm font-medium"
             title="Set time limit"
           >
-            <Pencil className="w-3.5 h-3.5" />
+            <Pencil className="w-4 h-4" />
+            <span className="hidden sm:inline">Set Time</span>
           </button>
           {stopwatch.isRunning ? (
             <button
               onClick={() => handleAction("pause")}
-              className="p-1 hover:bg-brand-50 text-brand-600 rounded"
+              className="flex-1 flex items-center justify-center gap-2 p-2 hover:bg-brand-50 text-brand-600 rounded-lg transition-colors text-sm font-medium"
               title="Pause Stopwatch"
             >
-              <Pause className="w-3.5 h-3.5" />
+              <Pause className="w-4 h-4" />
+              <span className="hidden sm:inline">Pause</span>
             </button>
           ) : (
             <button
               onClick={() => handleAction("resume")}
-              className="p-1 hover:bg-brand-50 text-brand-600 rounded"
+              className="flex-1 flex items-center justify-center gap-2 p-2 hover:bg-brand-50 text-brand-600 rounded-lg transition-colors text-sm font-medium"
               title="Resume Stopwatch"
             >
-              <Play className="w-3.5 h-3.5" />
+              <Play className="w-4 h-4" />
+              <span className="hidden sm:inline">Resume</span>
             </button>
           )}
           <button
             onClick={() => handleAction("reset")}
-            className="p-1 hover:bg-red-50 text-red-500 rounded"
+            className="flex-1 flex items-center justify-center gap-2 p-2 hover:bg-red-50 text-red-500 rounded-lg transition-colors text-sm font-medium"
             title="Reset Stopwatch"
           >
-            <RotateCcw className="w-3.5 h-3.5" />
+            <RotateCcw className="w-4 h-4" />
+            <span className="hidden sm:inline">Reset</span>
           </button>
         </div>
       )}
