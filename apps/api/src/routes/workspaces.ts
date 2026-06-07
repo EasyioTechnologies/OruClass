@@ -158,10 +158,29 @@ workspacesRouter.get("/:workspaceId/responses", workspaceTenantMiddleware, async
     with: {
       user: true,
       training: true,
-      module: { with: { day: true } },
+      module: true,
     },
     orderBy: (responses, { desc }) => [desc(responses.submittedAt)]
   });
 
-  return c.json(responses);
+  // Map over responses and attach day data from module
+  const responseIds = responses.map(r => r.module?.id).filter(Boolean);
+  let moduleDayMap: Record<string, typeof responses[0]["module"] & { day: any }> = {};
+
+  if (responseIds.length > 0) {
+    const modulesWithDays = await db.query.trainingModules.findMany({
+      where: inArray(trainingModules.id, responseIds),
+      with: { day: true },
+    });
+    moduleDayMap = Object.fromEntries(
+      modulesWithDays.map(m => [m.id, { ...m, day: m.day }])
+    );
+  }
+
+  const enrichedResponses = responses.map(r => ({
+    ...r,
+    module: r.module ? (moduleDayMap[r.module.id] || r.module) : null,
+  }));
+
+  return c.json(enrichedResponses);
 });
