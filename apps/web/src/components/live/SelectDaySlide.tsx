@@ -48,29 +48,33 @@ export function SelectDaySlide({ days, moduleCountForDay }: Props) {
         </p>
       </div>
 
-      <div className="w-full max-w-md flex flex-col gap-2.5">
+      <div className="w-full max-w-4xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 max-h-[60vh] overflow-y-auto pr-2">
         {sorted.map((d) => {
           const count = moduleCountForDay(d.id);
           return (
             <button
               key={d.id}
               onClick={() => select(d.id)}
-              className="group w-full flex items-center gap-3.5 px-4 py-3.5 rounded-2xl bg-white border border-gray-200 hover:border-brand-300 hover:shadow-sm active:scale-[.99] transition-all text-left"
+              className="group flex flex-col gap-2.5 p-4 rounded-2xl bg-white border border-gray-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-100 active:scale-[.98] transition-all text-left"
             >
-              <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-brand-50 border border-brand-100 flex flex-col items-center justify-center leading-none">
-                <span className="text-[8px] font-bold uppercase tracking-wider text-brand-400">Day</span>
-                <span className="text-[15px] font-extrabold text-brand-700 tabular-nums">{d.dayNumber}</span>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-50 border border-brand-100 flex flex-col items-center justify-center leading-none">
+                  <span className="text-[8px] font-bold uppercase tracking-wider text-brand-400">Day</span>
+                  <span className="text-[16px] font-extrabold text-brand-700 tabular-nums">{d.dayNumber}</span>
+                </div>
+                <ChevronRight size={18} className="text-gray-300 group-hover:text-brand-500 transition-all flex-shrink-0 mt-0.5" />
               </div>
-              <div className="flex-1 min-w-0">
-                <p className="text-[14px] font-semibold text-gray-900 truncate">{d.title}</p>
-                <p className="text-[12px] text-gray-400 font-medium">
+              <div className="min-w-0">
+                <p className="text-[14px] font-semibold text-gray-900 line-clamp-2">{d.title}</p>
+                <p className="text-[12px] text-gray-400 font-medium mt-1">
                   {count} {count === 1 ? "module" : "modules"}
-                  {d.deliveryMode && (
-                    <> · {d.deliveryMode === "in_person" ? "In-Person" : d.deliveryMode === "online" ? "Virtual" : "Hybrid"}</>
-                  )}
                 </p>
+                {d.deliveryMode && (
+                  <p className="text-[11px] text-gray-500 mt-1.5 pt-1.5 border-t border-gray-100">
+                    {d.deliveryMode === "in_person" ? "📍 In-Person" : d.deliveryMode === "online" ? "💻 Virtual" : "🔀 Hybrid"}
+                  </p>
+                )}
               </div>
-              <ChevronRight size={18} className="text-gray-300 group-hover:text-brand-500 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
             </button>
           );
         })}
@@ -79,18 +83,20 @@ export function SelectDaySlide({ days, moduleCountForDay }: Props) {
         <button
           onClick={() => select("all")}
           className={cn(
-            "group w-full flex items-center gap-3.5 px-4 py-3 rounded-2xl bg-gray-50 border border-gray-100",
-            "hover:bg-gray-100 hover:border-gray-200 active:scale-[.99] transition-all text-left mt-1",
+            "group flex flex-col gap-2.5 p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200",
+            "hover:from-gray-100 hover:to-gray-200 hover:border-gray-300 hover:shadow-md active:scale-[.98] transition-all text-left",
           )}
         >
-          <div className="flex-shrink-0 w-11 h-11 rounded-xl bg-white border border-gray-200 flex items-center justify-center">
-            <Layers size={18} className="text-gray-400" />
+          <div className="flex items-start justify-between gap-2">
+            <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-white border border-gray-300 flex items-center justify-center">
+              <Layers size={20} className="text-gray-500" />
+            </div>
+            <ChevronRight size={18} className="text-gray-400 transition-all flex-shrink-0 mt-0.5" />
           </div>
-          <div className="flex-1 min-w-0">
-            <p className="text-[13.5px] font-semibold text-gray-700">All days</p>
-            <p className="text-[12px] text-gray-400 font-medium">Run every module, ungrouped</p>
+          <div className="min-w-0">
+            <p className="text-[14px] font-semibold text-gray-800">All days</p>
+            <p className="text-[12px] text-gray-500 font-medium mt-1">Run every module</p>
           </div>
-          <ChevronRight size={18} className="text-gray-300 group-hover:translate-x-0.5 transition-all flex-shrink-0" />
         </button>
       </div>
     </div>
