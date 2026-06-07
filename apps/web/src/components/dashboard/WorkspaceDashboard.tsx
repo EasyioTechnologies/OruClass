@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useWorkspaces, useCreateWorkspace } from "@/hooks/useWorkspace";
-import { useTrainings } from "@/hooks/useTrainings";
+import { useTrainings, useTrash, useRestoreTraining } from "@/hooks/useTrainings";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useAuthStore } from "@/store/auth";
 import { useSubscriptionStore } from "@/store/subscription";
@@ -36,7 +36,7 @@ function DeleteTrainingModal({ isOpen, onClose, training, onDelete }: { isOpen: 
       <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
         <h3 className="text-xl font-bold text-slate-900 mb-2">Delete Training</h3>
         <p className="text-slate-600 mb-6 text-sm">
-          This action cannot be undone. This will permanently delete the <strong>{training.title}</strong> training and all its modules.
+          Move <strong>{training.title}</strong> to trash? You can restore it later from the trash folder.
         </p>
         <div className="mb-6">
           <label className="block text-sm font-medium text-slate-700 mb-2">
@@ -240,6 +240,47 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
   );
 }
 
+function RestoreTrainingCard({ t, index }: { t: Training; index: number }) {
+  const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
+  const restoreTraining = useRestoreTraining(workspaceId);
+
+  const handleRestore = () => {
+    restoreTraining.mutate(t.id);
+  };
+
+  return (
+    <div className="bg-white rounded-[2rem] border border-gray-200 overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group flex flex-col h-full">
+      <div className="p-6 bg-gradient-to-br from-gray-50/80 via-white to-gray-100/50 flex-1">
+        <div className="flex items-start justify-between gap-4 mb-4">
+          <div className="flex flex-wrap items-center gap-2">
+            {t.labels?.map((label, idx) => (
+              <span key={idx} className="px-3 py-1 bg-white text-gray-600 text-xs font-bold rounded-xl shadow-sm border border-gray-200 tracking-wide">
+                {label}
+              </span>
+            ))}
+          </div>
+        </div>
+        <h3 className="text-lg font-bold text-slate-900 mb-2">{t.title}</h3>
+        {t.description && (
+          <p className="text-sm text-slate-600 mb-4 line-clamp-2">{t.description}</p>
+        )}
+        <div className="text-xs text-slate-500 mb-4">
+          {t.days?.length || 0} days · Deleted
+        </div>
+      </div>
+      <div className="px-6 py-4 border-t border-gray-100 flex gap-2">
+        <button
+          onClick={handleRestore}
+          disabled={restoreTraining.isPending}
+          className="flex-1 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-60 transition-colors text-sm font-semibold"
+        >
+          {restoreTraining.isPending ? "Restoring…" : "Restore"}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 function TrainingCard({ t, index }: { t: Training; index: number }) {
   const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const deleteTraining = useDeleteTraining(workspaceId);
@@ -342,9 +383,11 @@ export function WorkspaceDashboard() {
   const { data: workspaces, isLoading } = useWorkspaces();
   const activeId = useWorkspaceStore((s) => s.activeWorkspaceId);
   const { data: trainings, isLoading: trainingsLoading } = useTrainings(activeId ?? "");
+  const { data: trash, isLoading: trashLoading } = useTrash(activeId ?? "");
   const { mutate: createWorkspace } = useCreateWorkspace();
   const user = useAuthStore((s) => s.user);
   const autoCreating = useRef(false);
+  const [showTrash, setShowTrash] = useState(false);
 
   const { planId: subPlanId, status: subStatus } = useSubscriptionStore();
   const isPro = subStatus === "active";
@@ -478,8 +521,12 @@ export function WorkspaceDashboard() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Day-wise Trainings</h1>
-          <p className="text-sm text-gray-500 mt-1">Select a day&apos;s session to start instantly.</p>
+          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
+            {showTrash ? "Trash" : "Day-wise Trainings"}
+          </h1>
+          <p className="text-sm text-gray-500 mt-1">
+            {showTrash ? "Restore deleted trainings." : "Select a day's session to start instantly."}
+          </p>
         </div>
         <div className="flex items-center gap-3">
           <button
@@ -490,7 +537,25 @@ export function WorkspaceDashboard() {
             <HelpCircle size={16} />
             <span className="hidden sm:inline">Take a tour</span>
           </button>
-          {trainings && trainings.length > 0 && (
+          {!showTrash && trash && trash.length > 0 && (
+            <button
+              onClick={() => setShowTrash(true)}
+              className="flex items-center gap-1.5 px-3 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors border border-gray-200"
+              title="View trash"
+            >
+              <Trash2 size={16} />
+              Trash ({trash.length})
+            </button>
+          )}
+          {showTrash && (
+            <button
+              onClick={() => setShowTrash(false)}
+              className="flex items-center gap-1.5 px-3 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors border border-gray-200"
+            >
+              Back to Trainings
+            </button>
+          )}
+          {!showTrash && trainings && trainings.length > 0 && (
             <Link
               href="/trainings/new"
               data-tour="new-training"
@@ -502,7 +567,24 @@ export function WorkspaceDashboard() {
         </div>
       </div>
 
-      {trainingsLoading ? (
+      {showTrash ? (
+        trashLoading ? (
+          <div className="flex items-center justify-center h-40">
+            <div className="w-6 h-6 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
+          </div>
+        ) : !trash?.length ? (
+          <div className="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
+            <h3 className="text-lg font-semibold text-gray-900 mb-2">Trash is empty</h3>
+            <p className="text-gray-500">Deleted trainings will appear here.</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+            {trash.map((t, i) => (
+              <RestoreTrainingCard key={t.id} t={t} index={i} />
+            ))}
+          </div>
+        )
+      ) : trainingsLoading ? (
         <div className="flex items-center justify-center h-40">
           <div className="w-6 h-6 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
         </div>

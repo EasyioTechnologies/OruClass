@@ -86,6 +86,7 @@ export const trainings = pgTable(
       .references(() => users.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
     updatedAt: timestamp("updated_at").notNull().defaultNow(),
+    deletedAt: timestamp("deleted_at"),
   },
   (t) => [index("trainings_workspace_idx").on(t.workspaceId)],
 );

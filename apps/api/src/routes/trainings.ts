@@ -1,6 +1,6 @@
 import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
-import { eq, and, sql } from "drizzle-orm";
+import { eq, and, sql, isNull, isNotNull } from "drizzle-orm";
 import { db } from "../db/client";
 import { trainings, trainingFacilitators, trainingModules, trainingDays, users } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
@@ -52,9 +52,9 @@ trainingsRouter.get("/", async (c) => {
   const workspaceId = c.get("workspaceId") as string;
 
   const rows = await db.query.trainings.findMany({
-    where: eq(trainings.workspaceId, workspaceId),
-    with: { 
-      creator: true, 
+    where: and(eq(trainings.workspaceId, workspaceId), isNull(trainings.deletedAt)),
+    with: {
+      creator: true,
       modules: true,
       days: { orderBy: (d, { asc }) => [asc(d.dayNumber)] }
     },
@@ -135,7 +135,11 @@ trainingsRouter.get("/:id", async (c) => {
   const { id } = c.req.param();
 
   const training = await db.query.trainings.findFirst({
-    where: and(eq(trainings.id, id), eq(trainings.workspaceId, workspaceId)),
+    where: and(
+      eq(trainings.id, id),
+      eq(trainings.workspaceId, workspaceId),
+      isNull(trainings.deletedAt)
+    ),
     with: {
       modules: { orderBy: (m, { asc }) => [asc(m.position)] },
       facilitators: { with: { user: true } },
@@ -192,7 +196,7 @@ trainingsRouter.patch(
   },
 );
 
-// DELETE /trainings/:id
+// DELETE /trainings/:id (soft delete to trash)
 trainingsRouter.delete(
   "/:id",
   requireTrainingPermission("edit_agenda"),
@@ -201,10 +205,47 @@ trainingsRouter.delete(
     const { id } = c.req.param();
 
     await db
-      .delete(trainings)
+      .update(trainings)
+      .set({ deletedAt: new Date() })
       .where(and(eq(trainings.id, id), eq(trainings.workspaceId, workspaceId)));
 
     return c.json({ success: true });
+  },
+);
+
+// GET /trainings/trash (list deleted trainings)
+trainingsRouter.get("/trash", async (c) => {
+  const workspaceId = c.get("workspaceId") as string;
+
+  const rows = await db.query.trainings.findMany({
+    where: and(eq(trainings.workspaceId, workspaceId), isNotNull(trainings.deletedAt)),
+    with: {
+      creator: true,
+      modules: true,
+      days: { orderBy: (d, { asc }) => [asc(d.dayNumber)] }
+    },
+    orderBy: (t, { desc }) => [desc(t.deletedAt)],
+  });
+
+  return c.json(rows);
+});
+
+// PATCH /trainings/:id/restore (restore from trash)
+trainingsRouter.patch(
+  "/:id/restore",
+  requireTrainingPermission("edit_agenda"),
+  async (c) => {
+    const workspaceId = c.get("workspaceId") as string;
+    const { id } = c.req.param();
+
+    const [restored] = await db
+      .update(trainings)
+      .set({ deletedAt: null })
+      .where(and(eq(trainings.id, id), eq(trainings.workspaceId, workspaceId)))
+      .returning();
+
+    if (!restored) return c.json({ error: "Training not found" }, 404);
+    return c.json(restored);
   },
 );
 

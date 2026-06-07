@@ -167,3 +167,34 @@ export function useMyTrainingRole(workspaceId: string, trainingId: string) {
   const me = facilitators.find((f) => f.userId === user.id);
   return me ? me.role : ("participant" as "participant" | TrainingRole);
 }
+
+export function useTrash(workspaceId: string) {
+  return useQuery({
+    queryKey: ["trainings-trash", workspaceId],
+    queryFn: async () => {
+      const { data } = await apiClient.get<Training[]>(
+        `/api/workspaces/${workspaceId}/trainings/trash`,
+        { headers: { "X-Workspace-ID": workspaceId } },
+      );
+      return data;
+    },
+    enabled: !!workspaceId,
+  });
+}
+
+export function useRestoreTraining(workspaceId: string) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (trainingId: string) =>
+      apiClient.patch(
+        `/api/workspaces/${workspaceId}/trainings/${trainingId}/restore`,
+        {},
+        { headers: { "X-Workspace-ID": workspaceId } },
+      ),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["trainings", workspaceId] });
+      qc.invalidateQueries({ queryKey: ["trainings-trash", workspaceId] });
+    },
+  });
+}
