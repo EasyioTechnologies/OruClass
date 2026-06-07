@@ -158,7 +158,7 @@ workspacesRouter.get("/:workspaceId/responses", workspaceTenantMiddleware, async
     with: {
       user: true,
       training: true,
-      module: true,
+      module: { with: { day: true } },
     },
     orderBy: (responses, { desc }) => [desc(responses.submittedAt)]
   });

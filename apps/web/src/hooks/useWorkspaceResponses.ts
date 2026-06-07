@@ -1,11 +1,11 @@
 import { useQuery } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
 import { useWorkspaceStore } from "@/store/workspace";
-import type { ParticipantResponseWithUser, Training, TrainingModule } from "@oruclass/types";
+import type { ParticipantResponseWithUser, Training, TrainingModule, TrainingDay } from "@oruclass/types";
 
 export type WorkspaceResponseData = ParticipantResponseWithUser & {
   training: Training;
-  module: TrainingModule;
+  module: TrainingModule & { day: TrainingDay | null };
 };
 
 export function useWorkspaceResponses() {

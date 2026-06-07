@@ -96,7 +96,7 @@ export default function DataPage() {
 
     // Group responses by day → module
     const groupedByDayModule = activeGroup.responses.reduce((acc, response) => {
-      const dayId = response.module?.dayId || "no-day";
+      const dayId = response.module?.day?.id || "no-day";
       const dayTitle = response.module?.day?.title || "Unassigned";
       const dayNumber = response.module?.day?.dayNumber || 0;
       const moduleId = response.module?.id || "unknown";
