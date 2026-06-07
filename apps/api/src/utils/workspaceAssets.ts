@@ -1,4 +1,4 @@
-import { eq, and } from "drizzle-orm";
+import { eq, and, isNull } from "drizzle-orm";
 import { db } from "../db/client";
 import { trainings, trainingModules, trainingDays } from "../db/schema";
 
@@ -10,7 +10,7 @@ export async function trainingInWorkspace(trainingId: string, workspaceId: strin
   const row = await db
     .select({ id: trainings.id })
     .from(trainings)
-    .where(and(eq(trainings.id, trainingId), eq(trainings.workspaceId, workspaceId)))
+    .where(and(eq(trainings.id, trainingId), eq(trainings.workspaceId, workspaceId), isNull(trainings.deletedAt)))
     .limit(1);
   return row.length > 0;
 }
@@ -29,6 +29,7 @@ export async function moduleInWorkspace(
         eq(trainingModules.id, moduleId),
         eq(trainingModules.trainingId, trainingId),
         eq(trainings.workspaceId, workspaceId),
+        isNull(trainings.deletedAt),
       ),
     )
     .limit(1);
@@ -49,6 +50,7 @@ export async function dayInWorkspace(
         eq(trainingDays.id, dayId),
         eq(trainingDays.trainingId, trainingId),
         eq(trainings.workspaceId, workspaceId),
+        isNull(trainings.deletedAt),
       ),
     )
     .limit(1);

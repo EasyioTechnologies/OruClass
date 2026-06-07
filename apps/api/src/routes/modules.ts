@@ -1,6 +1,6 @@
 import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
-import { eq, and, asc } from "drizzle-orm";
+import { eq, and, asc, isNull } from "drizzle-orm";
 import type { InferSelectModel } from "drizzle-orm";
 import { db } from "../db/client";
 import { trainingModules, trainings, participantResponses } from "../db/schema";
@@ -216,7 +216,7 @@ modulesRouter.post(
 
       // Verify target training is in same workspace
       const target = await tx.query.trainings.findFirst({
-        where: and(eq(trainings.id, targetTrainingId), eq(trainings.workspaceId, workspaceId)),
+        where: and(eq(trainings.id, targetTrainingId), eq(trainings.workspaceId, workspaceId), isNull(trainings.deletedAt)),
       });
       if (!target) return { ok: false as const, code: 404, msg: "Target training not found" };
 

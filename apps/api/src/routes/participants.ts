@@ -1,6 +1,6 @@
 import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, isNull } from "drizzle-orm";
 import { db } from "../db/client";
 import { trainingParticipants, trainings, participantResponses, users } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
@@ -82,7 +82,7 @@ participantsRouter.post("/join/code", async (c) => {
   const { code } = await parseBody(c, JoinCodeSchema);
 
   const liveTrainings = await db.query.trainings.findMany({
-    where: inArray(trainings.sessionStatus, ["live", "connecting"]),
+    where: and(inArray(trainings.sessionStatus, ["live", "connecting"]), isNull(trainings.deletedAt)),
     columns: { joinToken: true },
   });
 
@@ -98,7 +98,7 @@ participantsRouter.post("/join/:joinToken", async (c) => {
   const userId = c.get("userId") as string;
 
   const training = await db.query.trainings.findFirst({
-    where: eq(trainings.joinToken, joinToken),
+    where: and(eq(trainings.joinToken, joinToken), isNull(trainings.deletedAt)),
   });
 
   if (!training) return c.json({ error: "Training not found" }, 404);
@@ -192,7 +192,7 @@ participantsRouter.get("/participant/trainings/:id/review", async (c) => {
 
   // Fetch training with modules and facilitators
   const training = await db.query.trainings.findFirst({
-    where: eq(trainings.id, id),
+    where: and(eq(trainings.id, id), isNull(trainings.deletedAt)),
     with: {
       creator: { columns: { id: true, name: true, email: true } },
       modules: { orderBy: (m, { asc }) => [asc(m.position)] },

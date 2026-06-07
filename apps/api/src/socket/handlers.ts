@@ -1,7 +1,7 @@
 import type { Server as SocketIOServer, Socket } from "socket.io";
 import type { ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData, TrainingRole, StrokeData, StickyNote } from "@oruclass/types";
 import { hasPermission } from "@oruclass/utils";
-import { eq, and, count, desc } from "drizzle-orm";
+import { eq, and, count, desc, isNull } from "drizzle-orm";
 import { db } from "../db/client";
 import {
   trainingParticipants,
@@ -298,7 +298,7 @@ export function registerSocketHandlers(io: IO): void {
 
         // Restore active module only if session is currently live
         const trainingData = await db.query.trainings.findFirst({
-          where: eq(trainings.id, trainingId),
+          where: and(eq(trainings.id, trainingId), isNull(trainings.deletedAt)),
         });
 
         if (!trainingData || trainingData.sessionStatus === "draft" || trainingData.sessionStatus === "completed") {

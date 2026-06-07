@@ -1,6 +1,6 @@
 import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
-import { eq, and, count, sql, desc, inArray } from "drizzle-orm";
+import { eq, and, count, sql, desc, inArray, isNull } from "drizzle-orm";
 import { db } from "../db/client";
 import {
   liveSessions,
@@ -20,7 +20,7 @@ sessionsRouter.use("*", workspaceTenantMiddleware);
 // Returns the training row, or null if it does not match.
 async function trainingInWorkspace(trainingId: string, workspaceId: string) {
   return db.query.trainings.findFirst({
-    where: and(eq(trainings.id, trainingId), eq(trainings.workspaceId, workspaceId)),
+    where: and(eq(trainings.id, trainingId), eq(trainings.workspaceId, workspaceId), isNull(trainings.deletedAt)),
     columns: { id: true, workspaceId: true },
   });
 }
@@ -84,7 +84,7 @@ sessionsRouter.get("/:trainingId/sessions/current", async (c) => {
 
   // Get current active module
   const training = await db.query.trainings.findFirst({
-    where: eq(trainings.id, trainingId),
+    where: and(eq(trainings.id, trainingId), isNull(trainings.deletedAt)),
     columns: { currentActiveModuleId: true },
   });
 
