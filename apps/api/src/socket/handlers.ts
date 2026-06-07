@@ -15,7 +15,7 @@ import {
 } from "../db/schema";
 import { getOrCreateState, removeParticipant, persistState, restoreState } from "./state";
 import { logger } from "../utils/logger";
-import { DrawUpdateSchema, DrawClearSchema, DrawSyncSchema, NoteCreateSchema, NotePositionSchema, TimerSyncSchema, ParticipantJoinSchema, ModuleUnlockSchema, ResponseSubmitSchema, StopwatchActionSchema } from "@oruclass/validators";
+import { DrawUpdateSchema, DrawClearSchema, DrawSyncSchema, NoteCreateSchema, NotePositionSchema, TimerSyncSchema, ParticipantJoinSchema, ModuleUnlockSchema, ResponseSubmitSchema, StopwatchActionSchema, ModuleSetTimeLimitSchema } from "@oruclass/validators";
 import { USER_NAME_CACHE_TTL_MS, USER_NAME_CACHE_MAX } from "../config/limits";
 
 // Small in-process cache for socket-join user lookups. Avoids hammering the
@@ -572,6 +572,72 @@ export function registerSocketHandlers(io: IO): void {
             lastStartedAt: stopwatchData.lastStartedAt.toISOString()
           });
         }
+      }),
+    );
+
+    socket.on(
+      "module:setTimeLimit",
+      guard("module:setTimeLimit", async (payload: unknown) => {
+        const parsed = ModuleSetTimeLimitSchema.safeParse(payload);
+        if (!parsed.success) {
+          socket.emit("error", { code: "BAD_PAYLOAD", message: "invalid module:setTimeLimit payload" });
+          return;
+        }
+        const { trainingId, moduleId, timeLimitSeconds } = parsed.data;
+
+        let moduleData: typeof trainingModules.$inferSelect | undefined;
+        let denied = false;
+        try {
+          await db.transaction(async (tx) => {
+            const facilitator = await tx.query.trainingFacilitators.findFirst({
+              where: and(
+                eq(trainingFacilitators.trainingId, trainingId),
+                eq(trainingFacilitators.userId, userId),
+              ),
+            });
+            // Editing the live time limit is a room-control action — same gate as unlock.
+            if (!facilitator || !hasPermission(facilitator.role as TrainingRole, "unlock_modules")) {
+              denied = true;
+              return;
+            }
+
+            const mod = await tx.query.trainingModules.findFirst({
+              where: and(eq(trainingModules.id, moduleId), eq(trainingModules.trainingId, trainingId)),
+            });
+            if (!mod) {
+              denied = true;
+              return;
+            }
+
+            const prevConfig = (mod.config ?? {}) as Record<string, unknown>;
+            const nextConfig = { ...prevConfig };
+            // 0 clears the limit so the stopwatch reverts to count-up mode.
+            if (timeLimitSeconds === 0) delete nextConfig.timeLimitSeconds;
+            else nextConfig.timeLimitSeconds = timeLimitSeconds;
+
+            const updated = await tx
+              .update(trainingModules)
+              .set({ config: nextConfig, updatedAt: new Date() })
+              .where(eq(trainingModules.id, moduleId))
+              .returning();
+            moduleData = updated[0];
+          });
+        } catch (err) {
+          logger.error(err, "module:setTimeLimit tx failed");
+          socket.emit("error", { code: "INTERNAL", message: "failed to set time limit" });
+          return;
+        }
+
+        if (denied || !moduleData) {
+          socket.emit("error", { code: "FORBIDDEN", message: "not authorized to set time limit" });
+          return;
+        }
+
+        // Re-broadcast the updated module so every client recomputes the countdown live.
+        io.to(`training:${trainingId}`).emit("module:unlocked", {
+          moduleId,
+          module: moduleData,
+        });
       }),
     );
 

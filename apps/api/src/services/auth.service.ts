@@ -13,6 +13,11 @@ import {
 const RAW_WEB_URL = process.env.WEB_URL ?? "http://localhost:3000";
 const WEB_URL = RAW_WEB_URL.startsWith("http") ? RAW_WEB_URL.replace(/\/$/, "") : `https://${RAW_WEB_URL.replace(/\/$/, "")}`;
 
+// Dev convenience: skip the verify-by-email step so you don't need a real inbox
+// while developing. NEVER true in production — gated on NODE_ENV.
+const SKIP_EMAIL_VERIFICATION =
+  process.env.NODE_ENV !== "production" && process.env.SKIP_EMAIL_VERIFICATION === "true";
+
 function generateToken(): string {
   return crypto.randomUUID() + crypto.randomUUID().replace(/-/g, "");
 }
@@ -32,14 +37,16 @@ export async function signUp(email: string, password: string, name: string, retu
     email,
     name,
     hashedPassword: hashed,
-    emailVerified: false,
+    emailVerified: SKIP_EMAIL_VERIFICATION,
     isAnonymous: false,
   }).returning();
 
   const tokens = await createTokenPair(user.id, user.email);
 
-  // Only ONE email at signup: the verification email. Welcome is sent after they verify.
-  createAndSendVerificationEmail(user.id, user.email, user.name, returnTo).catch(() => {});
+  if (!SKIP_EMAIL_VERIFICATION) {
+    // Only ONE email at signup: the verification email. Welcome is sent after they verify.
+    createAndSendVerificationEmail(user.id, user.email, user.name, returnTo).catch(() => {});
+  }
 
   return { user: sanitizeUser(user), ...tokens };
 }
@@ -99,6 +106,11 @@ export async function logout(refreshToken: string) {
 import crypto from "node:crypto";
 
 export async function createAndSendVerificationEmail(userId: string, email: string, name: string, returnTo?: string) {
+  // Dev bypass: mark verified instead of mailing a code. Covers signup + resend + any caller.
+  if (SKIP_EMAIL_VERIFICATION) {
+    await db.update(schema.users).set({ emailVerified: true }).where(eq(schema.users.id, userId));
+    return;
+  }
   // Clear old tokens for this user
   await db.delete(schema.emailVerificationTokens).where(eq(schema.emailVerificationTokens.userId, userId));
 

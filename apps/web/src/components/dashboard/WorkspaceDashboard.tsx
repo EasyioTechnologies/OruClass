@@ -11,8 +11,10 @@ import { cn } from "@oruclass/utils";
 
 import { useRouter } from "next/navigation";
 
-import { ChevronDown, ChevronUp, Trash2, CalendarDays, Play, ArrowRight, LayoutGrid, Pencil, X, Check } from "lucide-react";
-import { useState, useEffect, useRef } from "react";
+import { ChevronDown, ChevronUp, Trash2, CalendarDays, Play, ArrowRight, LayoutGrid, Pencil, X, Check, HelpCircle } from "lucide-react";
+import { useState, useEffect, useRef, useMemo } from "react";
+import { useOnboardingTour } from "@/hooks/useOnboardingTour";
+import type { DriveStep } from "driver.js";
 import { getPlan } from "@/config/plans";
 import type { Training } from "@oruclass/types";
 import { useDeleteTraining, useUpdateTraining } from "@/hooks/useTrainings";
@@ -238,7 +240,7 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
   );
 }
 
-function TrainingCard({ t }: { t: Training }) {
+function TrainingCard({ t, index }: { t: Training; index: number }) {
   const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const deleteTraining = useDeleteTraining(workspaceId);
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
@@ -305,12 +307,14 @@ function TrainingCard({ t }: { t: Training }) {
       <div className="px-6 py-4 bg-slate-50/50 flex items-center justify-between border-t border-brand-50/50 mt-auto">
         <Link
           href={`/trainings/${t.id}/studio`}
+          data-tour={index === 0 ? "open-studio" : undefined}
           className="text-sm px-4 py-2 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-colors font-bold shadow-sm shadow-brand-200"
         >
           Open Studio
         </Link>
         <Link
           href={`/trainings/${t.id}/analytics`}
+          data-tour={index === 0 ? "analytics" : undefined}
           className="text-sm text-slate-500 font-bold hover:text-brand-600 flex items-center gap-1 transition-colors"
         >
           Analytics <ArrowRight size={14} />
@@ -345,6 +349,47 @@ export function WorkspaceDashboard() {
   const { planId: subPlanId, status: subStatus } = useSubscriptionStore();
   const isPro = subStatus === "active";
   const currentPlan = subPlanId ? getPlan(subPlanId) : null;
+
+  const hasTrainings = !!trainings?.length;
+  const tourSteps = useMemo<DriveStep[]>(() => {
+    const steps: DriveStep[] = [
+      {
+        popover: {
+          title: "Welcome! 👋",
+          description: "This is your dashboard. Here you build trainings and run them live. Quick look — takes 20 seconds.",
+        },
+      },
+      {
+        element: '[data-tour="new-training"]',
+        popover: {
+          title: "Make a training",
+          description: "Tap here to start. You add your days and activities inside.",
+        },
+      },
+    ];
+    if (hasTrainings) {
+      steps.push(
+        {
+          element: '[data-tour="open-studio"]',
+          popover: {
+            title: "Build your session",
+            description: "Open Studio to add quizzes, polls, whiteboards and more. This is where you set everything up.",
+          },
+        },
+        {
+          element: '[data-tour="analytics"]',
+          popover: {
+            title: "See the results",
+            description: "After the session, check here to see how everyone did.",
+          },
+        },
+      );
+    }
+    return steps;
+  }, [hasTrainings]);
+
+  const tourReady = !isLoading && !trainingsLoading && !!user;
+  const { startTour } = useOnboardingTour("trainer-dashboard-v1", tourSteps, tourReady);
 
   // Auto-create workspace for new trainers
   useEffect(() => {
@@ -437,9 +482,18 @@ export function WorkspaceDashboard() {
           <p className="text-sm text-gray-500 mt-1">Select a day&apos;s session to start instantly.</p>
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={startTour}
+            className="flex items-center gap-1.5 px-3 py-2.5 text-gray-500 hover:text-brand-600 text-sm font-medium transition-colors"
+            title="Show me around"
+          >
+            <HelpCircle size={16} />
+            <span className="hidden sm:inline">Take a tour</span>
+          </button>
           {trainings && trainings.length > 0 && (
             <Link
               href="/trainings/new"
+              data-tour="new-training"
               className="px-5 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm transition-colors text-sm font-semibold w-full sm:w-auto text-center"
             >
               + New Training
@@ -458,6 +512,7 @@ export function WorkspaceDashboard() {
           <p className="text-gray-500 mb-6">Create your first training to start building day-wise plans.</p>
           <Link
             href="/trainings/new"
+            data-tour="new-training"
             className="px-5 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm transition-colors text-sm font-semibold inline-flex"
           >
             Create Training
@@ -465,8 +520,8 @@ export function WorkspaceDashboard() {
         </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-          {trainings.map((t) => (
-            <TrainingCard key={t.id} t={t} />
+          {trainings.map((t, i) => (
+            <TrainingCard key={t.id} t={t} index={i} />
           ))}
         </div>
       )}

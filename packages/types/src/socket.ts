@@ -15,6 +15,7 @@ export interface ClientToServerEvents {
   "note:position": (data: { trainingId: string; moduleId: string; noteId: string; x: number; y: number }) => void;
   "timer:sync": (data: { trainingId: string; moduleId: string; remaining: number; running: boolean; duration: number }) => void;
   "stopwatch:action": (data: { trainingId: string; moduleId: string; action: "pause" | "resume" | "reset" }) => void;
+  "module:setTimeLimit": (data: { trainingId: string; moduleId: string; timeLimitSeconds: number }) => void;
   heartbeat: () => void;
 }
 

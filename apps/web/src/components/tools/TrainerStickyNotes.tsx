@@ -1,12 +1,12 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { SafeHTML } from "@/components/ui/SafeHTML";
 import { useSocket } from "@/hooks/useSocket";
 import { useAuthStore } from "@/store/auth";
 import type { TrainingModule, StickyNote } from "@oruclass/types";
 import { cn } from "@oruclass/utils";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
+import { StickyBoard } from "./StickyBoard";
 
 interface Props {
   module: TrainingModule;
@@ -50,6 +50,11 @@ export function TrainerStickyNotes({ module, trainingId }: Props) {
     setDraft("");
   };
 
+  const moveNote = (noteId: string, x: number, y: number) => {
+    setNotes((prev) => prev.map((n) => (n.id === noteId ? { ...n, x, y } : n)));
+    socket.emit("note:position", { trainingId, moduleId: module.id, noteId, x, y });
+  };
+
   return (
     <div className="flex flex-col h-full p-4 gap-3">
       <div className="flex items-center gap-3 bg-white p-3 rounded-lg shadow-sm border border-gray-100">
@@ -90,23 +95,16 @@ export function TrainerStickyNotes({ module, trainingId }: Props) {
         </button>
       </div>
 
-      <div className="flex-1 relative border border-gray-200 rounded-lg bg-gray-50 overflow-hidden shadow-inner">
-        {notes.map((note) => (
-          <div
-            key={note.id}
-            className="absolute w-48 min-h-[100px] p-3 rounded-lg shadow-md text-sm cursor-move select-none border border-black/10 overflow-hidden"
-            style={{ backgroundColor: note.color, left: note.x, top: note.y }}
-          >
-            <SafeHTML html={note.text} className="prose prose-sm max-w-none" />
-          </div>
-        ))}
-        {notes.length === 0 && (
+      <StickyBoard
+        notes={notes}
+        onMove={moveNote}
+        emptyState={
           <div className="flex flex-col items-center justify-center h-full text-gray-400 space-y-2">
             <p>The board is empty.</p>
             <p className="text-sm">Wait for participants to add notes.</p>
           </div>
-        )}
-      </div>
+        }
+      />
     </div>
   );
 }

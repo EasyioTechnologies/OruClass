@@ -77,6 +77,10 @@ export const trainings = pgTable(
       .notNull()
       .default("draft"),
     joinToken: text("join_token").notNull().unique(),
+    checklist: jsonb("checklist")
+      .$type<{ id: string; label: string; done: boolean }[]>()
+      .notNull()
+      .default([]),
     createdBy: text("created_by")
       .notNull()
       .references(() => users.id),

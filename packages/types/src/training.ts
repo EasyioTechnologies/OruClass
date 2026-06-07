@@ -22,6 +22,7 @@ export interface Training {
   currentActiveModuleId: string | null;
   sessionStatus: TrainingStatus;
   joinToken: string;
+  checklist?: { id: string; label: string; done: boolean }[];
   createdBy: string;
   createdAt: Date;
   updatedAt: Date;

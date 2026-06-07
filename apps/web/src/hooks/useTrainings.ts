@@ -53,7 +53,7 @@ export function useUpdateTraining(workspaceId: string, trainingId: string) {
   const qc = useQueryClient();
 
   return useMutation({
-    mutationFn: (data: { title?: string; labels?: string[]; type?: string; description?: string; venue?: string; meetingLink?: string; startDate?: string; endDate?: string }) =>
+    mutationFn: (data: { title?: string; labels?: string[]; type?: string; description?: string; venue?: string; meetingLink?: string; startDate?: string; endDate?: string; checklist?: { id: string; label: string; done: boolean }[] }) =>
       apiClient.patch<Training>(
         `/api/workspaces/${workspaceId}/trainings/${trainingId}`,
         data,

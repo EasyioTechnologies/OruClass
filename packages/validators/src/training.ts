@@ -28,6 +28,10 @@ const TrainingFields = {
     (v) => (v === "" || v == null ? undefined : typeof v === "string" && /^\d{4}-\d{2}-\d{2}$/.test(v) ? `${v}T00:00:00.000Z` : v),
     z.string().datetime({ offset: true }).optional(),
   ),
+  checklist: z
+    .array(z.object({ id: z.string().max(64), label: z.string().min(1).max(200), done: z.boolean() }))
+    .max(50)
+    .optional(),
 } as const;
 
 // A range is only valid when end is on/after start; either side may be absent.
@@ -164,6 +168,12 @@ export const StopwatchActionSchema = z.object({
   action: z.enum(["pause", "resume", "reset"]),
 });
 
+export const ModuleSetTimeLimitSchema = z.object({
+  trainingId: z.string().uuid(),
+  moduleId: z.string().uuid(),
+  timeLimitSeconds: z.number().int().min(0).max(86_400),
+});
+
 export const ScratchpadUpdateSchema = z
   .object({
     personalNotes: z.string().max(50_000).optional(),
@@ -226,3 +236,4 @@ export type NoteCreateInput = z.infer<typeof NoteCreateSchema>;
 export type NotePositionInput = z.infer<typeof NotePositionSchema>;
 export type TimerSyncInput = z.infer<typeof TimerSyncSchema>;
 export type StopwatchActionInput = z.infer<typeof StopwatchActionSchema>;
+export type ModuleSetTimeLimitInput = z.infer<typeof ModuleSetTimeLimitSchema>;

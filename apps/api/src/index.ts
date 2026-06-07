@@ -193,6 +193,9 @@ await connectRedis()
 httpServer.listen(PORT, "0.0.0.0", () => {
   logger.info(`API server running on http://0.0.0.0:${PORT}`);
   logger.info(`Socket.IO listening on ws://0.0.0.0:${PORT}`);
+  if (process.env.NODE_ENV !== "production" && process.env.SKIP_EMAIL_VERIFICATION === "true") {
+    logger.warn("⚠ EMAIL VERIFICATION SKIPPED (dev) — signups are auto-verified");
+  }
 });
 
 export { app };

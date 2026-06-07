@@ -4,57 +4,44 @@ import React, { useState } from "react";
 import { useWorkspaceResponses } from "@/hooks/useWorkspaceResponses";
 import { format } from "date-fns";
 import { Search, Loader2, ChevronLeft, Calendar, Users, ChevronDown, ChevronRight, Download } from "lucide-react";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import { apiClient } from "@/lib/api-client";
-import { useWorkspaceStore } from "@/store/workspace";
+import * as XLSX from "xlsx";
+
+// ── Response data helpers ─────────────────────────────────────────────
+// Turn an arbitrary value into one readable cell string (no raw JSON).
+function toCellString(v: unknown): string {
+  if (v === null || v === undefined) return "";
+  if (typeof v === "boolean") return v ? "Yes" : "No";
+  if (Array.isArray(v)) return v.map(toCellString).filter(Boolean).join(", ");
+  if (typeof v === "object") {
+    return Object.entries(v as Record<string, unknown>)
+      .map(([k, val]) => `${humanizeKey(k)}: ${toCellString(val)}`)
+      .join("; ");
+  }
+  return String(v);
+}
+
+// Flatten a response's data into a flat label→value record for table columns.
+function flattenResponse(rd: unknown): Record<string, string> {
+  if (rd && typeof rd === "object" && !Array.isArray(rd)) {
+    const out: Record<string, string> = {};
+    for (const [k, v] of Object.entries(rd as Record<string, unknown>)) out[k] = toCellString(v);
+    return out;
+  }
+  return { Response: toCellString(rd) };
+}
+
+function humanizeKey(key: string): string {
+  return key
+    .replace(/[_-]+/g, " ")
+    .replace(/([a-z])([A-Z])/g, "$1 $2")
+    .replace(/^\w/, (c) => c.toUpperCase());
+}
 
 export default function DataPage() {
   const { data: responses, isLoading, isError } = useWorkspaceResponses();
   const [searchTerm, setSearchTerm] = useState("");
   const [activeTrainingId, setActiveTrainingId] = useState<string | null>(null);
   const [expandedDates, setExpandedDates] = useState<Record<string, boolean>>({});
-  const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
-  const [exportJobId, setExportJobId] = React.useState<string | null>(null);
-
-  const exportExcel = useMutation({
-    mutationFn: async (trainingId: string) => {
-      const { data } = await apiClient.post<{ jobId: string; status: string }>(
-        `/api/workspaces/${workspaceId}/trainings/${trainingId}/analytics/export`,
-        {},
-        { headers: { "X-Workspace-ID": workspaceId } },
-      );
-      return data;
-    },
-    onSuccess: (data) => {
-      setExportJobId(data.jobId);
-    }
-  });
-
-  const { data: jobStatus } = useQuery({
-    queryKey: ["analytics-export-job", exportJobId],
-    queryFn: async () => {
-      const { data } = await apiClient.get<{ jobId: string; status: string; excelUrl: string | null }>(
-        `/api/workspaces/${workspaceId}/trainings/${activeTrainingId}/analytics/export/${exportJobId}`,
-        { headers: { "X-Workspace-ID": workspaceId } }
-      );
-      return data;
-    },
-    enabled: !!exportJobId && !!activeTrainingId,
-    refetchInterval: (query) => {
-      const status = query.state.data?.status;
-      return status === "completed" || status === "failed" ? false : 1500;
-    }
-  });
-
-  React.useEffect(() => {
-    if (!jobStatus) return;
-    if (jobStatus.status === "completed" && jobStatus.excelUrl) {
-      window.open(jobStatus.excelUrl, "_blank");
-      setExportJobId(null);
-    } else if (jobStatus.status === "failed") {
-      setExportJobId(null);
-    }
-  }, [jobStatus]);
 
   const toggleDate = (date: string) => {
     setExpandedDates(prev => ({ ...prev, [date]: !prev[date] }));
@@ -113,6 +100,31 @@ export default function DataPage() {
     // Sort dates (descending)
     const sortedDates = Object.keys(groupedByDate).sort((a, b) => new Date(b).getTime() - new Date(a).getTime());
 
+    // Client-side .xlsx export — real Excel workbook, no server job / R2 needed.
+    const exportExcel = () => {
+      const rows = activeGroup.responses;
+      const flat = rows.map((r) => flattenResponse(r.responseData));
+      // Union of all answer keys → one spreadsheet column each.
+      const dataKeys = Array.from(new Set(flat.flatMap((f) => Object.keys(f))));
+      const header = ["Participant", "Email", "Module", "Date", "Time", ...dataKeys.map(humanizeKey)];
+      const body = rows.map((r, i) => [
+        r.user?.name ?? "",
+        r.user?.email ?? "",
+        r.module?.title ?? "",
+        format(new Date(r.submittedAt), "yyyy-MM-dd"),
+        format(new Date(r.submittedAt), "h:mm a"),
+        ...dataKeys.map((k) => flat[i][k] ?? ""),
+      ]);
+      const ws = XLSX.utils.aoa_to_sheet([header, ...body]);
+      // Auto-fit column widths to the longest cell in each column.
+      ws["!cols"] = header.map((_, c) =>
+        ({ wch: Math.min(50, Math.max(12, ...[header, ...body].map((row) => String(row[c] ?? "").length + 2))) }),
+      );
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Responses");
+      XLSX.writeFile(wb, `${(activeGroup.training?.title || "training").replace(/[^\w-]+/g, "_")}-responses.xlsx`);
+    };
+
     return (
       <div className="flex flex-col h-full space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center gap-4">
@@ -134,20 +146,13 @@ export default function DataPage() {
             </div>
           </div>
           <div className="flex items-center gap-3 w-full sm:w-auto">
-            {exportJobId && jobStatus?.status !== "completed" && (
-              <span className="text-xs text-brand-600 animate-pulse font-medium">Generating Excel...</span>
-            )}
             <button
-              onClick={() => exportExcel.mutate(activeTrainingId)}
-              disabled={exportExcel.isPending || !!exportJobId}
+              onClick={exportExcel}
+              disabled={activeGroup.responses.length === 0}
               className="w-full sm:w-auto justify-center px-4 py-2 bg-brand-600 text-white rounded-lg text-sm font-medium hover:bg-brand-700 disabled:opacity-60 transition-colors flex items-center gap-2 shadow-sm"
             >
-              {exportExcel.isPending || !!exportJobId ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
-              ) : (
-                <Download className="w-4 h-4" />
-              )}
-              {exportExcel.isPending || !!exportJobId ? "Exporting…" : "Export Excel"}
+              <Download className="w-4 h-4" />
+              Export Excel
             </button>
           </div>
         </div>
@@ -214,10 +219,23 @@ export default function DataPage() {
                             <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                               {format(new Date(response.submittedAt), "h:mm a")}
                             </td>
-                            <td className="px-6 py-4 text-sm text-gray-700 max-w-md">
-                              <pre className="whitespace-pre-wrap bg-gray-50 p-2 rounded border border-gray-100 text-xs text-gray-600 max-h-24 overflow-y-auto">
-                                {JSON.stringify(response.responseData, null, 2)}
-                              </pre>
+                            <td className="px-6 py-4 text-sm text-gray-700 max-w-md align-top">
+                              {(() => {
+                                const flat = flattenResponse(response.responseData);
+                                const entries = Object.entries(flat).filter(([, v]) => v !== "");
+                                if (entries.length === 0)
+                                  return <span className="text-gray-400 text-xs italic">No data</span>;
+                                return (
+                                  <dl className="grid grid-cols-[auto_1fr] gap-x-3 gap-y-1 max-h-32 overflow-y-auto">
+                                    {entries.map(([k, v]) => (
+                                      <React.Fragment key={k}>
+                                        <dt className="text-xs font-medium text-gray-500 whitespace-nowrap">{humanizeKey(k)}</dt>
+                                        <dd className="text-xs text-gray-800 break-words">{v}</dd>
+                                      </React.Fragment>
+                                    ))}
+                                  </dl>
+                                );
+                              })()}
                             </td>
                           </tr>
                         ))}

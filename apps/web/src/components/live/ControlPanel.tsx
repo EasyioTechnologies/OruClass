@@ -1,6 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
+import { useQueryClient } from "@tanstack/react-query";
 import { useModules, useUnlockModule } from "@/hooks/useModules";
 import { useDays } from "@/hooks/useDays";
 import { useUpdateTrainingStatus, useResetSession, useTrainings } from "@/hooks/useTrainings";
@@ -32,11 +33,16 @@ export function ControlPanel({ trainingId, workspaceId, training, userTrainingRo
   const clearActiveModule = useLiveSessionStore((s) => s.setActiveModule);
   const { data: allTrainings } = useTrainings(workspaceId);
   const { data: days = [] } = useDays(workspaceId, trainingId);
+  const qc = useQueryClient();
 
   const status = training.sessionStatus;
-  const hasOtherActiveSession = allTrainings?.some(
+  // The lingering session blocking this one (status never auto-clears when a
+  // trainer just closes the tab — so surface it and let them stop it in one tap).
+  const otherActiveSession = allTrainings?.find(
     (t) => t.id !== trainingId && ["connecting", "live", "paused"].includes(t.sessionStatus)
   );
+  const hasOtherActiveSession = !!otherActiveSession;
+  const stopOtherSession = useUpdateTrainingStatus(workspaceId, otherActiveSession?.id ?? "");
   // Multi-day training must have a day chosen before opening for joining
   const needsDayPick = status === "draft" && days.length > 0 && !dayParam;
 
@@ -66,10 +72,26 @@ export function ControlPanel({ trainingId, workspaceId, training, userTrainingRo
                 <div className="rounded-xl bg-gray-50 border border-gray-100 px-3 py-2.5 text-center">
                   <p className="text-[11.5px] text-gray-400 font-medium">Session not started</p>
                 </div>
-                {hasOtherActiveSession && (
-                  <div className="flex items-start gap-1.5 p-2 bg-red-50 text-red-700 rounded-lg text-[11px] leading-tight font-medium">
-                    <AlertCircle size={14} className="shrink-0 mt-0.5" />
-                    Another session is currently active. Stop it before opening a new one.
+                {otherActiveSession && (
+                  <div className="space-y-1.5 p-2.5 bg-red-50 text-red-700 rounded-lg">
+                    <div className="flex items-start gap-1.5 text-[11px] leading-tight font-medium">
+                      <AlertCircle size={14} className="shrink-0 mt-0.5" />
+                      <span>
+                        “{otherActiveSession.title}” is still active. Stop it to open this one.
+                      </span>
+                    </div>
+                    <button
+                      onClick={() =>
+                        stopOtherSession.mutate("completed", {
+                          onSuccess: () => qc.invalidateQueries({ queryKey: ["trainings", workspaceId] }),
+                        })
+                      }
+                      disabled={stopOtherSession.isPending}
+                      className="w-full flex items-center justify-center gap-1.5 py-1.5 bg-red-600 text-white text-[11.5px] font-semibold rounded-lg hover:bg-red-700 active:scale-[.98] transition-all disabled:opacity-50"
+                    >
+                      <Square size={12} strokeWidth={2.5} />
+                      {stopOtherSession.isPending ? "Stopping…" : "Stop that session"}
+                    </button>
                   </div>
                 )}
                 {needsDayPick && (

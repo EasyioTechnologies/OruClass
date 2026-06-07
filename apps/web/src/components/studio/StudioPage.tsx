@@ -1,6 +1,6 @@
 "use client";
 
-import { createContext, useContext, useState } from "react";
+import { createContext, useContext, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { DndContext, closestCenter, DragEndEvent } from "@dnd-kit/core";
@@ -31,11 +31,14 @@ import {
   ClipboardList,
   ChevronDown,
   ChevronUp,
+  ChevronLeft,
+  ChevronRight,
   Trash2,
   Eye,
   EyeOff,
   Plus,
   X,
+  XCircle,
   UserPlus,
   Users,
   CheckCircle2,
@@ -1187,33 +1190,37 @@ function ModuleConfigEditor({
               <p className="text-[10px] text-gray-500">Lock submissions after this time</p>
             </div>
             <div className="flex items-center gap-2">
-              <input
-                type="number"
-                min={0}
-                value={config.timeLimitSeconds ? Math.floor(config.timeLimitSeconds / 60) : ""}
-                onChange={(e) => {
-                  const m = Number(e.target.value);
-                  const s = config.timeLimitSeconds ? config.timeLimitSeconds % 60 : 0;
-                  onChange({ ...config, timeLimitSeconds: m === 0 && s === 0 ? undefined : m * 60 + s });
-                }}
-                className="w-16 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 text-center"
-                placeholder="0"
-              />
-              <span className="text-xs text-gray-500">m</span>
-              <input
-                type="number"
-                min={0}
-                max={59}
-                value={config.timeLimitSeconds !== undefined && config.timeLimitSeconds > 0 ? config.timeLimitSeconds % 60 : ""}
-                onChange={(e) => {
-                  const s = Number(e.target.value);
-                  const m = config.timeLimitSeconds ? Math.floor(config.timeLimitSeconds / 60) : 0;
-                  onChange({ ...config, timeLimitSeconds: m === 0 && s === 0 ? undefined : m * 60 + s });
-                }}
-                className="w-16 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 text-center"
-                placeholder="0"
-              />
-              <span className="text-xs text-gray-500">s</span>
+              <div className="flex flex-col items-center">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={config.timeLimitSeconds ? Math.floor(config.timeLimitSeconds / 60) : ""}
+                  onChange={(e) => {
+                    const m = Math.max(0, parseInt(e.target.value.replace(/\D/g, ""), 10) || 0);
+                    const s = config.timeLimitSeconds ? config.timeLimitSeconds % 60 : 0;
+                    onChange({ ...config, timeLimitSeconds: m === 0 && s === 0 ? undefined : m * 60 + s });
+                  }}
+                  className="w-16 px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-center tabular-nums"
+                  placeholder="00"
+                />
+                <span className="text-[10px] text-gray-400 mt-0.5">min</span>
+              </div>
+              <span className="text-gray-400 font-semibold">:</span>
+              <div className="flex flex-col items-center">
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={config.timeLimitSeconds !== undefined && config.timeLimitSeconds > 0 ? config.timeLimitSeconds % 60 : ""}
+                  onChange={(e) => {
+                    const s = Math.min(59, Math.max(0, parseInt(e.target.value.replace(/\D/g, ""), 10) || 0));
+                    const m = config.timeLimitSeconds ? Math.floor(config.timeLimitSeconds / 60) : 0;
+                    onChange({ ...config, timeLimitSeconds: m === 0 && s === 0 ? undefined : m * 60 + s });
+                  }}
+                  className="w-16 px-2.5 py-1.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 text-center tabular-nums"
+                  placeholder="00"
+                />
+                <span className="text-[10px] text-gray-400 mt-0.5">sec</span>
+              </div>
             </div>
           </div>
         </div>
@@ -1282,41 +1289,39 @@ function SortableModuleCard({
         isDragging ? "shadow-xl opacity-80 rotate-1" : "shadow-sm hover:shadow-md",
       )}
     >
-      <div className="flex items-center gap-3 px-4 py-3">
+      <div className="flex items-center gap-2.5 sm:gap-3 px-3 sm:px-4 py-3">
         {canEdit && (
           <div
             {...attributes}
             {...listeners}
-            className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors shrink-0"
+            className="cursor-grab active:cursor-grabbing text-gray-300 hover:text-gray-500 transition-colors shrink-0 touch-none"
           >
-            <GripVertical size={16} />
+            <GripVertical size={18} />
           </div>
         )}
 
-        <div className="flex items-center gap-2.5 flex-1 min-w-0">
-          <div className={cn("w-8 h-8 rounded-xl flex items-center justify-center shrink-0", def.bg)}>
-            <Icon size={15} className={def.color} />
-          </div>
-          <div className="min-w-0">
-            <p className="text-sm font-semibold text-gray-900 truncate">{module.title}</p>
-            <p className="text-[11px] text-gray-400">{def.label}</p>
+        <div className={cn("w-9 h-9 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center shrink-0", def.bg)}>
+          <Icon size={17} className={def.color} />
+        </div>
+
+        <div className="flex-1 min-w-0">
+          <p className="text-sm sm:text-[15px] font-semibold text-gray-900 truncate leading-tight">{module.title}</p>
+          <div className="flex items-center gap-1.5 mt-0.5 text-[11px] text-gray-400">
+            <span className="truncate">{def.label}</span>
+            {module.moduleType === "attendance" ? (
+              <span className="inline-flex items-center gap-1 text-teal-600 font-semibold">
+                <span className="text-gray-300">·</span>
+                <ClipboardList size={10} /> First
+              </span>
+            ) : (
+              <span className="text-gray-300">· #{index + 1}</span>
+            )}
           </div>
         </div>
 
         {module.moduleType === "attendance" ? (
-          <div className="shrink-0 hidden sm:flex items-center gap-1 bg-teal-50 border border-teal-200 rounded-full px-2 py-0.5">
-            <ClipboardList size={10} className="text-teal-600" />
-            <span className="text-[10px] font-bold text-teal-700">First</span>
-          </div>
-        ) : (
-          <div className="shrink-0 hidden sm:flex items-center justify-center w-6 h-6 rounded-full bg-gray-100 text-[10px] font-bold text-gray-500">
-            {index + 1}
-          </div>
-        )}
-
-        {module.moduleType === "attendance" ? (
-          <div className="shrink-0 flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border bg-emerald-50 border-emerald-200 text-emerald-700 font-medium">
-            <Eye size={11} />
+          <div className="shrink-0 flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-full border bg-emerald-50 border-emerald-200 text-emerald-700 font-medium">
+            <Eye size={12} />
             <span className="hidden sm:inline">Always visible</span>
           </div>
         ) : canEdit ? (
@@ -1328,25 +1333,25 @@ function SortableModuleCard({
                 : "Participants can only see this when trainer activates it (click to make always visible)"
             }
             className={cn(
-              "shrink-0 flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border font-medium transition-all",
+              "shrink-0 flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-full border font-medium transition-all",
               module.isAlwaysOn
                 ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                 : "border-gray-200 text-gray-400 hover:border-gray-300 hover:text-gray-600",
             )}
           >
-            {module.isAlwaysOn ? <Eye size={11} /> : <EyeOff size={11} />}
+            {module.isAlwaysOn ? <Eye size={12} /> : <EyeOff size={12} />}
             <span className="hidden sm:inline">{module.isAlwaysOn ? "Always visible" : "On demand"}</span>
           </button>
         ) : (
           <div
             className={cn(
-              "shrink-0 flex items-center gap-1.5 text-[11px] px-2.5 py-1 rounded-full border font-medium",
+              "shrink-0 flex items-center gap-1.5 text-[11px] px-2.5 py-1.5 rounded-full border font-medium",
               module.isAlwaysOn
                 ? "bg-emerald-50 border-emerald-200 text-emerald-700"
                 : "border-gray-200 text-gray-400",
             )}
           >
-            {module.isAlwaysOn ? <Eye size={11} /> : <EyeOff size={11} />}
+            {module.isAlwaysOn ? <Eye size={12} /> : <EyeOff size={12} />}
             <span className="hidden sm:inline">{module.isAlwaysOn ? "Always visible" : "On demand"}</span>
           </div>
         )}
@@ -1547,53 +1552,67 @@ function AddModuleDrawer({
   });
 
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 shadow-lg p-5 space-y-5">
-      <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-gray-900">Add Module</h3>
-        <button
-          onClick={onClose}
-          className="p-1 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          <X size={16} />
-        </button>
-      </div>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-gray-900/50 backdrop-blur-sm animate-in fade-in duration-150"
+      onClick={onClose}
+    >
+      <div
+        onClick={(e) => e.stopPropagation()}
+        className="bg-white w-full sm:max-w-2xl rounded-t-3xl sm:rounded-3xl border-t sm:border border-gray-200 shadow-2xl max-h-[88vh] sm:max-h-[85vh] flex flex-col animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
+      >
+        <div className="flex items-center justify-between px-5 sm:px-6 pt-5 pb-4 border-b border-gray-100">
+          <div>
+            <h3 className="text-base font-bold text-gray-900">Add a module</h3>
+            <p className="text-xs text-gray-400 mt-0.5">Pick an activity to add to this day</p>
+          </div>
+          <button
+            onClick={onClose}
+            aria-label="Close"
+            className="p-1.5 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors shrink-0"
+          >
+            <X size={18} />
+          </button>
+        </div>
 
-      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-        {MODULE_TYPES.map((t) => {
-          const selected = selectedType === t.type;
-          return (
-            <button
-              key={t.type}
-              onClick={() => {
-                setSelectedType(t.type);
-                addModule.mutate(t.type);
-              }}
-              disabled={addModule.isPending}
-              className={cn(
-                "flex flex-col items-start gap-1.5 p-3 rounded-xl border-2 text-left transition-all",
-                selected ? `${t.bg} ${t.border}` : "border-gray-100 bg-gray-50 hover:border-gray-200",
-                addModule.isPending && !selected && "opacity-50 cursor-not-allowed"
-              )}
-            >
-              <div className={cn("w-7 h-7 rounded-lg flex items-center justify-center", selected ? "bg-white/70" : "bg-white border border-gray-200")}>
-                <t.Icon size={14} className={selected ? t.color : "text-gray-500"} />
-              </div>
-              <div>
-                <p className={cn("text-xs font-bold", selected ? t.color : "text-gray-700")}>{t.label}</p>
-                <SafeHTML html={t.description} className="text-[10px] text-gray-400 leading-tight mt-0.5 line-clamp-2" />
-              </div>
-            </button>
-          );
-        })}
-      </div>
+        <div className="overflow-y-auto px-5 sm:px-6 py-4">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+            {MODULE_TYPES.map((t) => {
+              const selected = selectedType === t.type;
+              return (
+                <button
+                  key={t.type}
+                  onClick={() => {
+                    setSelectedType(t.type);
+                    addModule.mutate(t.type);
+                  }}
+                  disabled={addModule.isPending}
+                  className={cn(
+                    "flex flex-col items-start gap-2 p-3 sm:p-3.5 rounded-2xl border-2 text-left transition-all",
+                    selected ? `${t.bg} ${t.border}` : "border-gray-100 bg-gray-50/70 hover:border-gray-200 hover:bg-white",
+                    addModule.isPending && !selected && "opacity-50 cursor-not-allowed",
+                  )}
+                >
+                  <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", selected ? "bg-white/70" : "bg-white border border-gray-200")}>
+                    <t.Icon size={16} className={selected ? t.color : "text-gray-500"} />
+                  </div>
+                  <div className="min-w-0">
+                    <p className={cn("text-[13px] font-bold", selected ? t.color : "text-gray-800")}>{t.label}</p>
+                    <SafeHTML html={t.description} className="text-[10px] text-gray-400 leading-tight mt-0.5 line-clamp-2" />
+                  </div>
+                </button>
+              );
+            })}
+          </div>
+        </div>
 
-      <div className="flex gap-2">
-        <button
-          onClick={onClose}
-          className="w-full py-2 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-colors"
-        >
-          Cancel
-        </button>
+        <div className="px-5 sm:px-6 py-4 border-t border-gray-100">
+          <button
+            onClick={onClose}
+            className="w-full py-2.5 border border-gray-200 text-gray-700 rounded-xl text-sm font-semibold hover:bg-gray-50 transition-colors"
+          >
+            Cancel
+          </button>
+        </div>
       </div>
     </div>
   );
@@ -1823,9 +1842,11 @@ function DayModuleList({
       {!adding && modules.length > 0 && canEdit && (
         <button
           onClick={() => setAdding(true)}
-          className="w-full flex items-center justify-center gap-2 py-2.5 border border-dashed border-brand-300 rounded-xl text-xs font-semibold text-brand-600 bg-brand-50/40 hover:border-brand-400 hover:text-brand-700 hover:bg-brand-50 transition-all"
+          aria-label="Add module"
+          className="fixed bottom-5 right-5 sm:bottom-7 sm:right-7 z-30 flex items-center justify-center gap-2 rounded-full sm:rounded-2xl bg-brand-600 text-white font-semibold text-sm h-14 w-14 sm:h-auto sm:w-auto sm:pl-4 sm:pr-5 sm:py-3.5 shadow-lg shadow-brand-400/40 hover:bg-brand-700 hover:shadow-xl active:scale-95 transition-all"
         >
-          <Plus size={13} /> Add module
+          <Plus size={20} strokeWidth={2.5} />
+          <span className="hidden sm:inline">Add module</span>
         </button>
       )}
     </div>
@@ -2227,52 +2248,125 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
 
 // ─── Session checklist panel ─────────────────────────────────────────────────
 
-function SessionChecklist({ dayCount, moduleCount }: { dayCount: number; moduleCount: number }) {
-  const tips = [
-    {
-      done: dayCount >= 1,
-      label: "Organise into days",
-      hint: "Add Day 1, Day 2… to structure your training curriculum.",
-    },
-    {
-      done: moduleCount >= 1,
-      label: "Add at least one module",
-      hint: "Modules are the activities participants will do during the live session.",
-    },
-    {
-      done: moduleCount >= 2,
-      label: "Create a full flow (2+ modules)",
-      hint: "Mix activity types — open with a quiz, close with reflection.",
-    },
-  ];
+type ChecklistItem = { id: string; label: string; done: boolean };
+
+const DEFAULT_CHECKLIST: ChecklistItem[] = [
+  { id: "seed-days", label: "Organise into days", done: false },
+  { id: "seed-module", label: "Add at least one module", done: false },
+  { id: "seed-flow", label: "Create a full flow (2+ modules)", done: false },
+];
+
+function SessionChecklist({ workspaceId, trainingId }: { workspaceId: string; trainingId: string }) {
+  const { data: training } = useTraining(workspaceId, trainingId);
+  const updateTraining = useUpdateTraining(workspaceId, trainingId);
+  const canEdit = useStudioCan("edit_agenda");
+  const [editing, setEditing] = useState(false);
+  const [draft, setDraft] = useState<ChecklistItem[]>([]);
+
+  const items: ChecklistItem[] =
+    training?.checklist && training.checklist.length > 0 ? training.checklist : DEFAULT_CHECKLIST;
+
+  const toggle = (id: string) => {
+    if (!canEdit || updateTraining.isPending) return;
+    updateTraining.mutate({
+      checklist: items.map((it) => (it.id === id ? { ...it, done: !it.done } : it)),
+    });
+  };
+
+  const startEdit = () => {
+    setDraft(items.map((it) => ({ ...it })));
+    setEditing(true);
+  };
+  const save = () => {
+    const cleaned = draft.map((d) => ({ ...d, label: d.label.trim() })).filter((d) => d.label);
+    updateTraining.mutate({ checklist: cleaned }, { onSuccess: () => setEditing(false) });
+  };
 
   return (
     <div className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
-      <div className="px-4 py-3.5 border-b border-gray-100">
+      <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
         <h2 className="text-sm font-bold text-gray-900">Session checklist</h2>
+        {!editing && canEdit && (
+          <button
+            onClick={startEdit}
+            className="flex items-center gap-1 text-[11px] text-brand-600 hover:text-brand-800 font-semibold"
+          >
+            <Pencil size={11} />
+            Edit
+          </button>
+        )}
       </div>
-      <div className="p-4 space-y-3">
-        {tips.map((t) => (
-          <div key={t.label} className="flex items-start gap-2.5">
-            <CheckCircle2
-              size={15}
-              className={cn("mt-0.5 shrink-0", t.done ? "text-emerald-500" : "text-gray-200")}
-            />
-            <div>
-              <p className={cn("text-xs font-semibold", t.done ? "text-gray-700 line-through" : "text-gray-700")}>
+
+      {editing ? (
+        <div className="p-4 space-y-2.5">
+          {draft.map((d, i) => (
+            <div key={d.id} className="flex items-center gap-2">
+              <input
+                value={d.label}
+                onChange={(e) =>
+                  setDraft((prev) => prev.map((p) => (p.id === d.id ? { ...p, label: e.target.value } : p)))
+                }
+                placeholder="Checklist item…"
+                className="flex-1 px-2.5 py-1.5 border border-gray-200 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+              />
+              <button
+                onClick={() => setDraft((prev) => prev.filter((_, idx) => idx !== i))}
+                className="shrink-0 p-1.5 text-gray-300 hover:text-red-500 transition-colors"
+                aria-label="Remove item"
+              >
+                <Trash2 size={14} />
+              </button>
+            </div>
+          ))}
+          <button
+            onClick={() =>
+              setDraft((prev) => [...prev, { id: crypto.randomUUID(), label: "", done: false }])
+            }
+            className="flex items-center gap-1.5 text-[11px] font-semibold text-brand-600 hover:text-brand-800"
+          >
+            <Plus size={13} /> Add item
+          </button>
+          {updateTraining.isError && <p className="text-xs text-red-500">Failed to save.</p>}
+          <div className="flex gap-2 pt-1">
+            <button
+              onClick={() => setEditing(false)}
+              className="flex-1 py-1.5 border border-gray-200 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-50"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={save}
+              disabled={updateTraining.isPending}
+              className="flex-1 py-1.5 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 disabled:opacity-60"
+            >
+              {updateTraining.isPending ? "Saving…" : "Save"}
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="p-4 space-y-2.5">
+          {items.map((t) => (
+            <button
+              key={t.id}
+              onClick={() => toggle(t.id)}
+              disabled={!canEdit}
+              className={cn(
+                "w-full flex items-start gap-2.5 text-left rounded-lg -mx-1 px-1 py-0.5",
+                canEdit && "hover:bg-gray-50 transition-colors",
+              )}
+            >
+              {t.done ? (
+                <CheckCircle2 size={16} className="mt-0.5 shrink-0 text-emerald-500" />
+              ) : (
+                <XCircle size={16} className="mt-0.5 shrink-0 text-gray-300" />
+              )}
+              <p className={cn("text-xs font-semibold text-gray-700", t.done && "line-through text-gray-400")}>
                 {t.label}
               </p>
-              {!t.done && <p className="text-[10px] text-gray-400 mt-0.5">{t.hint}</p>}
-            </div>
-          </div>
-        ))}
-        <div className="pt-2 border-t border-gray-100">
-          <p className="text-[10px] text-gray-400 leading-relaxed">
-            <strong className="text-gray-600">Always visible</strong> modules are open to participants anytime.{" "}
-            <strong className="text-gray-600">On demand</strong> modules only show when the trainer activates them.
-          </p>
+            </button>
+          ))}
         </div>
-      </div>
+      )}
     </div>
   );
 }
@@ -2293,6 +2387,9 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
 
   // Active tab: day id, or "general" for unassigned modules
   const [activeTab, setActiveTab] = useState<string | "general">(initialTab);
+  const dayTabsRef = useRef<HTMLDivElement>(null);
+  const scrollTabs = (dir: -1 | 1) =>
+    dayTabsRef.current?.scrollBy({ left: dir * 240, behavior: "smooth" });
 
   const unassignedModules = allModules.filter((m) => m.dayId == null);
   const showGeneralTab = unassignedModules.length > 0;
@@ -2392,7 +2489,7 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
           </div>
           <div className="space-y-4">
             <TrainingInfoPanel trainingId={trainingId} workspaceId={workspaceId} />
-            <SessionChecklist dayCount={0} moduleCount={0} />
+            <SessionChecklist trainingId={trainingId} workspaceId={workspaceId} />
           </div>
         </div>
       </div>
@@ -2431,7 +2528,23 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
       )}
 
       {/* Day tabs row */}
-      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none">
+      <div className="flex items-center gap-1.5">
+        <button
+          type="button"
+          onClick={() => scrollTabs(-1)}
+          aria-label="Scroll days left"
+          className="shrink-0 p-1.5 rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-colors"
+        >
+          <ChevronLeft size={16} />
+        </button>
+      <div
+        ref={dayTabsRef}
+        className="flex items-center gap-1.5 overflow-x-auto pb-1 scrollbar-none"
+        onWheel={(e) => {
+          if (e.deltaY === 0) return;
+          e.currentTarget.scrollLeft += e.deltaY;
+        }}
+      >
         {days.map((day) => {
           const dayMods = allModules.filter((m) => m.dayId === day.id);
           const isActive = effectiveTab === day.id;
@@ -2498,6 +2611,15 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
           </button>
         )}
       </div>
+        <button
+          type="button"
+          onClick={() => scrollTabs(1)}
+          aria-label="Scroll days right"
+          className="shrink-0 p-1.5 rounded-lg border border-gray-200 bg-white text-gray-400 hover:text-brand-600 hover:border-brand-200 transition-colors"
+        >
+          <ChevronRight size={16} />
+        </button>
+      </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* ── Left: content area ── */}
@@ -2536,7 +2658,7 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
         {/* ── Right: sidebar ── */}
         <div className="space-y-4">
           <TrainingInfoPanel trainingId={trainingId} workspaceId={workspaceId} />
-          <SessionChecklist dayCount={days.length} moduleCount={totalModules} />
+          <SessionChecklist trainingId={trainingId} workspaceId={workspaceId} />
           <FacilitatorPanel trainingId={trainingId} workspaceId={workspaceId} />
         </div>
       </div>
