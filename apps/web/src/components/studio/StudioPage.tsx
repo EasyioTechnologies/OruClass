@@ -1842,11 +1842,10 @@ function DayModuleList({
       {!adding && modules.length > 0 && canEdit && (
         <button
           onClick={() => setAdding(true)}
-          aria-label="Add module"
-          className="fixed bottom-5 right-5 sm:bottom-7 sm:right-7 z-30 flex items-center justify-center gap-2 rounded-full sm:rounded-2xl bg-brand-600 text-white font-semibold text-sm h-14 w-14 sm:h-auto sm:w-auto sm:pl-4 sm:pr-5 sm:py-3.5 shadow-lg shadow-brand-400/40 hover:bg-brand-700 hover:shadow-xl active:scale-95 transition-all"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-brand-50 border-2 border-dashed border-brand-200 text-brand-700 font-semibold text-sm hover:bg-brand-100 hover:border-brand-300 transition-all group"
         >
-          <Plus size={20} strokeWidth={2.5} />
-          <span className="hidden sm:inline">Add module</span>
+          <Plus size={16} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" />
+          Add module
         </button>
       )}
     </div>

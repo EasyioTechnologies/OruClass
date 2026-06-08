@@ -1,8 +1,8 @@
 import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, isNull } from "drizzle-orm";
 import { db } from "../db/client";
-import { workspaces, workspaceMembers, trainings, participantResponses } from "../db/schema";
+import { workspaces, workspaceMembers, trainings, participantResponses, trainingModules } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { CreateWorkspaceSchema, UpdateWorkspaceSchema } from "@oruclass/validators";
@@ -148,7 +148,7 @@ workspacesRouter.post("/:workspaceId/members", workspaceTenantMiddleware, async 
 workspacesRouter.get("/:workspaceId/responses", workspaceTenantMiddleware, async (c) => {
   const workspaceId = c.get("workspaceId") as string;
 
-  const workspaceTrainings = await db.select({ id: trainings.id }).from(trainings).where(eq(trainings.workspaceId, workspaceId));
+  const workspaceTrainings = await db.select({ id: trainings.id }).from(trainings).where(and(eq(trainings.workspaceId, workspaceId), isNull(trainings.deletedAt)));
   const trainingIds = workspaceTrainings.map((t) => t.id);
 
   if (trainingIds.length === 0) return c.json([]);
