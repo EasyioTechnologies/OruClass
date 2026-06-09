@@ -11,14 +11,16 @@ const nextConfig: NextConfig = {
     ],
   },
   async rewrites() {
+    const isProduction = process.env.NODE_ENV === "production";
+    const apiUrl = isProduction ? "http://api:3001" : "http://localhost:3001";
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/api/:path*`,
+        destination: `${apiUrl}/api/:path*`,
       },
       {
         source: "/socket.io/:path*",
-        destination: `${process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001"}/socket.io/:path*`,
+        destination: `${apiUrl}/socket.io/:path*`,
       },
     ];
   },
