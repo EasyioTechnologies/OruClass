@@ -10,21 +10,19 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
     ],
   },
-  async rewrites() {
-    const isProduction = process.env.NODE_ENV === "production";
-    const apiUrl = isProduction ? "http://api:3001" : "http://localhost:3001";
+  rewrites() {
     return [
       {
         source: "/health",
-        destination: `${apiUrl}/health`,
+        destination: "http://api:3001/health",
       },
       {
         source: "/api/:path*",
-        destination: `${apiUrl}/api/:path*`,
+        destination: "http://api:3001/api/:path*",
       },
       {
         source: "/socket.io/:path*",
-        destination: `${apiUrl}/socket.io/:path*`,
+        destination: "http://api:3001/socket.io/:path*",
       },
     ];
   },
