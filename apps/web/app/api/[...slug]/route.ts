@@ -1,20 +1,32 @@
 const API_URL = "http://api:3001";
 
-export async function handler(req: Request, { params }: { params: Promise<{ slug: string[] }> }) {
-  const { slug } = await params;
-  const path = slug.join("/");
-  const url = `${API_URL}/${path}${req.url.includes("?") ? `?${req.url.split("?")[1]}` : ""}`;
+async function handler(req: Request, { params }: { params: Promise<{ slug: string[] }> }) {
+  try {
+    const { slug } = await params;
+    const path = slug.join("/");
+    const url = new URL(req.url);
+    const fullUrl = `${API_URL}/api/${path}${url.search}`;
 
-  const response = await fetch(url, {
-    method: req.method,
-    headers: req.headers,
-    body: req.method === "GET" ? undefined : req.body,
-  });
+    const fetchOptions: RequestInit = {
+      method: req.method,
+      headers: Object.fromEntries(req.headers.entries()),
+    };
 
-  return new Response(response.body, {
-    status: response.status,
-    headers: response.headers,
-  });
+    if (req.method !== "GET" && req.method !== "HEAD") {
+      fetchOptions.body = await req.text();
+    }
+
+    const response = await fetch(fullUrl, fetchOptions);
+    const body = await response.text();
+
+    return new Response(body, {
+      status: response.status,
+      headers: response.headers,
+    });
+  } catch (error) {
+    console.error("API proxy error:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }
 
 export const GET = handler;
