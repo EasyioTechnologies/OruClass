@@ -11,7 +11,7 @@ import { useModules, useReorderModules, useUpdateModule, useDuplicateModule, use
 import { useDays, useCreateDay, useDeleteDay, useUpdateDay } from "@/hooks/useDays";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useWorkspaceMembers } from "@/hooks/useWorkspace";
-import { useAssignFacilitator, useTraining, useInviteFacilitator, useTrainings, useUpdateTraining, useMyTrainingRole } from "@/hooks/useTrainings";
+import { useAssignFacilitator, useTraining, useInviteFacilitator, useCancelFacilitatorInvitation, useTrainings, useUpdateTraining, useMyTrainingRole } from "@/hooks/useTrainings";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { apiClient } from "@/lib/api-client";
@@ -1859,6 +1859,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
   const { data: members = [] } = useWorkspaceMembers(workspaceId);
   const assignFacilitator = useAssignFacilitator(workspaceId, trainingId);
   const inviteFacilitator = useInviteFacilitator(workspaceId, trainingId);
+  const cancelInvitation = useCancelFacilitatorInvitation(workspaceId, trainingId);
   const canManage = useStudioCan("assign_roles");
 
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -1870,6 +1871,8 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
   const facilitators: Array<{ userId: string; role: TrainingRole; user?: { name: string } }> =
     (training as { facilitators?: Array<{ userId: string; role: TrainingRole; user?: { name: string } }> })?.facilitators ?? [];
 
+  const pendingInvitations = training?.pendingInvitations ?? [];
+
   const unassigned = members.filter((m) => !facilitators.some((f) => f.userId === m.userId));
   const roleLabel = (role: TrainingRole) =>
     FACILITATOR_ROLES.find((r) => r.value === role)?.label ?? role;
@@ -1880,9 +1883,9 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
         <div className="flex items-center gap-2">
           <Users size={15} className="text-gray-500" />
           <h2 className="text-sm font-bold text-gray-900">Training Team</h2>
-          {facilitators.length > 0 && (
+          {(facilitators.length + pendingInvitations.length) > 0 && (
             <span className="text-[10px] font-semibold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full">
-              {facilitators.length}
+              {facilitators.length + pendingInvitations.length}
             </span>
           )}
         </div>
@@ -1898,7 +1901,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
       </div>
 
       <div className="p-4 space-y-3">
-        {facilitators.length === 0 && !showAssign && (
+        {facilitators.length === 0 && pendingInvitations.length === 0 && !showAssign && (
           <div className="py-5 text-center">
             <Users size={24} className="text-gray-200 mx-auto mb-2" />
             <p className="text-xs text-gray-400 font-medium">No team members assigned</p>
@@ -1930,6 +1933,37 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                 {roleLabel(f.role)}
               </span>
             )}
+          </div>
+        ))}
+
+        {pendingInvitations.map((inv) => (
+          <div key={inv.id} className="flex items-center justify-between gap-2">
+            <div className="flex items-center gap-2.5">
+              <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-[10px] font-bold text-amber-700">
+                {inv.email.slice(0, 2).toUpperCase()}
+              </div>
+              <div>
+                <span className="text-sm text-gray-600 font-medium">{inv.email}</span>
+                <span className="ml-2 text-[9px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-wide">Pending</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 shrink-0">
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 font-medium">
+                {roleLabel(inv.role)}
+              </span>
+              {canManage && (
+                <button
+                  onClick={() => cancelInvitation.mutate(inv.id)}
+                  disabled={cancelInvitation.isPending}
+                  className="text-gray-300 hover:text-red-400 transition-colors disabled:opacity-50"
+                  title="Cancel invitation"
+                >
+                  <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
+            </div>
           </div>
         ))}
 
@@ -2047,7 +2081,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                     onClick={() => {
                       inviteFacilitator.mutate(
                         { email: inviteEmail, role: selectedRole },
-                        { onSuccess: () => { setInviteEmail(""); setShowAssign(false); } },
+                        { onSuccess: () => { setInviteEmail(""); setShowAssign(false); setSelectedRole("full_editor"); } },
                       );
                     }}
                     className="flex-1 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 disabled:opacity-60 transition-colors"

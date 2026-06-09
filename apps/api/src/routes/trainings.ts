@@ -2,7 +2,7 @@ import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and, sql, isNull, isNotNull } from "drizzle-orm";
 import { db } from "../db/client";
-import { trainings, trainingFacilitators, trainingModules, trainingDays, users } from "../db/schema";
+import { trainings, trainingFacilitators, trainingFacilitatorInvitations, trainingModules, trainingDays, users } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { requireTrainingPermission, invalidateRoleCache } from "../middleware/roleGuard";
@@ -144,6 +144,9 @@ trainingsRouter.get("/:id", async (c) => {
       modules: { orderBy: (m, { asc }) => [asc(m.position)] },
       facilitators: { with: { user: true } },
       participants: { with: { user: true } },
+      pendingInvitations: {
+        where: (inv, { eq }) => eq(inv.status, "pending"),
+      },
     },
   });
 
@@ -289,63 +292,107 @@ trainingsRouter.post(
   },
 );
 
-// POST /trainings/:id/facilitators/invite — invite facilitator by email
+// POST /trainings/:id/facilitators/invite — invite facilitator by email (pending if not yet signed up)
 trainingsRouter.post(
   "/:id/facilitators/invite",
   requireTrainingPermission("invite_participants"),
   async (c) => {
     const { id: trainingId } = c.req.param();
     const body = await parseBody(c, FacilitatorInviteSchema);
+    const inviterId = c.get("userId") as string;
 
-    const user = await db.query.users.findFirst({
-      where: eq(users.email, body.email),
-    });
+    const user = await db.query.users.findFirst({ where: eq(users.email, body.email) });
 
-    if (!user) {
-      return c.json({ error: "User with this email not found. They must sign up first." }, 404);
-    }
-
-    const existing = await db.query.trainingFacilitators.findFirst({
-      where: and(
-        eq(trainingFacilitators.trainingId, trainingId),
-        eq(trainingFacilitators.userId, user.id),
-      ),
-    });
-
-    if (existing) {
-      const [updated] = await db
-        .update(trainingFacilitators)
-        .set({ role: body.role, assignedModules: [] })
-        .where(and(eq(trainingFacilitators.trainingId, trainingId), eq(trainingFacilitators.userId, user.id)))
+    if (user) {
+      // Existing user: direct assignment
+      const existing = await db.query.trainingFacilitators.findFirst({
+        where: and(eq(trainingFacilitators.trainingId, trainingId), eq(trainingFacilitators.userId, user.id)),
+      });
+      if (existing) {
+        const [updated] = await db
+          .update(trainingFacilitators)
+          .set({ role: body.role, assignedModules: [] })
+          .where(and(eq(trainingFacilitators.trainingId, trainingId), eq(trainingFacilitators.userId, user.id)))
+          .returning();
+        invalidateRoleCache(user.id, trainingId);
+        return c.json(updated);
+      }
+      const [created] = await db
+        .insert(trainingFacilitators)
+        .values({ trainingId, userId: user.id, role: body.role, assignedModules: [] })
         .returning();
       invalidateRoleCache(user.id, trainingId);
-      return c.json(updated);
+      const inviter = await db.query.users.findFirst({ where: eq(users.id, inviterId) });
+      const training = await db.query.trainings.findFirst({ where: eq(trainings.id, trainingId) });
+      if (training) {
+        const { sendFacilitatorInviteEmail } = await import("../services/email.service");
+        const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
+        sendFacilitatorInviteEmail({
+          to: body.email,
+          inviterName: inviter?.name ?? "A teammate",
+          trainingTitle: training.title,
+          role: body.role,
+          joinUrl: `${webUrl}/trainings/${trainingId}/studio`,
+        }).catch((err) => console.error("[email] facilitator invite failed:", err));
+      }
+      return c.json(created, 201);
     }
 
-    const [created] = await db
-      .insert(trainingFacilitators)
-      .values({ trainingId, userId: user.id, role: body.role, assignedModules: [] })
+    // Not a registered user: create pending invitation
+    const token = randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    // Cancel any existing pending invite for this email+training before creating new one
+    await db
+      .update(trainingFacilitatorInvitations)
+      .set({ status: "cancelled" })
+      .where(
+        and(
+          eq(trainingFacilitatorInvitations.trainingId, trainingId),
+          eq(trainingFacilitatorInvitations.email, body.email),
+          eq(trainingFacilitatorInvitations.status, "pending"),
+        ),
+      );
+
+    const [invitation] = await db
+      .insert(trainingFacilitatorInvitations)
+      .values({ trainingId, email: body.email, role: body.role, token, invitedBy: inviterId, expiresAt })
       .returning();
 
-    invalidateRoleCache(user.id, trainingId);
-
-    // Send facilitator invite email
-    const inviterId = c.get("userId") as string;
     const inviter = await db.query.users.findFirst({ where: eq(users.id, inviterId) });
     const training = await db.query.trainings.findFirst({ where: eq(trainings.id, trainingId) });
     if (training) {
-      const { sendFacilitatorInviteEmail } = await import("../services/email.service");
+      const { sendFacilitatorPendingInviteEmail } = await import("../services/email.service");
       const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
-      sendFacilitatorInviteEmail({
+      sendFacilitatorPendingInviteEmail({
         to: body.email,
         inviterName: inviter?.name ?? "A teammate",
         trainingTitle: training.title,
         role: body.role,
-        joinUrl: `${webUrl}/trainings/${trainingId}/studio`,
-      }).catch((err) => console.error("[email] facilitator invite failed:", err));
+        acceptUrl: `${webUrl}/trainings/invite/${token}`,
+      }).catch((err) => console.error("[email] pending facilitator invite failed:", err));
     }
 
-    return c.json(created, 201);
+    return c.json({ pending: true, ...invitation }, 201);
+  },
+);
+
+// DELETE /trainings/:id/facilitators/invitations/:invitationId — cancel pending invite
+trainingsRouter.delete(
+  "/:id/facilitators/invitations/:invitationId",
+  requireTrainingPermission("invite_participants"),
+  async (c) => {
+    const { invitationId } = c.req.param();
+    await db
+      .update(trainingFacilitatorInvitations)
+      .set({ status: "cancelled" })
+      .where(
+        and(
+          eq(trainingFacilitatorInvitations.id, invitationId),
+          eq(trainingFacilitatorInvitations.status, "pending"),
+        ),
+      );
+    return c.json({ success: true });
   },
 );
 

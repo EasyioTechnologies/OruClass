@@ -14,6 +14,7 @@ import { responsesRouter } from "./routes/responses";
 import { analyticsRouter } from "./routes/analytics";
 import { invitationsRouter } from "./routes/invitations";
 import { sessionsRouter } from "./routes/sessions";
+import { facilitatorInvitationsRouter } from "./routes/facilitatorInvitations";
 import { errorHandler } from "./middleware/errorHandler";
 import { authRateLimiter, guestRateLimiter, apiRateLimiter } from "./middleware/rateLimiter";
 import { registerSocketHandlers } from "./socket/handlers";
@@ -70,6 +71,7 @@ trainingsRouter.route("/", sessionsRouter);
 app.route("/api/workspaces/:workspaceId/trainings", trainingsRouter);
 
 app.route("/api", participantsRouter);
+app.route("/api/invitations", facilitatorInvitationsRouter);
 app.route("/api/workspaces/:workspaceId", invitationsRouter);
 
 app.onError(errorHandler);

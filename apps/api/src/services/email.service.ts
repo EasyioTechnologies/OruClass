@@ -184,6 +184,26 @@ export async function sendFacilitatorInviteEmail(opts: {
   );
 }
 
+export async function sendFacilitatorPendingInviteEmail(opts: {
+  to: string;
+  inviterName: string;
+  trainingTitle: string;
+  role: string;
+  acceptUrl: string;
+}) {
+  const roleLabel = opts.role.replace(/_/g, " ").replace(/\b\w/g, (c) => c.toUpperCase());
+  return send(
+    opts.to,
+    `You're invited to facilitate: ${opts.trainingTitle}`,
+    wrap("Facilitator Invitation", `
+      <p><strong>${opts.inviterName}</strong> has invited you as <strong>${roleLabel}</strong> for the training <strong>${opts.trainingTitle}</strong>.</p>
+      <p style="color:#6b7280;font-size:14px">Create an account or sign in with this email to accept.</p>
+      ${btn("Accept Invitation", opts.acceptUrl, "#10b981")}
+      <p style="color:#9ca3af;font-size:12px;margin-top:16px">This invitation expires in 7 days.</p>
+    `),
+  );
+}
+
 // ─── Training & Session emails ──────────────────────────────────────
 
 export async function sendSessionDigestEmail(opts: {

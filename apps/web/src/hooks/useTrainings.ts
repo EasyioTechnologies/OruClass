@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
-import type { Training, TrainingFacilitator, TrainingRole } from "@oruclass/types";
+import type { Training, TrainingFacilitator, TrainingFacilitatorInvitation, TrainingRole } from "@oruclass/types";
 
 export function useTrainings(workspaceId: string) {
   return useQuery({
@@ -151,6 +151,51 @@ export function useInviteFacilitator(workspaceId: string, trainingId: string) {
         { headers: { "X-Workspace-ID": workspaceId } },
       ),
     onSuccess: () => qc.invalidateQueries({ queryKey: ["training"] }),
+  });
+}
+
+export function useCancelFacilitatorInvitation(workspaceId: string, trainingId: string) {
+  const qc = useQueryClient();
+
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiClient.delete(
+        `/api/workspaces/${workspaceId}/trainings/${trainingId}/facilitators/invitations/${invitationId}`,
+        { headers: { "X-Workspace-ID": workspaceId } },
+      ),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["training", workspaceId, trainingId] }),
+  });
+}
+
+export function useFacilitatorInvitation(token: string | null) {
+  return useQuery({
+    queryKey: ["facilitator-invitation", token],
+    queryFn: async () => {
+      const { data } = await apiClient.get<{
+        id: string;
+        email: string;
+        role: TrainingRole;
+        status: string;
+        trainingId: string;
+        workspaceId: string;
+        trainingTitle: string;
+        inviterName: string;
+        expiresAt: string;
+      }>(`/api/invitations/${token}`);
+      return data;
+    },
+    enabled: !!token,
+    retry: false,
+  });
+}
+
+export function useAcceptFacilitatorInvitation() {
+  return useMutation({
+    mutationFn: (token: string) =>
+      apiClient.post<{ success: boolean; trainingId: string }>(
+        `/api/invitations/${token}/accept`,
+        {},
+      ),
   });
 }
 

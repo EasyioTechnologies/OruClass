@@ -27,6 +27,7 @@ export interface Training {
   createdAt: Date;
   updatedAt: Date;
   facilitators?: Array<{ userId: string; role: TrainingRole }>;
+  pendingInvitations?: TrainingFacilitatorInvitation[];
   modules?: TrainingModule[];
   days?: TrainingDay[];
 }
@@ -141,6 +142,17 @@ export interface TrainingFacilitator {
   userId: string;
   role: TrainingRole;
   assignedModules: string[];
+}
+
+export interface TrainingFacilitatorInvitation {
+  id: string;
+  trainingId: string;
+  email: string;
+  role: TrainingRole;
+  status: "pending" | "accepted" | "cancelled";
+  invitedBy: string;
+  expiresAt: string;
+  createdAt: string;
 }
 
 export interface TrainingParticipant {

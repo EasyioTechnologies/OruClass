@@ -152,6 +152,35 @@ export const trainingFacilitators = pgTable(
   (t) => [primaryKey({ columns: [t.trainingId, t.userId] })],
 );
 
+// ─── TrainingFacilitatorInvitations ──────────────────────────────────────────
+export const trainingFacilitatorInvitations = pgTable(
+  "training_facilitator_invitations",
+  {
+    id: uuid("id").defaultRandom().primaryKey(),
+    trainingId: uuid("training_id")
+      .notNull()
+      .references(() => trainings.id, { onDelete: "cascade" }),
+    email: text("email").notNull(),
+    role: text("role")
+      .$type<"lead_trainer" | "full_editor" | "partial_editor" | "facilitation_support">()
+      .notNull(),
+    token: text("token").notNull().unique(),
+    invitedBy: text("invited_by")
+      .notNull()
+      .references(() => users.id),
+    status: text("status")
+      .$type<"pending" | "accepted" | "cancelled">()
+      .notNull()
+      .default("pending"),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    index("facilitator_inv_training_idx").on(t.trainingId),
+    index("facilitator_inv_email_idx").on(t.email),
+  ],
+);
+
 // ─── TrainingParticipants ─────────────────────────────────────────────────────
 export const trainingParticipants = pgTable(
   "training_participants",
@@ -288,6 +317,7 @@ export const trainingsRelations = relations(trainings, ({ one, many }) => ({
   days: many(trainingDays),
   modules: many(trainingModules),
   facilitators: many(trainingFacilitators),
+  pendingInvitations: many(trainingFacilitatorInvitations),
   participants: many(trainingParticipants),
   liveSessions: many(liveSessions),
   analytics: one(trainingAnalytics, {
@@ -318,6 +348,11 @@ export const trainingFacilitatorsRelations = relations(trainingFacilitators, ({ 
     references: [trainings.id],
   }),
   user: one(users, { fields: [trainingFacilitators.userId], references: [users.id] }),
+}));
+
+export const trainingFacilitatorInvitationsRelations = relations(trainingFacilitatorInvitations, ({ one }) => ({
+  training: one(trainings, { fields: [trainingFacilitatorInvitations.trainingId], references: [trainings.id] }),
+  inviter: one(users, { fields: [trainingFacilitatorInvitations.invitedBy], references: [users.id] }),
 }));
 
 export const trainingParticipantsRelations = relations(trainingParticipants, ({ one }) => ({
