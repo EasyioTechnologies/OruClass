@@ -15,6 +15,10 @@ const nextConfig: NextConfig = {
     const apiUrl = isProduction ? "http://api:3001" : "http://localhost:3001";
     return [
       {
+        source: "/health",
+        destination: `${apiUrl}/health`,
+      },
+      {
         source: "/api/:path*",
         destination: `${apiUrl}/api/:path*`,
       },
