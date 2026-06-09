@@ -1,5 +1,25 @@
 const API_URL = "http://api:3001";
 
+// Hop-by-hop headers must not be forwarded by proxies (RFC 2616 §13.5.1)
+const HOP_BY_HOP = new Set([
+  "transfer-encoding",
+  "connection",
+  "keep-alive",
+  "upgrade",
+  "proxy-authorization",
+  "proxy-connection",
+  "te",
+  "trailers",
+]);
+
+function filterHeaders(headers: Headers): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (const [k, v] of headers.entries()) {
+    if (!HOP_BY_HOP.has(k.toLowerCase())) out[k] = v;
+  }
+  return out;
+}
+
 async function handler(req: Request, { params }: { params: Promise<{ slug: string[] }> }) {
   try {
     const { slug } = await params;
@@ -9,7 +29,7 @@ async function handler(req: Request, { params }: { params: Promise<{ slug: strin
 
     const fetchOptions: RequestInit = {
       method: req.method,
-      headers: Object.fromEntries(req.headers.entries()),
+      headers: filterHeaders(req.headers),
     };
 
     if (req.method !== "GET" && req.method !== "HEAD") {
@@ -21,7 +41,7 @@ async function handler(req: Request, { params }: { params: Promise<{ slug: strin
 
     return new Response(body, {
       status: response.status,
-      headers: response.headers,
+      headers: filterHeaders(response.headers),
     });
   } catch (error) {
     console.error("API proxy error:", error);
