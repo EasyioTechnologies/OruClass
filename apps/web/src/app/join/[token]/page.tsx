@@ -7,9 +7,10 @@ import { useAuth } from "@/hooks/useAuth";
 import { useAuthStore } from "@/store/auth";
 import { setTokens } from "@/lib/token-storage";
 import { EmailAuthForm } from "@/components/auth/EmailAuthForm";
-import Link from "next/link";
-import { ArrowLeft, Loader2, User } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 import type { Training } from "@oruclass/types";
+
+const GUEST_UPGRADE_KEY = "oru_guest_upgrade";
 
 export default function JoinTokenPage({ params }: { params: Promise<{ token: string }> }) {
   const router = useRouter();
@@ -20,7 +21,7 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
 
   const [error, setError] = useState<string | null>(null);
   const [needsEntry, setNeedsEntry] = useState(false);
-  const [mode, setMode] = useState<"guest" | "signin">("guest");
+  const [mode, setMode] = useState<"signin" | "guest">("signin");
   const [hasJoined, setHasJoined] = useState(false);
   const [participantName, setParticipantName] = useState("");
   const [loading, setLoading] = useState(false);
@@ -31,9 +32,6 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
       router.replace(`/trainings/${data.training.id}/live?role=participant`);
     } catch (err: unknown) {
       const status = (err as { response?: { status?: number } })?.response?.status;
-      // 401 = our token was rejected, 400 = no/expired session token (interceptor already
-      // purged it). Either way the session lapsed — fall back to a fresh guest entry instead
-      // of showing a raw "Refresh token is required" error to a first-time joiner.
       if (status === 401 || status === 400) {
         clearUser();
         setHasJoined(false);
@@ -46,25 +44,40 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
     }
   }
 
-  // Auto-join when we already have a valid session; otherwise offer guest entry.
   useEffect(() => {
     if (isPending || hasJoined) return;
     if (!user) {
       setNeedsEntry(true);
       return;
     }
+
     setNeedsEntry(false);
     setHasJoined(true);
-    joinWithToken();
+
+    // If a real (non-guest) account just signed in, try to merge any pending guest session
+    const pendingGuestId = localStorage.getItem(GUEST_UPGRADE_KEY);
+    if (pendingGuestId && user.authProvider !== "guest" && user.id !== pendingGuestId) {
+      apiClient
+        .post("/api/auth/upgrade-guest", { guestUserId: pendingGuestId })
+        .catch(() => {})
+        .finally(() => {
+          localStorage.removeItem(GUEST_UPGRADE_KEY);
+          joinWithToken();
+        });
+    } else {
+      joinWithToken();
+    }
   }, [user, isPending, hasJoined]); // eslint-disable-line react-hooks/exhaustive-deps
 
-  async function handleGuestJoin(e: React.FormEvent) {
+  async function handleGuestJoin(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
     if (!participantName.trim()) return;
     setLoading(true);
     setError(null);
     try {
       const { data } = await apiClient.post("/api/auth/guest", { name: participantName.trim() });
+      // Store guest ID so a later sign-in can merge the session
+      localStorage.setItem(GUEST_UPGRADE_KEY, data.user.id);
       setTokens(data.accessToken);
       setUser({
         id: data.user.id,
@@ -102,24 +115,38 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
 
   if (needsEntry) {
     return (
-      <div className="relative min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <Link href="/" className="absolute top-6 left-6 md:top-8 md:left-8 flex items-center gap-2 text-sm font-medium text-gray-500 hover:text-gray-900 transition-colors z-20 bg-white/50 backdrop-blur-sm px-3 py-1.5 rounded-full border border-gray-200/50 hover:bg-white hover:border-gray-300 hover:shadow-sm">
-          <ArrowLeft className="w-4 h-4" />
-          Back to Home
-        </Link>
-        <div className="w-full max-w-sm relative z-10">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+        <div className="w-full max-w-sm">
           <div className="text-center mb-8">
             <h1 className="text-2xl font-bold text-gray-900">
               <span className="text-brand-600">Oru</span>Labs
             </h1>
             <p className="text-sm text-gray-500 mt-1">Join your live session</p>
           </div>
+
           <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
-            {mode === "guest" ? (
+            {mode === "signin" ? (
+              <>
+                <div>
+                  <h2 className="text-[15px] font-semibold text-gray-900">Sign in to join</h2>
+                  <p className="text-sm text-gray-500 mt-0.5">Your reflections &amp; history will be saved</p>
+                </div>
+                <EmailAuthForm returnTo={`/join/${token}`} />
+                <p className="text-center text-xs text-gray-400">
+                  or{" "}
+                  <button
+                    onClick={() => setMode("guest")}
+                    className="text-gray-500 hover:text-gray-700 underline underline-offset-2"
+                  >
+                    continue without an account
+                  </button>
+                </p>
+              </>
+            ) : (
               <>
                 <form onSubmit={handleGuestJoin} className="space-y-4">
                   <div>
-                    <h2 className="text-[15px] font-semibold text-gray-900">Welcome</h2>
+                    <h2 className="text-[15px] font-semibold text-gray-900">Join as guest</h2>
                     <p className="text-sm text-gray-500 mt-0.5">Enter your name to jump in — no account needed</p>
                   </div>
                   <div>
@@ -148,23 +175,12 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
                     Join Session
                   </button>
                 </form>
-                <p className="text-center text-xs text-gray-500">
-                  Have an account?{" "}
-                  <button onClick={() => setMode("signin")} className="text-brand-600 font-medium hover:underline">
-                    Sign in to save your progress
-                  </button>
-                </p>
-              </>
-            ) : (
-              <>
-                <div>
-                  <h2 className="text-[15px] font-semibold text-gray-900">Sign in</h2>
-                  <p className="text-sm text-gray-500 mt-0.5">Your reflections &amp; history will be saved</p>
-                </div>
-                <EmailAuthForm returnTo={`/join/${token}`} />
-                <p className="text-center text-xs text-gray-500">
-                  <button onClick={() => setMode("guest")} className="text-brand-600 font-medium hover:underline">
-                    ← Just join as a guest
+                <p className="text-center text-xs text-gray-400">
+                  <button
+                    onClick={() => setMode("signin")}
+                    className="text-gray-500 hover:text-gray-700 underline underline-offset-2"
+                  >
+                    ← Sign in instead
                   </button>
                 </p>
               </>

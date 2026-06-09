@@ -15,6 +15,10 @@ import {
   AuthError,
 } from "../services/auth.service";
 import { verifyAccessToken } from "../auth/jwt";
+import { eq, sql } from "drizzle-orm";
+import { db } from "../db/client";
+import { trainingParticipants, participantResponses, users } from "../db/schema";
+import { authMiddleware } from "../middleware/auth";
 
 export const authRouter = new Hono<AppEnv>();
 
@@ -232,5 +236,52 @@ authRouter.get("/me", async (c) => {
     return c.json({ user });
   } catch {
     return c.json({ error: "Unauthorized" }, 401);
+  }
+});
+
+// ─── POST /upgrade-guest ─────────────────────────────────────────────
+// Transfers a guest session's participant records + responses to the
+// authenticated real user, then deletes the guest account.
+
+authRouter.post("/upgrade-guest", authMiddleware, async (c) => {
+  try {
+    const { guestUserId } = await c.req.json();
+    const realUserId = c.get("userId");
+
+    if (!guestUserId || guestUserId === realUserId) {
+      return c.json({ error: "Invalid guest user ID" }, 400);
+    }
+
+    const [guest] = await db.select({ id: users.id, isAnonymous: users.isAnonymous })
+      .from(users).where(eq(users.id, guestUserId)).limit(1);
+
+    if (!guest?.isAnonymous) {
+      return c.json({ error: "Not a guest account" }, 400);
+    }
+
+    await db.transaction(async (tx) => {
+      // Copy participant rows; skip trainings the real user already joined
+      await tx.execute(sql`
+        INSERT INTO training_participants
+          (training_id, user_id, joined_at, connection_status, last_heartbeat, personal_notes, personal_whiteboard)
+        SELECT training_id, ${realUserId}, joined_at, connection_status, last_heartbeat, personal_notes, personal_whiteboard
+        FROM training_participants
+        WHERE user_id = ${guestUserId}
+        ON CONFLICT (training_id, user_id) DO NOTHING
+      `);
+      await tx.delete(trainingParticipants).where(eq(trainingParticipants.userId, guestUserId));
+
+      // Transfer all responses (UUID PK — no conflicts)
+      await tx.update(participantResponses)
+        .set({ userId: realUserId })
+        .where(eq(participantResponses.userId, guestUserId));
+
+      // Remove the guest account
+      await tx.delete(users).where(eq(users.id, guestUserId));
+    });
+
+    return c.json({ success: true });
+  } catch (err) {
+    return errorResponse(c, err);
   }
 });
