@@ -42,12 +42,15 @@ services:
       - "3001"
     ports:
       - "127.0.0.1:5011:3001"
+    networks:
+      - default
+      - traefik
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.oruclass-api.entrypoints=websecure"
       - "traefik.http.routers.oruclass-api.rule=Host(`api.orulabs.in`)"
       - "traefik.http.routers.oruclass-api.tls.certresolver=letsencrypt"
-      - "traefik.http.services.oruclass-api.loadbalancer.server.url=http://127.0.0.1:5011"
+      - "traefik.http.services.oruclass-api.loadbalancer.server.url=http://api:3001"
     healthcheck:
       test: ["CMD-SHELL", "wget -qO- http://127.0.0.1:3001/health || exit 1"]
       interval: 30s
@@ -73,13 +76,20 @@ services:
       - "3000"
     ports:
       - "127.0.0.1:5010:3000"
+    networks:
+      - default
+      - traefik
     labels:
       - "traefik.enable=true"
       - "traefik.http.routers.oruclass-web.entrypoints=websecure"
       - "traefik.http.routers.oruclass-web.rule=Host(`orulabs.in`) || Host(`www.orulabs.in`)"
       - "traefik.http.routers.oruclass-web.tls.certresolver=letsencrypt"
-      - "traefik.http.services.oruclass-web.loadbalancer.server.url=http://127.0.0.1:5010"
+      - "traefik.http.services.oruclass-web.loadbalancer.server.url=http://web:3000"
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  traefik:
+    external: true
