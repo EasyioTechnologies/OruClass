@@ -10,22 +10,6 @@ const nextConfig: NextConfig = {
       { protocol: "https", hostname: "*.r2.cloudflarestorage.com" },
     ],
   },
-  rewrites() {
-    return [
-      {
-        source: "/health",
-        destination: "http://api:3001/health",
-      },
-      {
-        source: "/api/:path*",
-        destination: "http://api:3001/api/:path*",
-      },
-      {
-        source: "/socket.io/:path*",
-        destination: "http://api:3001/socket.io/:path*",
-      },
-    ];
-  },
 
   async headers() {
     const apiOrigin = process.env.NEXT_PUBLIC_API_URL || "";
