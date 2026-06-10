@@ -3,6 +3,7 @@ import { db } from "../db/client";
 import * as schema from "../db/schema";
 import { hashPassword, verifyPassword } from "../auth/password";
 import { signAccessToken, signRefreshToken, getRefreshTokenExpiryDate, verifyRefreshToken } from "../auth/jwt";
+import { recordFailedLogin, isLockedOut, clearLockout } from "../auth/lockout";
 import {
   sendWelcomeEmail,
   sendVerificationEmail,
@@ -41,7 +42,7 @@ export async function signUp(email: string, password: string, name: string, retu
     isAnonymous: false,
   }).returning();
 
-  const tokens = await createTokenPair(user.id, user.email);
+  const tokens = await createTokenPair(user.id, user.email, user.emailVerified, user.isAnonymous);
 
   if (!SKIP_EMAIL_VERIFICATION) {
     // Only ONE email at signup: the verification email. Welcome is sent after they verify.
@@ -54,17 +55,24 @@ export async function signUp(email: string, password: string, name: string, retu
 // ─── Login ───────────────────────────────────────────────────────────
 
 export async function login(email: string, password: string) {
+  if (await isLockedOut(email)) {
+    throw new AuthError("ACCOUNT_LOCKED", "Too many failed attempts. Try again in 15 minutes.");
+  }
+
   const [user] = await db.select().from(schema.users).where(eq(schema.users.email, email)).limit(1);
   if (!user || !user.hashedPassword) {
+    await recordFailedLogin(email);
     throw new AuthError("INVALID_CREDENTIALS", "Invalid email or password.");
   }
 
   const valid = await verifyPassword(password, user.hashedPassword);
   if (!valid) {
+    await recordFailedLogin(email);
     throw new AuthError("INVALID_CREDENTIALS", "Invalid email or password.");
   }
 
-  const tokens = await createTokenPair(user.id, user.email);
+  await clearLockout(email);
+  const tokens = await createTokenPair(user.id, user.email, user.emailVerified, user.isAnonymous);
   return { user: sanitizeUser(user), ...tokens };
 }
 
@@ -91,7 +99,7 @@ export async function refreshAccessToken(refreshToken: string) {
     throw new AuthError("USER_NOT_FOUND", "User not found.");
   }
 
-  const tokens = await createTokenPair(user.id, user.email);
+  const tokens = await createTokenPair(user.id, user.email, user.emailVerified, user.isAnonymous);
   return { user: sanitizeUser(user), ...tokens };
 }
 
@@ -167,7 +175,7 @@ export async function verifyEmail(payload: { token?: string, code?: string, emai
   // Now that the account is verified, send the welcome email (single, separate from verification).
   sendWelcomeEmail({ to: user.email, name: user.name, loginUrl: WEB_URL }).catch(() => {});
 
-  const tokens = await createTokenPair(user.id, user.email);
+  const tokens = await createTokenPair(user.id, user.email, user.emailVerified, user.isAnonymous);
   return { user: sanitizeUser(user), ...tokens };
 }
 
@@ -231,7 +239,7 @@ export async function guestLogin(name: string) {
     emailVerified: false,
   }).returning();
 
-  const tokens = await createTokenPair(user.id, user.email);
+  const tokens = await createTokenPair(user.id, user.email, user.emailVerified, user.isAnonymous);
   return { user: sanitizeUser(user), ...tokens };
 }
 
@@ -247,8 +255,8 @@ export async function getUser(userId: string) {
 
 // ─── Helpers ─────────────────────────────────────────────────────────
 
-async function createTokenPair(userId: string, email: string) {
-  const accessToken = await signAccessToken(userId, email);
+async function createTokenPair(userId: string, email: string, emailVerified: boolean, isAnonymous: boolean) {
+  const accessToken = await signAccessToken(userId, email, emailVerified, isAnonymous);
   const refreshToken = await signRefreshToken(userId);
 
   await db.insert(schema.refreshTokens).values({
@@ -266,7 +274,6 @@ function sanitizeUser(user: typeof schema.users.$inferSelect) {
     email: user.email,
     name: user.name,
     avatarUrl: user.avatarUrl,
-    image: user.image,
     emailVerified: user.emailVerified,
     isAnonymous: user.isAnonymous,
     createdAt: user.createdAt,

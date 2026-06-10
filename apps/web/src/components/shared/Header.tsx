@@ -56,9 +56,9 @@ export function Header() {
                     : "bg-brand-100 hover:ring-2 hover:ring-brand-500/20"
                 )}
               >
-                {user.avatarUrl || user.image ? (
+                {user.avatarUrl ? (
                   <img
-                    src={user.avatarUrl || user.image!}
+                    src={user.avatarUrl}
                     alt={user.name}
                     className="w-full h-full rounded-full object-cover"
                   />

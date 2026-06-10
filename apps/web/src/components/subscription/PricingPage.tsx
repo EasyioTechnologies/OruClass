@@ -95,11 +95,12 @@ const tierIcons: Record<PlanId, () => ReactElement> = {
   yearly: EnterpriseIcon,
 };
 
-export function PricingPage() {
+export function PricingPage({ onGetStarted }: { onGetStarted?: (planId: PlanId) => void } = {}) {
   const [selectedPlan, setSelectedPlan] = useState<PlanId>("quarterly");
   const router = useRouter();
 
   function handleGetStarted(planId: PlanId) {
+    if (onGetStarted) { onGetStarted(planId); return; }
     router.push(`/subscription/checkout?plan=${planId}`);
   }
 

@@ -25,7 +25,5 @@ export interface JWTPayload {
 }
 
 export type PublicUser = Pick<User, "id" | "name" | "email" | "avatarUrl" | "authProvider"> & {
-  // Client-only optional fields hydrated from the auth response when present.
-  image?: string | null;
   createdAt?: Date | string;
 };

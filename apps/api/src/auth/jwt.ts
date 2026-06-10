@@ -28,8 +28,13 @@ const ACCESS_TOKEN_EXPIRY = "15m";
 const REFRESH_TOKEN_EXPIRY = "365d";
 const REFRESH_TOKEN_TTL_MS = 365 * 24 * 60 * 60 * 1000;
 
-export async function signAccessToken(userId: string, email: string): Promise<string> {
-  return new SignJWT({ userId, email })
+export async function signAccessToken(
+  userId: string,
+  email: string,
+  emailVerified: boolean,
+  isAnonymous: boolean,
+): Promise<string> {
+  return new SignJWT({ userId, email, emailVerified, isAnonymous })
     .setProtectedHeader({ alg: "HS256" })
     .setIssuer(issuer)
     .setIssuedAt()
@@ -46,9 +51,14 @@ export async function signRefreshToken(userId: string): Promise<string> {
     .sign(secret);
 }
 
-export async function verifyAccessToken(token: string): Promise<{ userId: string; email: string }> {
+export async function verifyAccessToken(token: string): Promise<{ userId: string; email: string; emailVerified: boolean; isAnonymous: boolean }> {
   const { payload } = await jwtVerify(token, secret, { issuer });
-  return { userId: payload.userId as string, email: payload.email as string };
+  return {
+    userId: payload.userId as string,
+    email: payload.email as string,
+    emailVerified: payload.emailVerified as boolean,
+    isAnonymous: payload.isAnonymous as boolean,
+  };
 }
 
 export async function verifyRefreshToken(token: string): Promise<{ userId: string }> {

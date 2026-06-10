@@ -38,7 +38,7 @@ export default function JoinPage() {
         id: data.user.id,
         name: participantName,
         email: data.user.email,
-        avatarUrl: data.user.avatarUrl ?? data.user.image,
+        avatarUrl: data.user.avatarUrl,
         authProvider: "guest",
       });
       setStep("code");

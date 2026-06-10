@@ -1,3 +1,4 @@
+import "./instrument";
 import { Hono } from "hono";
 import { cors } from "hono/cors";
 import { logger as honoLogger } from "hono/logger";
@@ -21,9 +22,11 @@ import { registerSocketHandlers } from "./socket/handlers";
 import { setIO } from "./socket/io-instance";
 import { startExportWorker } from "./jobs/exportAnalytics.job";
 import { startDigestWorker } from "./jobs/sendSessionDigest.job";
-import { connectRedis, pubClient, subClient } from "./db/redis";
+import { connectRedis, pubClient, subClient, redis } from "./db/redis";
 import { createAdapter } from "@socket.io/redis-adapter";
 import { logger } from "./utils/logger";
+import { db } from "./db/client";
+import { sql } from "drizzle-orm";
 import type { AppEnv } from "./types/hono";
 
 const PORT = Number(process.env.PORT ?? 3001);
@@ -52,7 +55,20 @@ app.use(
   }),
 );
 
-app.get("/health", (c) => c.json({ status: "ok", ts: Date.now() }));
+app.get("/health", async (c) => {
+  const ts = Date.now();
+  const checks: Record<string, "ok" | "error"> = {};
+  try {
+    await db.execute(sql`SELECT 1`);
+    checks.db = "ok";
+  } catch { checks.db = "error"; }
+  try {
+    await redis.ping();
+    checks.redis = "ok";
+  } catch { checks.redis = "error"; }
+  const allOk = Object.values(checks).every((v) => v === "ok");
+  return c.json({ status: allOk ? "ok" : "degraded", checks, ts }, allOk ? 200 : 503);
+});
 
 // Lenient guest limiter must be mounted BEFORE the strict auth wildcard so a whole
 // room can provision anonymous guests at once (auth limiter skips this path).

@@ -26,7 +26,7 @@ export function useAuth() {
             id: data.user.id,
             name: data.user.name,
             email: data.user.email,
-            avatarUrl: data.user.avatarUrl ?? data.user.image,
+            avatarUrl: data.user.avatarUrl,
             authProvider: data.user.isAnonymous ? "guest" : "email",
           });
           setEmailVerified(data.user.emailVerified ?? false);
@@ -51,7 +51,7 @@ export function useAuth() {
             id: data.user.id,
             name: data.user.name,
             email: data.user.email,
-            avatarUrl: data.user.avatarUrl ?? data.user.image,
+            avatarUrl: data.user.avatarUrl,
             authProvider: data.user.isAnonymous ? "guest" : "email",
           });
           setEmailVerified(data.user.emailVerified ?? false);

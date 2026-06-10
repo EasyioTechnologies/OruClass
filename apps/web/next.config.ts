@@ -1,4 +1,5 @@
 import type { NextConfig } from "next";
+import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   output: "standalone",
@@ -14,6 +15,7 @@ const nextConfig: NextConfig = {
   async headers() {
     const apiOrigin = process.env.NEXT_PUBLIC_API_URL || "";
     const wsOrigin = apiOrigin.replace(/^http/, "ws");
+    const sentryOrigin = "https://*.ingest.sentry.io";
     // 'unsafe-inline'/'unsafe-eval' are required by Next.js hydration (no nonce
     // pipeline in place). The remaining directives still block framing, plugin
     // content, and base-tag hijacking; the primary XSS sink is sanitized in SafeHTML.
@@ -23,7 +25,7 @@ const nextConfig: NextConfig = {
       "style-src 'self' 'unsafe-inline'",
       "img-src 'self' data: blob: https://*.r2.cloudflarestorage.com https:",
       "font-src 'self' data:",
-      `connect-src 'self' ${apiOrigin} ${wsOrigin}`.trim(),
+      `connect-src 'self' ${apiOrigin} ${wsOrigin} ${sentryOrigin}`.trim(),
       "frame-ancestors 'none'",
       "object-src 'none'",
       "base-uri 'self'",
@@ -47,4 +49,12 @@ const nextConfig: NextConfig = {
 
 };
 
-export default nextConfig;
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: true,
+  widenClientFileUpload: true,
+  sourcemaps: { disable: true },
+  disableLogger: true,
+  automaticVercelMonitors: false,
+});

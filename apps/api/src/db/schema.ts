@@ -20,7 +20,6 @@ export const users = pgTable("users", {
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
   avatarUrl: text("avatar_url"),
-  image: text("image"),
   hashedPassword: text("hashed_password"),
   emailVerified: boolean("email_verified").notNull().default(false),
   isAnonymous: boolean("is_anonymous").notNull().default(false),
@@ -37,6 +36,7 @@ export const workspaces = pgTable("workspaces", {
     .references(() => users.id, { onDelete: "cascade" }),
   settings: jsonb("settings").$type<Record<string, unknown>>().notNull().default({}),
   createdAt: timestamp("created_at").notNull().defaultNow(),
+  updatedAt: timestamp("updated_at").notNull().defaultNow(),
 });
 
 // ─── WorkspaceMembers ─────────────────────────────────────────────────────────
@@ -71,7 +71,7 @@ export const trainings = pgTable(
     meetingLink: text("meeting_link"),
     startDate: timestamp("start_date"),
     endDate: timestamp("end_date"),
-    currentActiveModuleId: uuid("current_active_module_id"),
+    currentActiveModuleId: uuid("current_active_module_id"), // FK → training_modules.id added via migration 0010
     sessionStatus: text("session_status")
       .$type<"draft" | "connecting" | "live" | "paused" | "completed">()
       .notNull()
@@ -149,7 +149,10 @@ export const trainingFacilitators = pgTable(
       .notNull(),
     assignedModules: text("assigned_modules").array().notNull().default([]),
   },
-  (t) => [primaryKey({ columns: [t.trainingId, t.userId] })],
+  (t) => [
+    primaryKey({ columns: [t.trainingId, t.userId] }),
+    index("facilitators_user_id_idx").on(t.userId),
+  ],
 );
 
 // ─── TrainingFacilitatorInvitations ──────────────────────────────────────────
@@ -203,6 +206,7 @@ export const trainingParticipants = pgTable(
   (t) => [
     primaryKey({ columns: [t.trainingId, t.userId] }),
     index("participants_training_idx").on(t.trainingId),
+    index("participants_user_id_idx").on(t.userId),
   ],
 );
 
@@ -221,7 +225,10 @@ export const liveSessions = pgTable(
     createdBy: text("created_by").notNull().references(() => users.id),
     createdAt: timestamp("created_at").notNull().defaultNow(),
   },
-  (t) => [index("live_sessions_training_idx").on(t.trainingId)],
+  (t) => [
+    index("live_sessions_training_idx").on(t.trainingId),
+    index("live_sessions_training_status_idx").on(t.trainingId, t.status),
+  ],
 );
 
 // ─── LiveSessionModuleStats ───────────────────────────────────────────────────
@@ -269,6 +276,7 @@ export const participantResponses = pgTable(
     index("responses_training_module_idx").on(t.trainingId, t.moduleId),
     uniqueIndex("responses_user_unique_idx").on(t.trainingId, t.moduleId, t.userId),
     index("responses_session_module_idx").on(t.liveSessionId, t.moduleId),
+    index("responses_user_id_idx").on(t.userId),
   ],
 );
 
@@ -387,13 +395,17 @@ export const liveSessionsRelations = relations(liveSessions, ({ one, many }) => 
 
 // ─── Auth Tables ─────────────────────────────────────────────────────────────
 
-export const refreshTokens = pgTable("refresh_tokens", {
-  id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
-  token: text("token").notNull().unique(),
-  userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
-  expiresAt: timestamp("expires_at").notNull(),
-  createdAt: timestamp("created_at").notNull().defaultNow(),
-});
+export const refreshTokens = pgTable(
+  "refresh_tokens",
+  {
+    id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),
+    token: text("token").notNull().unique(),
+    userId: text("user_id").notNull().references(() => users.id, { onDelete: "cascade" }),
+    expiresAt: timestamp("expires_at").notNull(),
+    createdAt: timestamp("created_at").notNull().defaultNow(),
+  },
+  (t) => [index("refresh_tokens_user_id_idx").on(t.userId)],
+);
 
 export const passwordResetTokens = pgTable("password_reset_tokens", {
   id: text("id").primaryKey().$defaultFn(() => crypto.randomUUID()),

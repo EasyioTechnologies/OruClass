@@ -83,7 +83,7 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
         id: data.user.id,
         name: participantName.trim(),
         email: data.user.email,
-        avatarUrl: data.user.avatarUrl ?? data.user.image,
+        avatarUrl: data.user.avatarUrl,
         authProvider: "guest",
       });
       setNeedsEntry(false);

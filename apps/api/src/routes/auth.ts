@@ -14,6 +14,7 @@ import {
   createAndSendVerificationEmail,
   AuthError,
 } from "../services/auth.service";
+import { sendAccountDeletedEmail } from "../services/email.service";
 import { verifyAccessToken } from "../auth/jwt";
 import { eq, sql } from "drizzle-orm";
 import { db } from "../db/client";
@@ -47,10 +48,8 @@ function clearRefreshCookie(c: Context) {
   deleteCookie(c, REFRESH_COOKIE, { path: REFRESH_COOKIE_PATH, domain: COOKIE_DOMAIN });
 }
 
-// Prefer the httpOnly cookie; fall back to the JSON body during the rollout
-// window so a client that hasn't received the cookie yet still authenticates.
-function readRefreshToken(c: Context, bodyToken?: string): string | undefined {
-  return getCookie(c, REFRESH_COOKIE) ?? bodyToken;
+function readRefreshToken(c: Context): string | undefined {
+  return getCookie(c, REFRESH_COOKIE);
 }
 
 function errorResponse(c: Context, err: unknown) {
@@ -59,6 +58,7 @@ function errorResponse(c: Context, err: unknown) {
       : err.code === "USER_ALREADY_EXISTS" ? 409
       : err.code === "WEAK_PASSWORD" ? 422
       : err.code === "INVALID_TOKEN" || err.code === "INVALID_REFRESH_TOKEN" ? 401
+      : err.code === "ACCOUNT_LOCKED" ? 429
       : 400;
     return c.json({ error: err.message, code: err.code }, status);
   }
@@ -74,7 +74,9 @@ authRouter.post("/signup", async (c) => {
     if (!email || !password || !name) {
       return c.json({ error: "Email, password, and name are required." }, 400);
     }
-    const result = await signUp(email, password, name, returnTo);
+    // Only allow same-origin redirects — reject absolute URLs to prevent open redirect
+    const safeReturnTo = typeof returnTo === "string" && returnTo.startsWith("/") ? returnTo : undefined;
+    const result = await signUp(email, password, name, safeReturnTo);
     setRefreshCookie(c, result.refreshToken);
     return c.json(result, 201);
   } catch (err) {
@@ -102,8 +104,7 @@ authRouter.post("/login", async (c) => {
 
 authRouter.post("/refresh", async (c) => {
   try {
-    const body = await c.req.json().catch(() => ({}));
-    const refreshToken = readRefreshToken(c, body?.refreshToken);
+    const refreshToken = readRefreshToken(c);
     if (!refreshToken) {
       return c.json({ error: "Refresh token is required." }, 400);
     }
@@ -120,8 +121,7 @@ authRouter.post("/refresh", async (c) => {
 
 authRouter.post("/logout", async (c) => {
   try {
-    const body = await c.req.json().catch(() => ({}));
-    const refreshToken = readRefreshToken(c, body?.refreshToken);
+    const refreshToken = readRefreshToken(c);
     if (refreshToken) {
       await logout(refreshToken);
     }
@@ -236,6 +236,58 @@ authRouter.get("/me", async (c) => {
     return c.json({ user });
   } catch {
     return c.json({ error: "Unauthorized" }, 401);
+  }
+});
+
+// ─── DELETE /me ──────────────────────────────────────────────────────
+
+authRouter.delete("/me", authMiddleware, async (c) => {
+  try {
+    const userId = c.get("userId");
+    const user = await getUser(userId);
+    // Delete user — cascades all owned workspaces, trainings, tokens, responses
+    await db.delete(users).where(eq(users.id, userId));
+    clearRefreshCookie(c);
+    sendAccountDeletedEmail({ to: user.email, name: user.name }).catch(() => {});
+    return c.json({ success: true });
+  } catch (err) {
+    return errorResponse(c, err);
+  }
+});
+
+// ─── GET /me/export ──────────────────────────────────────────────────
+// DPDP Act 2023: right to access personal data
+
+authRouter.get("/me/export", authMiddleware, async (c) => {
+  try {
+    const userId = c.get("userId");
+    const user = await getUser(userId);
+    const trainingsData = await db.query.trainings.findMany({
+      where: (t, { eq }) => eq(t.createdBy, userId),
+      columns: { id: true, title: true, sessionStatus: true, createdAt: true },
+    });
+    const participations = await db.query.trainingParticipants.findMany({
+      where: (tp, { eq }) => eq(tp.userId, userId),
+      with: { training: { columns: { id: true, title: true } } },
+      columns: { joinedAt: true, connectionStatus: true },
+    });
+    const payload = {
+      exportedAt: new Date().toISOString(),
+      account: {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+        createdAt: user.createdAt,
+        emailVerified: user.emailVerified,
+      },
+      trainingsCreated: trainingsData,
+      trainingsAttended: participations,
+    };
+    c.header("Content-Disposition", `attachment; filename="orulabs-data-export-${Date.now()}.json"`);
+    c.header("Content-Type", "application/json");
+    return c.body(JSON.stringify(payload, null, 2));
+  } catch (err) {
+    return errorResponse(c, err);
   }
 });
 
