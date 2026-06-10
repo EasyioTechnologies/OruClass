@@ -2,7 +2,7 @@
 
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { apiClient } from "@/lib/api-client";
-import type { Training, TrainingFacilitator, TrainingFacilitatorInvitation, TrainingRole } from "@oruclass/types";
+import type { Training, TrainingFacilitator, TrainingRole } from "@oruclass/types";
 
 export function useTrainings(workspaceId: string) {
   return useQuery({
@@ -224,6 +224,18 @@ export function useTrash(workspaceId: string) {
       return data;
     },
     enabled: !!workspaceId,
+  });
+}
+
+export function useSharedTrainings() {
+  return useQuery({
+    queryKey: ["facilitator-trainings"],
+    queryFn: async () => {
+      const { data } = await apiClient.get<Array<Training & { myRole: TrainingRole; assignedModules: string[] }>>(
+        "/api/facilitator/trainings",
+      );
+      return data;
+    },
   });
 }
 

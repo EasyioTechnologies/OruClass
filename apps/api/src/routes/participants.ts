@@ -2,7 +2,7 @@ import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
 import { eq, and, inArray, isNull } from "drizzle-orm";
 import { db } from "../db/client";
-import { trainingParticipants, trainings, participantResponses, users } from "../db/schema";
+import { trainingParticipants, trainings, participantResponses, users, trainingFacilitators } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
 import { workspaceTenantMiddleware } from "../middleware/workspace";
 import { joinTokenToCode } from "@oruclass/utils";
@@ -30,6 +30,30 @@ participantsRouter.get("/:trainingId/participants", workspaceTenantMiddleware, a
   });
 
   return c.json(participants);
+});
+
+// GET /facilitator/trainings — trainings shared with the current user as a facilitator
+participantsRouter.get("/facilitator/trainings", async (c) => {
+  const userId = c.get("userId") as string;
+
+  const rows = await db.query.trainingFacilitators.findMany({
+    where: eq(trainingFacilitators.userId, userId),
+    with: {
+      training: {
+        with: { creator: true },
+      },
+    },
+  });
+
+  const list = rows
+    .filter((r) => r.training && !r.training.deletedAt)
+    .map((r) => ({
+      ...r.training,
+      myRole: r.role,
+      assignedModules: r.assignedModules,
+    }));
+
+  return c.json(list);
 });
 
 // GET /participant/sessions — get all trainings the user is participating in
