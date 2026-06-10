@@ -1910,13 +1910,11 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
         )}
 
         {facilitators.map((f) => (
-          <div key={f.userId} className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-[10px] font-bold text-brand-700">
-                {(f.user?.name ?? "?").slice(0, 2).toUpperCase()}
-              </div>
-              <span className="text-sm text-gray-800 font-medium">{f.user?.name ?? f.userId}</span>
+          <div key={f.userId} className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-brand-100 flex items-center justify-center text-[10px] font-bold text-brand-700 shrink-0">
+              {(f.user?.name ?? "?").slice(0, 2).toUpperCase()}
             </div>
+            <span className="text-sm text-gray-800 font-medium truncate flex-1 min-w-0">{f.user?.name ?? f.userId}</span>
             {canManage && f.userId !== training?.createdBy ? (
               <select
                 value={f.role}
@@ -1937,18 +1935,16 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
         ))}
 
         {pendingInvitations.map((inv) => (
-          <div key={inv.id} className="flex items-center justify-between gap-2">
-            <div className="flex items-center gap-2.5">
-              <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-[10px] font-bold text-amber-700">
-                {inv.email.slice(0, 2).toUpperCase()}
-              </div>
-              <div>
-                <span className="text-sm text-gray-600 font-medium">{inv.email}</span>
-                <span className="ml-2 text-[9px] font-semibold bg-amber-100 text-amber-700 px-1.5 py-0.5 rounded-full uppercase tracking-wide">Pending</span>
-              </div>
+          <div key={inv.id} className="flex items-center gap-2 min-w-0">
+            <div className="w-7 h-7 rounded-full bg-amber-100 flex items-center justify-center text-[10px] font-bold text-amber-700 shrink-0">
+              {inv.email.slice(0, 2).toUpperCase()}
             </div>
-            <div className="flex items-center gap-2 shrink-0">
-              <span className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 font-medium">
+            <div className="flex flex-col min-w-0 flex-1">
+              <span className="text-xs text-gray-600 font-medium truncate">{inv.email}</span>
+              <span className="text-[9px] font-semibold text-amber-600 uppercase tracking-wide">Pending</span>
+            </div>
+            <div className="flex items-center gap-1.5 shrink-0">
+              <span className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 font-medium whitespace-nowrap">
                 {roleLabel(inv.role)}
               </span>
               {canManage && (
