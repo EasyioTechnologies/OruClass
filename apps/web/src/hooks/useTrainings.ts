@@ -239,6 +239,26 @@ export function useSharedTrainings() {
   });
 }
 
+export function useResendFacilitatorInvitation(workspaceId: string, trainingId: string) {
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: (invitationId: string) =>
+      apiClient.post(
+        `/api/workspaces/${workspaceId}/trainings/${trainingId}/facilitators/invitations/${invitationId}/resend`,
+        {},
+        { headers: { "X-Workspace-ID": workspaceId } },
+      ),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ["training", workspaceId, trainingId] }),
+  });
+}
+
+export function useDeclineFacilitatorInvitation() {
+  return useMutation({
+    mutationFn: (token: string) =>
+      apiClient.post(`/api/invitations/${token}/decline`, {}),
+  });
+}
+
 export function useRestoreTraining(workspaceId: string) {
   const qc = useQueryClient();
 

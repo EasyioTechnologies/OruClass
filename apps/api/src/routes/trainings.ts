@@ -1,6 +1,6 @@
 import type { AppEnv } from "../types/hono";
 import { Hono } from "hono";
-import { eq, and, sql, isNull, isNotNull } from "drizzle-orm";
+import { eq, and, sql, isNull, isNotNull, ne } from "drizzle-orm";
 import { db } from "../db/client";
 import { trainings, trainingFacilitators, trainingFacilitatorInvitations, trainingModules, trainingDays, users } from "../db/schema";
 import { authMiddleware } from "../middleware/auth";
@@ -145,7 +145,7 @@ trainingsRouter.get("/:id", async (c) => {
       facilitators: { with: { user: true } },
       participants: { with: { user: true } },
       pendingInvitations: {
-        where: (inv, { eq }) => eq(inv.status, "pending"),
+        where: (inv, { ne }) => ne(inv.status, "accepted"),
       },
     },
   });
@@ -392,6 +392,45 @@ trainingsRouter.delete(
           eq(trainingFacilitatorInvitations.status, "pending"),
         ),
       );
+    return c.json({ success: true });
+  },
+);
+
+// POST /trainings/:id/facilitators/invitations/:invitationId/resend — resend cancelled/declined invite
+trainingsRouter.post(
+  "/:id/facilitators/invitations/:invitationId/resend",
+  requireTrainingPermission("invite_participants"),
+  async (c) => {
+    const { invitationId } = c.req.param();
+    const inviterId = c.get("userId") as string;
+
+    const invitation = await db.query.trainingFacilitatorInvitations.findFirst({
+      where: eq(trainingFacilitatorInvitations.id, invitationId),
+      with: { training: true },
+    });
+
+    if (!invitation) return c.json({ error: "Invitation not found" }, 404);
+    if (invitation.status === "accepted") return c.json({ error: "Invitation already accepted" }, 400);
+
+    const newToken = randomBytes(32).toString("hex");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000);
+
+    await db
+      .update(trainingFacilitatorInvitations)
+      .set({ token: newToken, expiresAt, status: "pending" })
+      .where(eq(trainingFacilitatorInvitations.id, invitationId));
+
+    const inviter = await db.query.users.findFirst({ where: eq(users.id, inviterId) });
+    const { sendFacilitatorPendingInviteEmail } = await import("../services/email.service");
+    const webUrl = process.env.WEB_URL ?? "http://localhost:3000";
+    sendFacilitatorPendingInviteEmail({
+      to: invitation.email,
+      inviterName: inviter?.name ?? "A teammate",
+      trainingTitle: (invitation as { training: { title: string } } & typeof invitation).training.title,
+      role: invitation.role,
+      acceptUrl: `${webUrl}/trainings/invite/${newToken}`,
+    }).catch((err) => console.error("[email] facilitator resend failed:", err));
+
     return c.json({ success: true });
   },
 );

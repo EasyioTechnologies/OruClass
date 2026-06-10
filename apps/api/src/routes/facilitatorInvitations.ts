@@ -84,3 +84,30 @@ facilitatorInvitationsRouter.post("/:token/accept", authMiddleware, async (c) =>
 
   return c.json({ success: true, trainingId: invitation.trainingId });
 });
+
+// POST /api/invitations/:token/decline — auth required
+facilitatorInvitationsRouter.post("/:token/decline", authMiddleware, async (c) => {
+  const { token } = c.req.param();
+  const userId = c.get("userId") as string;
+
+  const invitation = await db.query.trainingFacilitatorInvitations.findFirst({
+    where: eq(trainingFacilitatorInvitations.token, token),
+  });
+
+  if (!invitation) return c.json({ error: "Invitation not found" }, 404);
+  if (invitation.status !== "pending") {
+    return c.json({ error: "Invitation already used", status: invitation.status }, 410);
+  }
+
+  const user = await db.query.users.findFirst({ where: eq(users.id, userId) });
+  if (!user || user.email !== invitation.email) {
+    return c.json({ error: "This invitation was sent to a different email address" }, 403);
+  }
+
+  await db
+    .update(trainingFacilitatorInvitations)
+    .set({ status: "declined" })
+    .where(eq(trainingFacilitatorInvitations.id, invitation.id));
+
+  return c.json({ success: true });
+});

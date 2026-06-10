@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams, useRouter } from "next/navigation";
-import { useFacilitatorInvitation, useAcceptFacilitatorInvitation } from "@/hooks/useTrainings";
+import { useFacilitatorInvitation, useAcceptFacilitatorInvitation, useDeclineFacilitatorInvitation } from "@/hooks/useTrainings";
 import { useAuthStore } from "@/store/auth";
 import Link from "next/link";
 
@@ -13,10 +13,16 @@ export default function AcceptInvitePage() {
 
   const { data: invitation, isLoading, error } = useFacilitatorInvitation(token);
   const acceptMutation = useAcceptFacilitatorInvitation();
+  const declineMutation = useDeclineFacilitatorInvitation();
 
   const handleAccept = async () => {
     const { data } = await acceptMutation.mutateAsync(token);
     router.push(`/trainings/${data.trainingId}/studio`);
+  };
+
+  const handleDecline = async () => {
+    await declineMutation.mutateAsync(token);
+    router.push("/dashboard");
   };
 
   if (isLoading) {
@@ -89,13 +95,22 @@ export default function AcceptInvitePage() {
             </Link>
           </div>
         ) : (
-          <button
-            onClick={handleAccept}
-            disabled={acceptMutation.isPending}
-            className="w-full bg-emerald-500 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-emerald-600 transition-colors disabled:opacity-50"
-          >
-            {acceptMutation.isPending ? "Accepting…" : "Accept Invitation"}
-          </button>
+          <div className="space-y-3">
+            <button
+              onClick={handleAccept}
+              disabled={acceptMutation.isPending || declineMutation.isPending}
+              className="w-full bg-emerald-500 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-emerald-600 transition-colors disabled:opacity-50"
+            >
+              {acceptMutation.isPending ? "Accepting…" : "Accept Invitation"}
+            </button>
+            <button
+              onClick={handleDecline}
+              disabled={acceptMutation.isPending || declineMutation.isPending}
+              className="w-full border border-gray-200 text-gray-500 rounded-lg py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+            >
+              {declineMutation.isPending ? "Declining…" : "Decline"}
+            </button>
+          </div>
         )}
 
         {acceptMutation.isError && (

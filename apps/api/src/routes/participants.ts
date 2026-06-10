@@ -46,7 +46,7 @@ participantsRouter.get("/facilitator/trainings", async (c) => {
   });
 
   const list = rows
-    .filter((r) => r.training && !r.training.deletedAt)
+    .filter((r) => r.training && !r.training.deletedAt && r.training.createdBy !== userId)
     .map((r) => ({
       ...r.training,
       myRole: r.role,

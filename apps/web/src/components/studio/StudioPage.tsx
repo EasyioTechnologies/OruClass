@@ -11,7 +11,7 @@ import { useModules, useReorderModules, useUpdateModule, useDuplicateModule, use
 import { useDays, useCreateDay, useDeleteDay, useUpdateDay } from "@/hooks/useDays";
 import { useWorkspaceStore } from "@/store/workspace";
 import { useWorkspaceMembers } from "@/hooks/useWorkspace";
-import { useAssignFacilitator, useTraining, useInviteFacilitator, useCancelFacilitatorInvitation, useTrainings, useUpdateTraining, useMyTrainingRole } from "@/hooks/useTrainings";
+import { useAssignFacilitator, useTraining, useInviteFacilitator, useCancelFacilitatorInvitation, useResendFacilitatorInvitation, useTrainings, useUpdateTraining, useMyTrainingRole } from "@/hooks/useTrainings";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import * as DropdownMenu from "@radix-ui/react-dropdown-menu";
 import { apiClient } from "@/lib/api-client";
@@ -1860,6 +1860,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
   const assignFacilitator = useAssignFacilitator(workspaceId, trainingId);
   const inviteFacilitator = useInviteFacilitator(workspaceId, trainingId);
   const cancelInvitation = useCancelFacilitatorInvitation(workspaceId, trainingId);
+  const resendInvitation = useResendFacilitatorInvitation(workspaceId, trainingId);
   const canManage = useStudioCan("assign_roles");
 
   const [selectedUserId, setSelectedUserId] = useState("");
@@ -1868,10 +1869,18 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
   const [showAssign, setShowAssign] = useState(false);
   const [assignMode, setAssignMode] = useState<"member" | "email">("member");
 
-  const facilitators: Array<{ userId: string; role: TrainingRole; user?: { name: string } }> =
+  const allFacilitators: Array<{ userId: string; role: TrainingRole; user?: { name: string } }> =
     (training as { facilitators?: Array<{ userId: string; role: TrainingRole; user?: { name: string } }> })?.facilitators ?? [];
 
-  const pendingInvitations = training?.pendingInvitations ?? [];
+  // Creator is always the training owner — exclude from team list (they control the training by default)
+  const facilitators = allFacilitators.filter((f) => f.userId !== training?.createdBy);
+
+  const allInvitations = training?.pendingInvitations ?? [];
+  const pendingInvitations = allInvitations.filter((inv) => (inv as { status?: string }).status === "pending");
+  const resendableInvitations = allInvitations.filter((inv) => {
+    const s = (inv as { status?: string }).status;
+    return s === "cancelled" || s === "declined";
+  });
 
   const unassigned = members.filter((m) => !facilitators.some((f) => f.userId === m.userId));
   const roleLabel = (role: TrainingRole) =>
@@ -1883,9 +1892,9 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
         <div className="flex items-center gap-2">
           <Users size={15} className="text-gray-500" />
           <h2 className="text-sm font-bold text-gray-900">Training Team</h2>
-          {(facilitators.length + pendingInvitations.length) > 0 && (
+          {(facilitators.length + allInvitations.length) > 0 && (
             <span className="text-[10px] font-semibold bg-brand-100 text-brand-700 px-1.5 py-0.5 rounded-full">
-              {facilitators.length + pendingInvitations.length}
+              {facilitators.length + allInvitations.length}
             </span>
           )}
         </div>
@@ -1901,7 +1910,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
       </div>
 
       <div className="p-4 space-y-3">
-        {facilitators.length === 0 && pendingInvitations.length === 0 && !showAssign && (
+        {facilitators.length === 0 && allInvitations.length === 0 && !showAssign && (
           <div className="py-5 text-center">
             <Users size={24} className="text-gray-200 mx-auto mb-2" />
             <p className="text-xs text-gray-400 font-medium">No team members assigned</p>
@@ -1962,6 +1971,40 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
             </div>
           </div>
         ))}
+
+        {resendableInvitations.map((inv) => {
+          const status = (inv as { status?: string }).status as "cancelled" | "declined";
+          return (
+            <div key={inv.id} className="flex items-center gap-2 min-w-0">
+              <div className="w-7 h-7 rounded-full bg-gray-100 flex items-center justify-center text-[10px] font-bold text-gray-500 shrink-0">
+                {inv.email.slice(0, 2).toUpperCase()}
+              </div>
+              <div className="flex flex-col min-w-0 flex-1">
+                <span className="text-xs text-gray-500 font-medium truncate">{inv.email}</span>
+                <span className={`text-[9px] font-semibold uppercase tracking-wide ${status === "declined" ? "text-red-400" : "text-gray-400"}`}>
+                  {status === "declined" ? "Declined" : "Cancelled"}
+                </span>
+              </div>
+              <div className="flex items-center gap-1.5 shrink-0">
+                <span className="text-[10px] px-2 py-0.5 rounded-md bg-gray-100 text-gray-500 font-medium whitespace-nowrap">
+                  {roleLabel(inv.role)}
+                </span>
+                {canManage && (
+                  <button
+                    onClick={() => resendInvitation.mutate(inv.id)}
+                    disabled={resendInvitation.isPending}
+                    className="text-gray-300 hover:text-brand-500 transition-colors disabled:opacity-50"
+                    title="Resend invitation"
+                  >
+                    <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="1 4 1 10 7 10" /><path d="M3.51 15a9 9 0 1 0 .49-3.68" />
+                    </svg>
+                  </button>
+                )}
+              </div>
+            </div>
+          );
+        })}
 
         {showAssign && (
           <div className="pt-3 border-t border-gray-100 space-y-3">
@@ -2471,13 +2514,15 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
             <h1 className="text-xl font-bold text-gray-900">Training Studio</h1>
             <p className="text-sm text-gray-500 mt-0.5">Build and configure activities for your live session</p>
           </div>
-          <Link
-            href={`/trainings/${trainingId}/live`}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200 w-full sm:w-auto shrink-0"
-          >
-            <Radio size={14} />
-            Go Live
-          </Link>
+          {(!myRole || canDo(myRole, "pause_room")) && (
+            <Link
+              href={`/trainings/${trainingId}/live`}
+              className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200 w-full sm:w-auto shrink-0"
+            >
+              <Radio size={14} />
+              Go Live
+            </Link>
+          )}
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -2535,13 +2580,15 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
           <h1 className="text-xl font-bold text-gray-900">Training Studio</h1>
           <p className="text-sm text-gray-500 mt-0.5">Build and configure activities for your live session</p>
         </div>
-        <Link
-          href={`/trainings/${trainingId}/live`}
-          className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200 w-full sm:w-auto shrink-0"
-        >
-          <Radio size={14} />
-          Go Live
-        </Link>
+        {(!myRole || canDo(myRole, "pause_room")) && (
+          <Link
+            href={`/trainings/${trainingId}/live`}
+            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200 w-full sm:w-auto shrink-0"
+          >
+            <Radio size={14} />
+            Go Live
+          </Link>
+        )}
       </div>
 
       {isReadOnly && (

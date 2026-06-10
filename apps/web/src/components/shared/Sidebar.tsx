@@ -32,6 +32,7 @@ const trainerNavItems = [
   { href: "/calendar", label: "Calendar", icon: CalendarDays },
   { href: "/data", label: "Data", icon: Database },
   { href: "/trainings/new", label: "New Training", icon: PlusCircle },
+  { href: "/shared", label: "Shared with me", icon: Users },
 ];
 
 const participantNavItems = [

@@ -169,7 +169,7 @@ export const trainingFacilitatorInvitations = pgTable(
       .notNull()
       .references(() => users.id),
     status: text("status")
-      .$type<"pending" | "accepted" | "cancelled">()
+      .$type<"pending" | "accepted" | "cancelled" | "declined">()
       .notNull()
       .default("pending"),
     expiresAt: timestamp("expires_at").notNull(),
