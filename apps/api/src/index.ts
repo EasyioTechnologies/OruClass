@@ -70,8 +70,8 @@ trainingsRouter.route("/", analyticsRouter);
 trainingsRouter.route("/", sessionsRouter);
 app.route("/api/workspaces/:workspaceId/trainings", trainingsRouter);
 
-app.route("/api", participantsRouter);
 app.route("/api/invitations", facilitatorInvitationsRouter);
+app.route("/api", participantsRouter);
 app.route("/api/workspaces/:workspaceId", invitationsRouter);
 
 app.onError(errorHandler);
