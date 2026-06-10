@@ -43,6 +43,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+    networks:
+      - default
+      - traefik
     develop:
       watch:
         - action: sync+restart
@@ -64,7 +67,14 @@ services:
       API_URL: http://api:3001
     depends_on:
       - api
+    networks:
+      - default
+      - traefik
 
 volumes:
   postgres_data:
   redis_data:
+
+networks:
+  traefik:
+    external: true
