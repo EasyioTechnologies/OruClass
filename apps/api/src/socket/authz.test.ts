@@ -14,7 +14,7 @@ const UUID = "00000000-0000-4000-8000-000000000000";
 // its handshake token verifies. These tests pin that authz contract.
 describe("socket handshake authz", () => {
   it("admits a connection carrying a valid access token", async () => {
-    const token = await signAccessToken("trainer-1", "t@example.com");
+    const token = await signAccessToken("trainer-1", "t@example.com", true, false);
     const { userId } = await verifyAccessToken(token);
     expect(userId).toBe("trainer-1");
   });

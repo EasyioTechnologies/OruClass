@@ -22,7 +22,7 @@ jobs:
           key: ${{ secrets.VPS_SSH_KEY }}
           script: |
             set -e
-            cd /opt/oruclass
+            cd /docker/OruClass
 
             git pull origin main
 

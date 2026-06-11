@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Daily pg_dump → Cloudflare R2
-# Cron (on VPS): 0 2 * * * /opt/oruclass/scripts/backup-db.sh >> /var/log/oruclass-backup.log 2>&1
+# Cron (on VPS): 0 2 * * * /docker/OruClass/scripts/backup-db.sh >> /var/log/oruclass-backup.log 2>&1
 set -euo pipefail
 
 : "${POSTGRES_PASSWORD:?POSTGRES_PASSWORD not set}"

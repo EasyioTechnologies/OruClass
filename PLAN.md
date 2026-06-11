@@ -52,7 +52,7 @@
 | P5-1 | Remove placeholder pages from sitemap | ✅ |
 | P5-2 | Add `/compare` sub-pages to sitemap | ✅ |
 | P5-3 | Add per-page metadata to all marketing pages | ✅ |
-| P5-4 | Write real About page content | ⏳ |
+| P5-4 | Write real About page content | ✅ |
 | P5-5 | Add public `/pricing` page (no auth required) | ✅ |
 | P5-6 | Fix sitemap `lastModified` — use real static dates | ✅ |
 | P5-7 | Add Cookie Policy page | ✅ |
@@ -81,7 +81,10 @@
 
 | # | Task | Notes |
 |---|------|-------|
-| P5-4 | Write real About page content | Currently "Coming Soon" |
-| P6-4 | External uptime monitoring | e.g. UptimeRobot / BetterUptime pointing at `/health` |
+| P6-4 | External uptime monitoring | UptimeRobot / BetterUptime → `https://api.orulabs.in/health` |
+
+## Production DB Migrations Applied
+- `0010_indexes_constraints.sql` — applied 2026-06-11 via psql
+- `0011_drop_image_column.sql` — applied 2026-06-11 via psql
 
 *Update status in this file and in `memory/production_launch_plan.md` after each item is completed.*
