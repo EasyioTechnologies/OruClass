@@ -37,14 +37,14 @@ export function TrainerAttendance({ module, trainingId }: Props) {
       </div>
 
       {/* Table */}
-      <div className="flex-1 overflow-auto rounded-xl border border-gray-200">
+      <div className="flex-1 overflow-auto rounded-xl border border-gray-100">
         {isLoading ? (
           <div className="flex items-center justify-center h-full text-gray-400 text-sm">
             Loading attendance…
           </div>
         ) : count === 0 ? (
           <div className="flex flex-col items-center justify-center h-full gap-3 text-gray-400 p-8">
-            <div className="w-12 h-12 rounded-2xl bg-gray-50 border border-gray-200 flex items-center justify-center">
+            <div className="w-12 h-12 rounded-xl bg-gray-50 border border-gray-100 flex items-center justify-center">
               <ClipboardList size={22} className="text-gray-300" />
             </div>
             <div className="text-center">
@@ -54,7 +54,7 @@ export function TrainerAttendance({ module, trainingId }: Props) {
           </div>
         ) : (
           <table className="w-full text-sm">
-            <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
+            <thead className="bg-gray-50 border-b border-gray-100 sticky top-0">
               <tr>
                 <th className="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3 w-8">#</th>
                 <th className="text-left text-[11px] font-semibold text-gray-500 uppercase tracking-wider px-4 py-3">Name</th>

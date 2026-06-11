@@ -57,7 +57,7 @@ export function StickyNotePad({ module, trainingId }: Props) {
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => e.key === "Enter" && addNote()}
-          className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+          className="flex-1 px-3 py-2 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
           placeholder="Add a sticky note…"
         />
         <div className="flex gap-1">
@@ -82,7 +82,7 @@ export function StickyNotePad({ module, trainingId }: Props) {
         </button>
       </div>
 
-      <div className="flex-1 relative border border-gray-200 rounded-lg bg-gray-50 overflow-hidden">
+      <div className="flex-1 relative border border-gray-100 rounded-lg bg-gray-50 overflow-hidden">
         {notes.map((note) => (
           <div
             key={note.id}

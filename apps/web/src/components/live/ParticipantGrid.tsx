@@ -32,7 +32,7 @@ export function ParticipantGrid() {
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg border border-transparent hover:border-gray-100 hover:bg-gray-50 transition-colors group"
               >
                 <div className="relative flex-shrink-0">
-                  <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-200 flex items-center justify-center text-[11px] font-bold text-gray-700">
+                  <div className="w-8 h-8 rounded-full bg-gray-100 border border-gray-100 flex items-center justify-center text-[11px] font-bold text-gray-700">
                     {initials}
                   </div>
                   <span
@@ -51,7 +51,7 @@ export function ParticipantGrid() {
                   </p>
                 </div>
                 {p.role === "trainer" && (
-                  <span className="text-[10px] bg-gray-900 text-white border border-gray-900 px-1.5 py-0.5 rounded-md font-semibold flex-shrink-0">
+                  <span className="text-[10px] bg-brand-600 text-white border border-brand-600 px-1.5 py-0.5 rounded-md font-medium flex-shrink-0">
                     Trainer
                   </span>
                 )}

@@ -71,7 +71,7 @@ export function TrainerWordCloud({ module, trainingId }: Props) {
 
       <div className="flex-1 flex gap-6 overflow-hidden">
         {/* Analytics Sidebar */}
-        <div className="w-64 bg-white border border-gray-200 rounded-xl flex flex-col hidden md:flex">
+        <div className="w-64 bg-white border border-gray-100 rounded-xl flex flex-col hidden md:flex">
           <div className="p-4 border-b border-gray-100 font-semibold text-gray-800">
             Top Words
           </div>
@@ -97,7 +97,7 @@ export function TrainerWordCloud({ module, trainingId }: Props) {
         {/* Word Cloud Canvas */}
         <div 
           ref={cloudRef}
-          className="flex-1 overflow-auto bg-gray-50 rounded-xl border border-gray-200 p-8 flex items-center justify-center relative min-h-[300px]"
+          className="flex-1 overflow-auto bg-gray-50 rounded-xl border border-gray-100 p-8 flex items-center justify-center relative min-h-[300px]"
         >
           {isLoading ? (
             <div className="text-gray-400">Loading words...</div>

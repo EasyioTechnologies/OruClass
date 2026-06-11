@@ -122,7 +122,7 @@ export function TrainerQuiz({ module, trainingId }: Props) {
           </div>
         ) : (
           stats.map(({ q, bars, textAnswers, correctCount, totalAnswered, averageRating }, qi) => (
-            <div key={q.id} className="bg-white rounded-2xl border border-gray-200 p-5">
+            <div key={q.id} className="bg-white rounded-xl border border-gray-100 p-5">
               <div className="flex items-start justify-between gap-3 mb-4">
                 <div className="flex-1">
                   <div className="flex items-center gap-2 mb-1">

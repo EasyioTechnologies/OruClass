@@ -21,6 +21,14 @@ import { useDeleteTraining, useUpdateTraining } from "@/hooks/useTrainings";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
 import { SafeHTML } from "@/components/ui/SafeHTML";
 
+// Deterministic banner color from training ID
+const BANNER_COLORS = ["#1565C0","#00695C","#2E7D32","#6A1B9A","#E65100","#AD1457","#283593","#00838F"];
+function bannerColor(id: string): string {
+  let h = 0;
+  for (let i = 0; i < id.length; i++) h = (h * 31 + id.charCodeAt(i)) | 0;
+  return BANNER_COLORS[Math.abs(h) % BANNER_COLORS.length];
+}
+
 function DeleteTrainingModal({ isOpen, onClose, training, onDelete }: { isOpen: boolean, onClose: () => void, training: Training, onDelete: () => void }) {
   const [input, setInput] = useState("");
   const isMatch = input === training.title;
@@ -32,31 +40,31 @@ function DeleteTrainingModal({ isOpen, onClose, training, onDelete }: { isOpen: 
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
-        <h3 className="text-xl font-bold text-slate-900 mb-2">Delete Training</h3>
-        <p className="text-slate-600 mb-6 text-sm">
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-lg animate-in fade-in zoom-in duration-200" onClick={e => e.stopPropagation()}>
+        <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Training</h3>
+        <p className="text-gray-600 mb-6 text-sm">
           Move <strong>{training.title}</strong> to trash? You can restore it later from the trash folder.
         </p>
         <div className="mb-6">
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 mb-2">
             Please type <strong>{training.title}</strong> to confirm.
           </label>
-          <input 
-            type="text" 
-            value={input} 
+          <input
+            type="text"
+            value={input}
             onChange={e => setInput(e.target.value)}
-            className="w-full px-4 py-2 border border-slate-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
+            className="w-full px-4 py-2 border border-gray-300 rounded-xl focus:ring-2 focus:ring-red-500 focus:border-red-500 outline-none transition-all"
             placeholder={training.title}
           />
         </div>
         <div className="flex justify-end gap-3">
-          <button onClick={onClose} className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-xl font-medium transition-colors">
+          <button onClick={onClose} className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-xl font-medium transition-colors">
             Cancel
           </button>
-          <button 
+          <button
             disabled={!isMatch}
-            onClick={() => { if(isMatch) onDelete(); }}
+            onClick={() => { if (isMatch) onDelete(); }}
             className="px-4 py-2 bg-red-600 text-white rounded-xl font-medium hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed shadow-sm"
           >
             Delete Training
@@ -66,8 +74,6 @@ function DeleteTrainingModal({ isOpen, onClose, training, onDelete }: { isOpen: 
     </div>
   );
 }
-
-
 
 const TYPES: { value: string; label: string }[] = [
   { value: "in_person", label: "In-Person" },
@@ -108,11 +114,11 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
 
   const handleSave = () => {
     updateTraining.mutate(
-      { 
-        title: title.trim(), 
+      {
+        title: title.trim(),
         labels: labels ? labels.split(",").map(s => s.trim()).filter(Boolean) : undefined,
         type: type as "in_person" | "online" | "hybrid",
-        description: description.trim() || undefined, 
+        description: description.trim() || undefined,
         venue: venue.trim() || undefined,
         meetingLink: meetingLink.trim() || undefined,
         startDate: startDate ? new Date(startDate).toISOString() : undefined,
@@ -123,10 +129,10 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm" onClick={onClose}>
-      <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-2xl animate-in fade-in zoom-in duration-200 space-y-4" onClick={e => e.stopPropagation()}>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-gray-900/40 backdrop-blur-sm" onClick={onClose}>
+      <div className="bg-white rounded-xl w-full max-w-md p-6 shadow-lg animate-in fade-in zoom-in duration-200 space-y-4" onClick={e => e.stopPropagation()}>
         <div className="flex items-center justify-between">
-          <h3 className="text-lg font-bold text-slate-900">Edit Training</h3>
+          <h3 className="text-lg font-bold text-gray-900">Edit Training</h3>
           <button onClick={onClose} className="p-1 text-gray-400 hover:text-gray-600 rounded-lg"><X size={18} /></button>
         </div>
         <div>
@@ -196,7 +202,7 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
             <p className="text-xs text-gray-400 mt-1">Moving the start date shifts existing days to match.</p>
           </div>
         </div>
-        {type === "in_person" || type === "hybrid" ? (
+        {(type === "in_person" || type === "hybrid") && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Venue Location</label>
             <input
@@ -207,8 +213,8 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
-        ) : null}
-        {type === "online" || type === "hybrid" ? (
+        )}
+        {(type === "online" || type === "hybrid") && (
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">Virtual Meeting Link</label>
             <input
@@ -219,12 +225,12 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
               className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
             />
           </div>
-        ) : null}
+        )}
         {updateTraining.isError && (
           <p className="text-sm text-red-500">Failed to update training. Try again.</p>
         )}
         <div className="flex gap-2 pt-2">
-          <button onClick={onClose} className="flex-1 py-2 border border-gray-200 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50">
+          <button onClick={onClose} className="flex-1 py-2 border border-gray-100 text-gray-600 rounded-xl text-sm font-medium hover:bg-gray-50">
             Cancel
           </button>
           <button
@@ -240,39 +246,29 @@ function EditTrainingModal({ isOpen, onClose, training }: { isOpen: boolean; onC
   );
 }
 
-function RestoreTrainingCard({ t, index }: { t: Training; index: number }) {
+function RestoreTrainingCard({ t }: { t: Training }) {
   const workspaceId = useWorkspaceStore((s) => s.activeWorkspaceId) ?? "";
   const restoreTraining = useRestoreTraining(workspaceId);
 
-  const handleRestore = () => {
-    restoreTraining.mutate(t.id);
-  };
-
   return (
-    <div className="bg-white rounded-[2rem] border border-gray-200 overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group flex flex-col h-full">
-      <div className="p-6 bg-gradient-to-br from-gray-50/80 via-white to-gray-100/50 flex-1">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {t.labels?.map((label, idx) => (
-              <span key={idx} className="px-3 py-1 bg-white text-gray-600 text-xs font-bold rounded-xl shadow-sm border border-gray-200 tracking-wide">
-                {label}
-              </span>
+    <div className="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col overflow-hidden opacity-70">
+      <div className="h-24 bg-gray-200 flex-shrink-0" />
+      <div className="p-4 flex-1 flex flex-col">
+        <h3 className="text-[15px] font-semibold text-gray-700 leading-snug mb-1">{t.title}</h3>
+        <p className="text-xs text-gray-400 mb-3">{t.days?.length || 0} days · Deleted</p>
+        {t.labels && t.labels.length > 0 && (
+          <div className="flex flex-wrap gap-1.5 mt-auto">
+            {t.labels.map((label, idx) => (
+              <span key={idx} className="px-2.5 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">{label}</span>
             ))}
           </div>
-        </div>
-        <h3 className="text-lg font-bold text-slate-900 mb-2">{t.title}</h3>
-        {t.description && (
-          <p className="text-sm text-slate-600 mb-4 line-clamp-2">{t.description}</p>
         )}
-        <div className="text-xs text-slate-500 mb-4">
-          {t.days?.length || 0} days · Deleted
-        </div>
       </div>
-      <div className="px-6 py-4 border-t border-gray-100 flex gap-2">
+      <div className="px-4 py-3 border-t border-gray-100">
         <button
-          onClick={handleRestore}
+          onClick={() => restoreTraining.mutate(t.id)}
           disabled={restoreTraining.isPending}
-          className="flex-1 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-60 transition-colors text-sm font-semibold"
+          className="w-full py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-60 transition-colors text-xs font-semibold"
         >
           {restoreTraining.isPending ? "Restoring…" : "Restore"}
         </button>
@@ -287,93 +283,92 @@ function TrainingCard({ t, index }: { t: Training; index: number }) {
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
 
-  const handleEditClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsEditModalOpen(true);
-  };
-
-  const handleDeleteClick = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setIsDeleteModalOpen(true);
-  };
-  
   const confirmDelete = () => {
     deleteTraining.mutate(t.id);
     setIsDeleteModalOpen(false);
   };
-  
+
   return (
     <>
-    <div className="bg-white rounded-[2rem] border border-brand-100/50 overflow-hidden shadow-[0_8px_30px_rgb(0,0,0,0.04)] hover:shadow-[0_8px_30px_rgb(0,0,0,0.08)] transition-all duration-300 group flex flex-col h-full">
-      {/* Header section with soft colorful gradient */}
-      <div className="p-6 bg-gradient-to-br from-brand-50/80 via-white to-blue-50/50 flex-1">
-        <div className="flex items-start justify-between gap-4 mb-4">
-          <div className="flex flex-wrap items-center gap-2">
-            {t.labels?.map((label, idx) => (
-              <span key={idx} className="px-3 py-1 bg-white text-brand-600 text-xs font-bold rounded-xl shadow-sm border border-brand-100/50 tracking-wide">
-                {label}
-              </span>
-            ))}
-            <span className="text-xs font-bold text-slate-500 bg-white/60 px-3 py-1 rounded-xl flex items-center gap-1.5">
-              <span className="w-2 h-2 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.5)]"></span>
-              {t.sessionStatus}
-            </span>
-            <span className="text-xs font-bold text-slate-500 bg-white/60 px-3 py-1 rounded-xl">
-              {t.days?.length || 0} Days
-            </span>
-          </div>
-          <div className="flex items-center gap-1">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 group flex flex-col overflow-hidden">
+        {/* Colored banner */}
+        <div
+          className="h-28 relative flex-shrink-0"
+          style={{ backgroundColor: bannerColor(t.id) }}
+        >
+          <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
             <button
-              onClick={handleEditClick}
-              className="text-slate-400 hover:text-brand-600 hover:bg-white p-2 rounded-full transition-colors bg-white/50"
+              onClick={(e) => { e.stopPropagation(); setIsEditModalOpen(true); }}
+              className="p-1.5 bg-black/20 hover:bg-black/35 text-white rounded-lg transition-colors"
               title="Edit training"
             >
-              <Pencil size={15} />
+              <Pencil size={13} />
             </button>
             <button
-              onClick={handleDeleteClick}
-              className="text-slate-400 hover:text-red-500 hover:bg-white p-2 rounded-full transition-colors bg-white/50"
+              onClick={(e) => { e.stopPropagation(); setIsDeleteModalOpen(true); }}
+              className="p-1.5 bg-black/20 hover:bg-black/35 text-white rounded-lg transition-colors"
               title="Delete training"
             >
-              <Trash2 size={16} />
+              <Trash2 size={13} />
             </button>
           </div>
         </div>
-        
-        <h3 className="text-xl font-extrabold text-slate-800 leading-tight mb-2 group-hover:text-brand-700 transition-colors">{t.title}</h3>
-        {t.description && <SafeHTML html={t.description} className="text-sm text-slate-600 line-clamp-2 leading-relaxed" />}
+
+        {/* Body */}
+        <div className="p-4 flex-1 flex flex-col">
+          <h3 className="text-[15px] font-semibold text-gray-900 leading-snug mb-1.5">{t.title}</h3>
+          <div className="flex items-center gap-2 mb-2 flex-wrap">
+            <span className="text-xs text-gray-500">{t.days?.length || 0} days</span>
+            <span className="text-xs text-gray-300">·</span>
+            <span className="flex items-center gap-1 text-xs text-gray-500">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 inline-block flex-shrink-0" />
+              {t.sessionStatus}
+            </span>
+          </div>
+          {t.description && (
+            <SafeHTML html={t.description} className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-2 flex-1" />
+          )}
+          {t.labels && t.labels.length > 0 && (
+            <div className="flex flex-wrap gap-1.5 mt-auto pt-1">
+              {t.labels.map((label, idx) => (
+                <span key={idx} className="px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                  {label}
+                </span>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Footer */}
+        <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+          <Link
+            href={`/trainings/${t.id}/studio`}
+            data-tour={index === 0 ? "open-studio" : undefined}
+            className="text-xs px-3.5 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-semibold"
+          >
+            Open Studio
+          </Link>
+          <Link
+            href={`/trainings/${t.id}/analytics`}
+            data-tour={index === 0 ? "analytics" : undefined}
+            className="text-xs text-gray-400 font-medium hover:text-brand-600 flex items-center gap-1 transition-colors"
+          >
+            Analytics <ArrowRight size={12} />
+          </Link>
+        </div>
       </div>
 
-      {/* Footer */}
-      <div className="px-6 py-4 bg-slate-50/50 flex items-center justify-between border-t border-brand-50/50 mt-auto">
-        <Link
-          href={`/trainings/${t.id}/studio`}
-          data-tour={index === 0 ? "open-studio" : undefined}
-          className="text-sm px-4 py-2 bg-brand-600 text-white rounded-xl hover:bg-brand-700 transition-colors font-bold shadow-sm shadow-brand-200"
-        >
-          Open Studio
-        </Link>
-        <Link
-          href={`/trainings/${t.id}/analytics`}
-          data-tour={index === 0 ? "analytics" : undefined}
-          className="text-sm text-slate-500 font-bold hover:text-brand-600 flex items-center gap-1 transition-colors"
-        >
-          Analytics <ArrowRight size={14} />
-        </Link>
-      </div>
-    </div>
-    
-    <DeleteTrainingModal
-      isOpen={isDeleteModalOpen}
-      onClose={() => setIsDeleteModalOpen(false)}
-      training={t}
-      onDelete={confirmDelete}
-    />
-    <EditTrainingModal
-      isOpen={isEditModalOpen}
-      onClose={() => setIsEditModalOpen(false)}
-      training={t}
-    />
+      <DeleteTrainingModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        training={t}
+        onDelete={confirmDelete}
+      />
+      <EditTrainingModal
+        isOpen={isEditModalOpen}
+        onClose={() => setIsEditModalOpen(false)}
+        training={t}
+      />
     </>
   );
 }
@@ -435,7 +430,6 @@ export function WorkspaceDashboard() {
   const tourReady = !isLoading && !trainingsLoading && !!user;
   const { startTour } = useOnboardingTour("trainer-dashboard-v1", tourSteps, tourReady);
 
-  // Auto-create workspace for new trainers
   useEffect(() => {
     if (!isLoading && (!workspaces || workspaces.length === 0) && user && !autoCreating.current) {
       autoCreating.current = true;
@@ -443,8 +437,6 @@ export function WorkspaceDashboard() {
       createWorkspace(`${firstName}'s Workspace`);
     }
   }, [isLoading, workspaces, user, createWorkspace]);
-
-
 
   if (isLoading || (!workspaces?.length && user)) {
     return (
@@ -455,10 +447,10 @@ export function WorkspaceDashboard() {
   }
 
   return (
-    <div className="space-y-8 max-w-6xl mx-auto pb-12">
+    <div className="space-y-6 max-w-6xl mx-auto pb-12">
       {/* Subscription Banner */}
       {isPro && currentPlan ? (
-        <div className="rounded-xl border border-gray-200 bg-white p-4 md:p-5">
+        <div className="rounded-xl border border-gray-100 bg-white p-4 md:p-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
@@ -466,12 +458,8 @@ export function WorkspaceDashboard() {
               </div>
               <div className="min-w-0">
                 <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-sm font-700 text-gray-900">
-                    {currentPlan.name}
-                  </h2>
-                  <span className="bg-emerald-50 text-emerald-700 text-[10px] font-600 px-2 py-0.5 rounded-md">
-                    Active
-                  </span>
+                  <h2 className="text-sm font-semibold text-gray-900">{currentPlan.name}</h2>
+                  <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded-md">Active</span>
                 </div>
                 <p className="text-xs text-gray-500 mt-0.5">
                   All features unlocked &middot; Renews {currentPlan.period === "month" ? "monthly" : currentPlan.period === "quarter" ? "quarterly" : "yearly"}
@@ -480,27 +468,22 @@ export function WorkspaceDashboard() {
             </div>
             <Link
               href="/subscription/billing"
-              className="flex items-center justify-center gap-1.5 border border-gray-200 text-gray-700 px-3.5 py-2 rounded-lg text-xs font-600 hover:bg-gray-50 transition-colors flex-shrink-0 sm:w-auto w-full"
+              className="flex items-center justify-center gap-1.5 border border-gray-100 text-gray-700 px-3.5 py-2 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors flex-shrink-0 sm:w-auto w-full"
             >
-              Manage Billing
-              <ArrowRight size={12} />
+              Manage Billing <ArrowRight size={12} />
             </Link>
           </div>
         </div>
       ) : (
-        <div className="rounded-xl border border-gray-200 bg-gray-50 p-4 md:p-5">
+        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 md:p-5">
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-3 min-w-0">
               <div className="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">
                 <ArrowRight size={18} className="text-brand-600" strokeWidth={2} />
               </div>
               <div className="min-w-0">
-                <h2 className="text-sm font-700 text-gray-900">
-                  Upgrade your plan
-                </h2>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  Unlock unlimited participants, analytics, and custom branding
-                </p>
+                <h2 className="text-sm font-semibold text-gray-900">Upgrade your plan</h2>
+                <p className="text-xs text-gray-500 mt-0.5">Unlock unlimited participants, analytics, and custom branding</p>
               </div>
             </div>
             <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
@@ -510,57 +493,56 @@ export function WorkspaceDashboard() {
               </div>
               <Link
                 href="/subscription"
-                className="bg-gray-900 text-white px-4 py-2 rounded-lg text-xs font-600 hover:bg-gray-800 transition-colors flex items-center justify-center gap-1.5 flex-shrink-0"
+                className="bg-brand-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-brand-700 transition-colors flex items-center justify-center gap-1.5 flex-shrink-0"
               >
-                View Plans
-                <ArrowRight size={12} />
+                View Plans <ArrowRight size={12} />
               </Link>
             </div>
           </div>
         </div>
       )}
 
+      {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">
-            {showTrash ? "Trash" : "Day-wise Trainings"}
+          <h1 className="text-xl font-semibold text-gray-900">
+            {showTrash ? "Trash" : "Trainings"}
           </h1>
-          <p className="text-sm text-gray-500 mt-1">
+          <p className="text-sm text-gray-500 mt-0.5">
             {showTrash ? "Restore deleted trainings." : "Select a day's session to start instantly."}
           </p>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2">
           <button
             onClick={startTour}
-            className="flex items-center gap-1.5 px-3 py-2.5 text-gray-500 hover:text-brand-600 text-sm font-medium transition-colors"
+            className="flex items-center gap-1.5 px-3 py-2 text-gray-500 hover:text-brand-600 text-sm font-medium transition-colors rounded-lg hover:bg-gray-100"
             title="Show me around"
           >
             <HelpCircle size={16} />
-            <span className="hidden sm:inline">Take a tour</span>
+            <span className="hidden sm:inline">Tour</span>
           </button>
           {!showTrash && trash && trash.length > 0 && (
             <button
               onClick={() => setShowTrash(true)}
-              className="flex items-center gap-1.5 px-3 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors border border-gray-200"
-              title="View trash"
+              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors border border-gray-100"
             >
-              <Trash2 size={16} />
+              <Trash2 size={15} />
               Trash ({trash.length})
             </button>
           )}
           {showTrash && (
             <button
               onClick={() => setShowTrash(false)}
-              className="flex items-center gap-1.5 px-3 py-2.5 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors border border-gray-200"
+              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors border border-gray-100"
             >
-              Back to Trainings
+              Back
             </button>
           )}
           {!showTrash && trainings && trainings.length > 0 && (
             <Link
               href="/trainings/new"
               data-tour="new-training"
-              className="px-5 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm transition-colors text-sm font-semibold w-full sm:w-auto text-center"
+              className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm transition-colors text-sm font-semibold"
             >
               + New Training
             </Link>
@@ -574,14 +556,14 @@ export function WorkspaceDashboard() {
             <div className="w-6 h-6 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : !trash?.length ? (
-          <div className="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
-            <h3 className="text-lg font-semibold text-gray-900 mb-2">Trash is empty</h3>
-            <p className="text-gray-500">Deleted trainings will appear here.</p>
+          <div className="bg-white rounded-xl border border-dashed border-gray-100 p-12 text-center">
+            <h3 className="text-base font-semibold text-gray-900 mb-1">Trash is empty</h3>
+            <p className="text-sm text-gray-500">Deleted trainings will appear here.</p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
-            {trash.map((t, i) => (
-              <RestoreTrainingCard key={t.id} t={t} index={i} />
+          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
+            {trash.map((t) => (
+              <RestoreTrainingCard key={t.id} t={t} />
             ))}
           </div>
         )
@@ -590,9 +572,9 @@ export function WorkspaceDashboard() {
           <div className="w-6 h-6 border-4 border-brand-600 border-t-transparent rounded-full animate-spin" />
         </div>
       ) : !trainings?.length ? (
-        <div className="bg-white rounded-xl border border-dashed border-gray-300 p-12 text-center">
-          <h3 className="text-lg font-semibold text-gray-900 mb-2">No trainings yet</h3>
-          <p className="text-gray-500 mb-6">Create your first training to start building day-wise plans.</p>
+        <div className="bg-white rounded-xl border border-dashed border-gray-100 p-12 text-center">
+          <h3 className="text-base font-semibold text-gray-900 mb-1">No trainings yet</h3>
+          <p className="text-sm text-gray-500 mb-6">Create your first training to start building day-wise plans.</p>
           <Link
             href="/trainings/new"
             data-tour="new-training"
@@ -602,13 +584,12 @@ export function WorkspaceDashboard() {
           </Link>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4 md:gap-5">
           {trainings.map((t, i) => (
             <TrainingCard key={t.id} t={t} index={i} />
           ))}
         </div>
       )}
-
     </div>
   );
 }

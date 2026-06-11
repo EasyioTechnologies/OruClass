@@ -46,12 +46,12 @@ export function MatrixEditor({ module, trainingId }: Props) {
       </div>
 
       <div className="overflow-x-auto">
-        <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+        <table className="min-w-full border border-gray-100 rounded-lg overflow-hidden">
           <thead>
             <tr>
-              <th className="border-b border-gray-200 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-500 text-left" />
+              <th className="border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-500 text-left" />
               {cols.map((c) => (
-                <th key={c} className="border-b border-l border-gray-200 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-700">
+                <th key={c} className="border-b border-l border-gray-100 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-700">
                   {c}
                 </th>
               ))}
@@ -60,11 +60,11 @@ export function MatrixEditor({ module, trainingId }: Props) {
           <tbody>
             {rows.map((r) => (
               <tr key={r}>
-                <td className="border-b border-gray-200 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-700">
+                <td className="border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-700">
                   {r}
                 </td>
                 {cols.map((c) => (
-                  <td key={c} className="border-b border-l border-gray-200 p-0">
+                  <td key={c} className="border-b border-l border-gray-100 p-0">
                     <input
                       value={cells[`${r}__${c}`] ?? ""}
                       onChange={(e) =>

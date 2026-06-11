@@ -20,9 +20,9 @@ export default function ProfilePage() {
     <div className="max-w-2xl mx-auto py-8">
       <h1 className="text-2xl font-bold text-gray-900 mb-6">My Profile</h1>
       
-      <div className="bg-white border border-gray-200 rounded-2xl overflow-hidden shadow-sm">
+      <div className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm">
         {/* Header Cover */}
-        <div className="h-32 bg-gradient-to-r from-brand-400 to-brand-600"></div>
+        <div className="h-32 bg-brand-600"></div>
         
         <div className="px-8 pb-8">
           {/* Avatar Area */}

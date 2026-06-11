@@ -168,7 +168,7 @@ export function CalendarView() {
       <div className="flex gap-4 flex-none sm:flex-1 min-h-0 flex-col lg:flex-row">
         {/* Calendar grid */}
         <div 
-          className="sm:flex-1 min-w-0 bg-white rounded-2xl border border-gray-200 overflow-hidden flex flex-col sm:min-h-[320px] touch-pan-y"
+          className="sm:flex-1 min-w-0 bg-white rounded-xl border border-gray-100 overflow-hidden flex flex-col sm:min-h-[320px] touch-pan-y"
           onTouchStart={onTouchStart}
           onTouchMove={onTouchMove}
           onTouchEnd={onTouchEndHandler}
@@ -261,7 +261,7 @@ export function CalendarView() {
 
       {/* Mobile: selected day events */}
       {selectedDay && selectedDayEvents.length > 0 && (
-        <div className="lg:hidden bg-white rounded-2xl border border-gray-200 p-4 space-y-2">
+        <div className="lg:hidden bg-white rounded-xl border border-gray-100 p-4 space-y-2">
           <div className="flex items-center justify-between mb-1">
             <h3 className="text-sm font-semibold text-gray-900">
               {new Date(viewYear, viewMonth, parseInt(selectedDay.split("-")[2])).toLocaleDateString(undefined, {
@@ -278,7 +278,7 @@ export function CalendarView() {
               onClick={() => setSelected(selected?.id === t.id ? null : t)}
               className={cn(
                 "p-3 rounded-xl border transition-colors cursor-pointer",
-                selected?.id === t.id ? "border-brand-300 bg-brand-50" : "border-gray-100 hover:border-gray-200",
+                selected?.id === t.id ? "border-brand-300 bg-brand-50" : "border-gray-100 hover:border-gray-100",
               )}
             >
               <div className="flex items-center gap-2">
@@ -333,7 +333,7 @@ export function CalendarView() {
 function TrainingDetail({ training, onClose }: { training: Training | null; onClose: () => void }) {
   if (!training) return null;
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4 space-y-3">
+    <div className="bg-white rounded-xl border border-gray-100 p-4 space-y-3">
       <div className="flex items-start justify-between gap-2">
         <h3 className="font-semibold text-gray-900 text-sm leading-tight">{training.title}</h3>
         <button onClick={onClose} className="text-gray-400 hover:text-gray-700 p-0.5 shrink-0">
@@ -365,7 +365,7 @@ function TrainingDetail({ training, onClose }: { training: Training | null; onCl
 function UnscheduledList({ trainings }: { trainings: Training[] }) {
   if (trainings.length === 0) return null;
   return (
-    <div className="bg-white rounded-2xl border border-gray-200 p-4 flex-1 overflow-hidden flex flex-col">
+    <div className="bg-white rounded-xl border border-gray-100 p-4 flex-1 overflow-hidden flex flex-col">
       <h3 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Unscheduled</h3>
       <div className="space-y-1.5 overflow-y-auto flex-1">
         {trainings.map((t) => (

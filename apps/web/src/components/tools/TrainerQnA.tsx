@@ -18,7 +18,7 @@ export function TrainerQnA({ module, trainingId }: Props) {
         <div className="text-sm text-gray-500 font-medium">{responses?.length ?? 0} Questions</div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-gray-50 rounded-xl border border-gray-200 p-6 space-y-3">
+      <div className="flex-1 overflow-auto bg-gray-50 rounded-xl border border-gray-100 p-6 space-y-3">
         {isLoading ? (
           <div className="text-center text-gray-400">Loading questions...</div>
         ) : responses?.length === 0 ? (

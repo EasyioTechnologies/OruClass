@@ -59,7 +59,7 @@ export function QuizRenderer({ module, trainingId }: Props) {
                       "w-full text-left px-4 py-3 rounded-lg border text-sm transition-colors",
                       answers[q.id] === opt
                         ? "border-brand-500 bg-brand-50 text-brand-700"
-                        : "border-gray-200 hover:bg-gray-50",
+                        : "border-gray-100 hover:bg-gray-50",
                     )}
                   >
                     {opt}
@@ -71,7 +71,7 @@ export function QuizRenderer({ module, trainingId }: Props) {
                 value={answers[q.id] ?? ""}
                 onChange={(e) => setAnswers((prev) => ({ ...prev, [q.id]: e.target.value }))}
                 rows={3}
-                className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+                className="w-full px-3 py-2 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
                 placeholder="Your answer…"
               />
             )}

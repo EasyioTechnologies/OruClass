@@ -23,7 +23,7 @@ export function TrainerMatrix({ module, trainingId }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-gray-50 rounded-xl border border-gray-200 p-6 space-y-6">
+      <div className="flex-1 overflow-auto bg-gray-50 rounded-xl border border-gray-100 p-6 space-y-6">
         {isLoading ? (
           <div className="text-center text-gray-400">Loading matrices...</div>
         ) : responses?.length === 0 ? (
@@ -39,12 +39,12 @@ export function TrainerMatrix({ module, trainingId }: Props) {
                   <div className="font-semibold text-sm mb-4 text-brand-600">
                     {r.user?.name ?? "Anonymous Participant"}
                   </div>
-                  <table className="min-w-full border border-gray-200 rounded-lg overflow-hidden">
+                  <table className="min-w-full border border-gray-100 rounded-lg overflow-hidden">
                     <thead>
                       <tr>
-                        <th className="border-b border-gray-200 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-500 text-left" />
+                        <th className="border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-500 text-left" />
                         {cols.map((c) => (
-                          <th key={c} className="border-b border-l border-gray-200 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-700">
+                          <th key={c} className="border-b border-l border-gray-100 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-700">
                             {c}
                           </th>
                         ))}
@@ -53,11 +53,11 @@ export function TrainerMatrix({ module, trainingId }: Props) {
                     <tbody>
                       {rows.map((rowLabel) => (
                         <tr key={rowLabel}>
-                          <td className="border-b border-gray-200 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-700">
+                          <td className="border-b border-gray-100 bg-gray-50 px-4 py-2 text-xs font-medium text-gray-700">
                             {rowLabel}
                           </td>
                           {cols.map((colLabel) => (
-                            <td key={colLabel} className="border-b border-l border-gray-200 px-4 py-2 text-sm text-gray-800">
+                            <td key={colLabel} className="border-b border-l border-gray-100 px-4 py-2 text-sm text-gray-800">
                               {cells[`${rowLabel}__${colLabel}`] || "-"}
                             </td>
                           ))}

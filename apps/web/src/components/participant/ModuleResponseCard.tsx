@@ -228,7 +228,7 @@ export function ModuleResponseCard({ module, response }: { module: TrainingModul
   const Icon = moduleIcons[module.moduleType] || FileText;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-5">
+    <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-5">
       <div className="flex items-center gap-3 mb-3">
         <div className="w-9 h-9 rounded-xl bg-brand-50 flex items-center justify-center flex-shrink-0">
           <Icon size={16} className="text-brand-500" />

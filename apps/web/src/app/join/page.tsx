@@ -115,7 +115,7 @@ export default function JoinPage() {
           <p className="text-sm text-gray-500 mt-1">Join your live session</p>
         </div>
 
-        <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
           {step === "auth" ? (
             <form onSubmit={handleGuestLogin} className="space-y-4">
               <div>
@@ -178,7 +178,7 @@ export default function JoinPage() {
                         ? "border-red-300 text-red-600 focus:border-red-400"
                         : d
                         ? "border-brand-400 text-brand-700"
-                        : "border-gray-200 text-gray-900 focus:border-brand-400",
+                        : "border-gray-100 text-gray-900 focus:border-brand-400",
                     ].join(" ")}
                   />
                 ))}

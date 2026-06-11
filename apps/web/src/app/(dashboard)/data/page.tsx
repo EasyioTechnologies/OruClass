@@ -178,10 +178,10 @@ export default function DataPage() {
             const totalResponses = Object.values(dayData.modules).reduce((sum, m) => sum + m.responses.length, 0);
 
             return (
-              <div key={dayId} className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col">
+              <div key={dayId} className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm flex flex-col">
                 <button
                   onClick={() => toggleDay(dayId)}
-                  className="px-6 py-4 border-b border-gray-200 bg-gradient-to-r from-brand-50 to-transparent flex items-center justify-between hover:bg-brand-50 transition-colors w-full text-left"
+                  className="px-6 py-4 border-b border-gray-100 bg-brand-50/50 flex items-center justify-between hover:bg-brand-50 transition-colors w-full text-left"
                 >
                   <div className="flex items-center gap-3">
                     <Calendar className="w-5 h-5 text-brand-600" />
@@ -194,11 +194,11 @@ export default function DataPage() {
                 </button>
 
                 {isExpanded && (
-                  <div className="p-4 space-y-4 border-t border-gray-200 bg-gray-50/30">
+                  <div className="p-4 space-y-4 border-t border-gray-100 bg-gray-50/30">
                     {Object.entries(dayData.modules).map(([moduleId, moduleData]) => {
                       const isModuleExpanded = expandedModules[moduleId];
                       return (
-                        <div key={moduleId} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-sm">
+                        <div key={moduleId} className="bg-white border border-gray-100 rounded-lg overflow-hidden shadow-sm">
                           <button
                             onClick={() => toggleModule(moduleId)}
                             className="w-full px-4 py-3 flex items-center justify-between hover:bg-gray-50 transition-colors text-left border-b border-gray-100"
@@ -291,7 +291,7 @@ export default function DataPage() {
           <input
             type="text"
             placeholder="Search by participant, training..."
-            className="pl-9 pr-4 py-2 border border-gray-200 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
+            className="pl-9 pr-4 py-2 border border-gray-100 rounded-lg text-sm w-full sm:w-64 focus:outline-none focus:ring-2 focus:ring-brand-500/20 focus:border-brand-500 transition-all"
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
@@ -300,7 +300,7 @@ export default function DataPage() {
 
       <div className="flex-1 overflow-auto space-y-6 pb-6 pr-2">
         {Object.values(groupedByTraining).length === 0 ? (
-          <div className="bg-white border border-gray-200 rounded-xl p-12 text-center text-sm text-gray-500">
+          <div className="bg-white border border-gray-100 rounded-xl p-12 text-center text-sm text-gray-500">
             No responses found.
           </div>
         ) : (
@@ -308,7 +308,7 @@ export default function DataPage() {
             {Object.values(groupedByTraining).map((group) => (
               <div 
                 key={group.training?.id || "unknown"} 
-                className="bg-white border border-gray-200 rounded-xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer"
+                className="bg-white border border-gray-100 rounded-xl overflow-hidden shadow-sm flex flex-col hover:shadow-md transition-shadow cursor-pointer"
                 onClick={() => setActiveTrainingId(group.training?.id || "unknown")}
               >
                 <div className="p-6 flex-1">

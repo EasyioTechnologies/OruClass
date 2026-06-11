@@ -122,7 +122,7 @@ export function TrainerForm({ module, trainingId }: Props) {
         </div>
         
         <div className="flex gap-4">
-          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-100">
             <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
               <Users className="w-5 h-5" />
             </div>
@@ -134,7 +134,7 @@ export function TrainerForm({ module, trainingId }: Props) {
             </div>
           </div>
           
-          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-100">
             <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600">
               <FileText className="w-5 h-5" />
             </div>
@@ -152,7 +152,7 @@ export function TrainerForm({ module, trainingId }: Props) {
             <div className="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
           </div>
         ) : fields.length === 0 ? (
-          <div className="text-center p-12 text-gray-500 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="text-center p-12 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-100">
             No form fields configured for this module.
           </div>
         ) : (
@@ -162,7 +162,7 @@ export function TrainerForm({ module, trainingId }: Props) {
               const ansCount = fieldAnswers.get(field.id)?.length ?? 0;
               
               return (
-                <div key={field.id} className="bg-white rounded-2xl border border-gray-200 shadow-sm overflow-hidden">
+                <div key={field.id} className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
                   <button 
                     onClick={() => setExpandedField(isExpanded ? null : field.id)}
                     className="w-full flex items-center justify-between p-5 bg-white hover:bg-gray-50 transition-colors"

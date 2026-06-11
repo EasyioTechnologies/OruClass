@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { GraduationCap } from "lucide-react";
 import Link from "next/link";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
@@ -12,8 +13,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   useEffect(() => {
     if (!isPending && isAuthenticated && (emailVerified || user?.authProvider === "guest")) {
       let dest = "/participant";
-      // Guests are participants only — never honor a stale oru_return that may point
-      // at a trainer route (e.g. "/dashboard" left over from a prior trainer login).
       if (user?.authProvider !== "guest") {
         try { dest = localStorage.getItem("oru_return") ?? dest; } catch {}
       }
@@ -22,24 +21,21 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   }, [isPending, isAuthenticated, emailVerified, user, router]);
 
   return (
-    <div className="relative min-h-screen flex items-center justify-center overflow-hidden bg-slate-50/50">
-      <Link href="/" className="absolute top-6 left-6 md:top-8 md:left-8 z-20 group">
-        <div className="flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/50 hover:bg-white border border-transparent hover:border-gray-200 transition-all shadow-sm backdrop-blur-sm">
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-brand-600">
-            <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/>
-            <polyline points="9 22 9 12 15 12 15 22"/>
-          </svg>
-          <span className="text-sm font-bold tracking-tight text-gray-700 group-hover:text-brand-700">
-            Home
+    <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top bar */}
+      <div className="h-14 border-b border-gray-100 bg-white flex items-center px-6">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="w-7 h-7 rounded-lg bg-brand-600 flex items-center justify-center">
+            <GraduationCap size={14} className="text-white" strokeWidth={2} />
+          </div>
+          <span className="text-[15px] font-semibold text-gray-900 tracking-tight group-hover:text-brand-700 transition-colors">
+            OruLabs
           </span>
-        </div>
-      </Link>
-      
-      {/* Floating Brand Gradient Background */}
-      <div className="absolute top-[-15%] left-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-brand-300/20 blur-[100px] pointer-events-none mix-blend-multiply" />
-      <div className="absolute bottom-[-15%] right-[-10%] w-[50vw] h-[50vw] max-w-[600px] max-h-[600px] rounded-full bg-brand-200/30 blur-[100px] pointer-events-none mix-blend-multiply" />
+        </Link>
+      </div>
 
-      <div className="relative z-10 p-4 w-full flex justify-center">
+      {/* Content */}
+      <div className="flex-1 flex items-center justify-center p-6">
         {children}
       </div>
     </div>

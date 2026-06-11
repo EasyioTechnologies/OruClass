@@ -129,6 +129,23 @@ trainingsRouter.post("/", async (c) => {
   return c.json(training, 201);
 });
 
+// GET /trainings/trash (list deleted trainings)
+trainingsRouter.get("/trash", async (c) => {
+  const workspaceId = c.get("workspaceId") as string;
+
+  const rows = await db.query.trainings.findMany({
+    where: and(eq(trainings.workspaceId, workspaceId), isNotNull(trainings.deletedAt)),
+    with: {
+      creator: true,
+      modules: true,
+      days: { orderBy: (d, { asc }) => [asc(d.dayNumber)] }
+    },
+    orderBy: (t, { desc }) => [desc(t.deletedAt)],
+  });
+
+  return c.json(rows);
+});
+
 // GET /trainings/:id
 trainingsRouter.get("/:id", async (c) => {
   const workspaceId = c.get("workspaceId") as string;
@@ -215,23 +232,6 @@ trainingsRouter.delete(
     return c.json({ success: true });
   },
 );
-
-// GET /trainings/trash (list deleted trainings)
-trainingsRouter.get("/trash", async (c) => {
-  const workspaceId = c.get("workspaceId") as string;
-
-  const rows = await db.query.trainings.findMany({
-    where: and(eq(trainings.workspaceId, workspaceId), isNotNull(trainings.deletedAt)),
-    with: {
-      creator: true,
-      modules: true,
-      days: { orderBy: (d, { asc }) => [asc(d.dayNumber)] }
-    },
-    orderBy: (t, { desc }) => [desc(t.deletedAt)],
-  });
-
-  return c.json(rows);
-});
 
 // PATCH /trainings/:id/restore (restore from trash)
 trainingsRouter.patch(

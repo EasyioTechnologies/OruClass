@@ -171,17 +171,17 @@ export function TrainerLiveRoom({ trainingId }: { trainingId: string }) {
       live: { label: "Live", dot: "bg-green-500", pill: "bg-green-50 text-green-700 border-green-200" },
       connecting: { label: "Open", dot: "bg-blue-500", pill: "bg-blue-50 text-blue-700 border-blue-200" },
       paused: { label: "Paused", dot: "bg-amber-500", pill: "bg-amber-50 text-amber-700 border-amber-200" },
-      draft: { label: "Draft", dot: "bg-gray-400", pill: "bg-gray-50 text-gray-500 border-gray-200" },
-      completed: { label: "Ended", dot: "bg-gray-400", pill: "bg-gray-50 text-gray-500 border-gray-200" },
+      draft: { label: "Draft", dot: "bg-gray-400", pill: "bg-gray-50 text-gray-500 border-gray-100" },
+      completed: { label: "Ended", dot: "bg-gray-400", pill: "bg-gray-50 text-gray-500 border-gray-100" },
     } as Record<string, { label: string; dot: string; pill: string }>
-  )[training.sessionStatus] ?? { label: training.sessionStatus, dot: "bg-gray-400", pill: "bg-gray-50 text-gray-500 border-gray-200" };
+  )[training.sessionStatus] ?? { label: training.sessionStatus, dot: "bg-gray-400", pill: "bg-gray-50 text-gray-500 border-gray-100" };
 
   return (
     <div className="flex h-full overflow-hidden bg-gray-50">
       {/* ── MAIN CONTENT ── */}
       <div className="flex flex-1 flex-col min-w-0 overflow-hidden">
         {/* Top bar */}
-        <div className="h-[52px] border-b border-gray-200 bg-white flex items-center justify-between px-4 flex-shrink-0 gap-3">
+        <div className="h-14 border-b border-gray-100 bg-white flex items-center justify-between px-4 flex-shrink-0 gap-3">
           {/* Left: back + training name */}
           <div className="flex items-center gap-3 min-w-0">
             <a
@@ -232,7 +232,7 @@ export function TrainerLiveRoom({ trainingId }: { trainingId: string }) {
           {/* Right: status + participant count + toggle */}
           <div className="flex items-center gap-2 shrink-0">
             {participantCount > 0 && (
-              <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 font-medium bg-gray-50 border border-gray-200 rounded-full px-2.5 py-1">
+              <div className="hidden sm:flex items-center gap-1.5 text-xs text-gray-500 font-medium bg-gray-50 border border-gray-100 rounded-full px-2.5 py-1">
                 <Users size={12} />
                 {participantCount}
               </div>
@@ -303,7 +303,7 @@ export function TrainerLiveRoom({ trainingId }: { trainingId: string }) {
       {/* ── RIGHT PANEL ── */}
       <div
         className={cn(
-          "bg-white border-l border-gray-200 flex flex-col flex-shrink-0 overflow-hidden transition-all duration-300",
+          "bg-white border-l border-gray-100 flex flex-col flex-shrink-0 overflow-hidden transition-all duration-300",
           "fixed md:relative inset-y-0 right-0 z-50",
           rightOpen
             ? "w-[280px] translate-x-0"
@@ -311,7 +311,7 @@ export function TrainerLiveRoom({ trainingId }: { trainingId: string }) {
         )}
       >
         {/* Mobile close header */}
-        <div className="h-[52px] border-b border-gray-100 flex items-center justify-between px-4 md:hidden flex-shrink-0">
+        <div className="h-14 border-b border-gray-100 flex items-center justify-between px-4 md:hidden flex-shrink-0">
           <span className="text-sm font-bold text-gray-800">Session Panel</span>
           <button className="text-gray-400 p-1 hover:text-gray-700" onClick={() => setRightOpen(false)}>
             <X size={17} />

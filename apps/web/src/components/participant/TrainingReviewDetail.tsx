@@ -53,7 +53,7 @@ export function TrainingReviewDetail({ trainingId }: { trainingId: string }) {
   return (
     <div className="space-y-4 sm:space-y-6 max-w-4xl mx-auto">
       {/* Header */}
-      <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6 shadow-sm">
+      <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6 shadow-sm">
         <button
           onClick={() => router.push("/participant/previous")}
           className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-gray-700 transition-colors mb-3"
@@ -83,7 +83,7 @@ export function TrainingReviewDetail({ trainingId }: { trainingId: string }) {
       </div>
 
       {/* Tabs */}
-      <div className="flex gap-1 bg-white rounded-xl border border-gray-200 p-1 shadow-sm overflow-x-auto">
+      <div className="flex gap-1 bg-white rounded-xl border border-gray-100 p-1 shadow-sm overflow-x-auto">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           return (
@@ -109,7 +109,7 @@ export function TrainingReviewDetail({ trainingId }: { trainingId: string }) {
         {activeTab === "overview" && (
           <div className="space-y-4">
             {/* Training Info */}
-            <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+            <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6">
               <h3 className="text-sm font-semibold text-gray-900 mb-4">Training Details</h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
@@ -139,7 +139,7 @@ export function TrainingReviewDetail({ trainingId }: { trainingId: string }) {
 
             {/* Facilitators */}
             {training.facilitators && training.facilitators.length > 0 && (
-              <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Facilitators</h3>
                 <div className="space-y-2">
                   {training.facilitators.map((f) => {
@@ -162,12 +162,12 @@ export function TrainingReviewDetail({ trainingId }: { trainingId: string }) {
 
             {/* Days */}
             {training.days && training.days.length > 0 && (
-              <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+              <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6">
                 <h3 className="text-sm font-semibold text-gray-900 mb-3">Training Schedule</h3>
                 <div className="space-y-2">
                   {training.days.map((day) => (
                     <div key={day.id} className="flex items-center gap-3 bg-gray-50 rounded-lg p-3">
-                      <div className="w-8 h-8 rounded-lg bg-white border border-gray-200 flex items-center justify-center text-xs font-bold text-gray-600">
+                      <div className="w-8 h-8 rounded-lg bg-white border border-gray-100 flex items-center justify-center text-xs font-bold text-gray-600">
                         {day.dayNumber}
                       </div>
                       <div>
@@ -189,7 +189,7 @@ export function TrainingReviewDetail({ trainingId }: { trainingId: string }) {
         {activeTab === "modules" && (
           <div className="space-y-3">
             {!training.modules?.length ? (
-              <div className="bg-gray-50 border border-gray-200 rounded-xl p-8 text-center">
+              <div className="bg-gray-50 border border-gray-100 rounded-xl p-8 text-center">
                 <p className="text-gray-500 text-sm">No modules in this training.</p>
               </div>
             ) : (
@@ -205,7 +205,7 @@ export function TrainingReviewDetail({ trainingId }: { trainingId: string }) {
         )}
 
         {activeTab === "notes" && (
-          <div className="bg-white rounded-xl border border-gray-200 p-4 sm:p-6">
+          <div className="bg-white rounded-xl border border-gray-100 p-4 sm:p-6">
             <h3 className="text-sm font-semibold text-gray-900 mb-3">Personal Notes</h3>
             {personalNotes ? (
               <div className="bg-gray-50 rounded-lg p-4">

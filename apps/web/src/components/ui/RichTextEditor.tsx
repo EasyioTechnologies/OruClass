@@ -46,7 +46,7 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
   const colors = ["#000000", "#ef4444", "#f97316", "#eab308", "#22c55e", "#3b82f6", "#6366f1", "#a855f7"];
 
   return (
-    <div className="flex flex-wrap items-center gap-1 p-1 bg-gray-50 border-b border-gray-200 rounded-t-lg">
+    <div className="flex flex-wrap items-center gap-1 p-1 bg-gray-50 border-b border-gray-100 rounded-t-lg">
       <button
         onClick={() => editor.chain().focus().toggleBold().run()}
         disabled={!editor.can().chain().focus().toggleBold().run()}
@@ -121,12 +121,12 @@ const MenuBar = ({ editor }: { editor: Editor | null }) => {
         >
           <Palette size={16} />
         </button>
-        <div className="absolute top-full left-0 mt-1 p-2 bg-white border border-gray-200 rounded-lg shadow-lg hidden group-hover:flex flex-wrap w-32 gap-1 z-10">
+        <div className="absolute top-full left-0 mt-1 p-2 bg-white border border-gray-100 rounded-lg shadow-lg hidden group-hover:flex flex-wrap w-32 gap-1 z-10">
           {colors.map((color) => (
             <button
               key={color}
               type="button"
-              className="w-6 h-6 rounded border border-gray-200"
+              className="w-6 h-6 rounded border border-gray-100"
               style={{ backgroundColor: color }}
               onClick={() => editor.chain().focus().setColor(color).run()}
             />

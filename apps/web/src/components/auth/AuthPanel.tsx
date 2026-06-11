@@ -1,5 +1,6 @@
 "use client";
 
+import { GraduationCap } from "lucide-react";
 import Link from "next/link";
 import { EmailAuthForm } from "./EmailAuthForm";
 
@@ -13,15 +14,23 @@ export function AuthPanel({
   returnTo: string;
 }) {
   return (
-    <div className="w-full max-w-[400px] mx-auto p-6 sm:p-10 space-y-6 sm:space-y-7 my-4 sm:my-8 relative z-10">
-      <div className="text-center space-y-1.5 sm:space-y-2 mb-2">
-        <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">{title}</h1>
-        <p className="text-xs sm:text-sm text-gray-500">{subtitle}</p>
+    <div className="w-full max-w-[420px] mx-auto">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 space-y-6">
+        {/* Brand */}
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center">
+            <GraduationCap size={22} className="text-white" strokeWidth={2} />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">{title}</h1>
+            <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
+          </div>
+        </div>
+
+        <EmailAuthForm returnTo={returnTo} />
       </div>
 
-      <EmailAuthForm returnTo={returnTo} />
-
-      <div className="pt-4 mt-4 border-t border-gray-100/60 text-center">
+      <div className="text-center mt-4">
         <Link href="/login" className="text-sm text-gray-400 hover:text-gray-600 font-medium transition-colors">
           ← Choose a different role
         </Link>

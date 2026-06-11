@@ -82,7 +82,7 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-xl border border-gray-200 p-6 space-y-4">
+    <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-xl border border-gray-100 p-6 space-y-4">
       <div>
         <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
         <input

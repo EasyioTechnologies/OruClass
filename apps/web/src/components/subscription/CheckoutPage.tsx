@@ -88,7 +88,7 @@ export function CheckoutPage() {
           </div>
 
           {/* Account Info */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
             <h3 className="text-[13px] font-600 text-gray-400 uppercase tracking-[0.06em] mb-3">
               Account
             </h3>
@@ -104,7 +104,7 @@ export function CheckoutPage() {
           </div>
 
           {/* Payment Method */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
             <h3 className="text-[13px] font-600 text-gray-400 uppercase tracking-[0.06em] mb-3">
               Payment Method
             </h3>
@@ -199,7 +199,7 @@ export function CheckoutPage() {
           </div>
 
           {/* Coupon */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
             <h3 className="text-[13px] font-600 text-gray-400 uppercase tracking-[0.06em] mb-3">
               Have a coupon?
             </h3>
@@ -230,7 +230,7 @@ export function CheckoutPage() {
 
         {/* Right — Order Summary */}
         <div className="lg:col-span-2">
-          <div className="bg-white border border-gray-200 rounded-xl p-5 lg:sticky lg:top-6">
+          <div className="bg-white border border-gray-100 rounded-xl p-5 lg:sticky lg:top-6">
             <h3 className="text-[13px] font-600 text-gray-400 uppercase tracking-[0.06em] mb-4">
               Order Summary
             </h3>

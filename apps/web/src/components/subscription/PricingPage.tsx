@@ -26,8 +26,8 @@ const tierStyle: Record<PlanId, {
     badge: "",
     iconBg: "bg-gray-100",
     iconColor: "text-gray-600",
-    cta: "bg-gray-900 text-white",
-    ctaHover: "hover:bg-gray-800",
+    cta: "bg-brand-600 text-white",
+    ctaHover: "hover:bg-brand-700",
     check: "text-gray-500",
     checkBg: "bg-gray-100",
     savings: "",
@@ -37,25 +37,25 @@ const tierStyle: Record<PlanId, {
   quarterly: {
     accent: "text-emerald-700",
     accentLight: "text-emerald-600",
-    badge: "bg-gradient-to-r from-emerald-600 to-teal-500 text-white",
-    iconBg: "bg-gradient-to-br from-emerald-500 to-teal-500",
+    badge: "bg-emerald-600 text-white",
+    iconBg: "bg-emerald-600",
     iconColor: "text-white",
-    cta: "bg-gradient-to-r from-emerald-600 to-teal-500 text-white shadow-[0_2px_12px_-2px_rgba(16,185,129,0.45)]",
-    ctaHover: "hover:shadow-[0_4px_20px_-2px_rgba(16,185,129,0.55)]",
+    cta: "bg-emerald-600 text-white",
+    ctaHover: "hover:bg-emerald-700",
     check: "text-emerald-600",
     checkBg: "bg-emerald-50",
     savings: "text-emerald-700 bg-emerald-50",
-    ring: "border-emerald-400/60 shadow-[0_8px_40px_-8px_rgba(16,185,129,0.18)]",
+    ring: "border-emerald-300 shadow-sm",
     cardBg: "bg-white",
   },
   yearly: {
     accent: "text-gray-900",
     accentLight: "text-gray-600",
-    badge: "bg-gradient-to-r from-gray-900 to-gray-700 text-white",
-    iconBg: "bg-gradient-to-br from-gray-900 to-gray-700",
+    badge: "bg-gray-700 text-white",
+    iconBg: "bg-gray-700",
     iconColor: "text-white",
-    cta: "bg-gray-900 text-white",
-    ctaHover: "hover:bg-gray-800",
+    cta: "bg-brand-600 text-white",
+    ctaHover: "hover:bg-brand-700",
     check: "text-gray-600",
     checkBg: "bg-gray-100",
     savings: "text-gray-700 bg-gray-100",
@@ -132,7 +132,7 @@ export function PricingPage({ onGetStarted }: { onGetStarted?: (planId: PlanId) 
               key={plan.id}
               onClick={() => setSelectedPlan(plan.id)}
               className={cn(
-                "relative rounded-2xl border-2 p-6 cursor-pointer transition-all duration-200",
+                "relative rounded-xl border-2 p-6 cursor-pointer transition-all duration-200",
                 style.cardBg,
                 isPopular
                   ? style.ring
@@ -249,7 +249,7 @@ export function PricingPage({ onGetStarted }: { onGetStarted?: (planId: PlanId) 
       </div>
 
       {/* FAQ-lite */}
-      <div className="mt-12 bg-gray-50 rounded-2xl p-6 md:p-8">
+      <div className="mt-12 bg-gray-50 rounded-xl p-6 md:p-8">
         <h2 className="text-[18px] font-700 text-gray-900 mb-5">Common questions</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {[

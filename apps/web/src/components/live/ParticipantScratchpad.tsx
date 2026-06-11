@@ -39,7 +39,7 @@ export function ParticipantScratchpad({ trainingId }: { trainingId: string }) {
         <button
           onClick={() => { setActiveWidget(activeWidget === "whiteboard" ? null : "whiteboard"); }}
           className={cn(
-            "flex items-center gap-3 bg-white px-4 py-3 rounded-full shadow-lg border border-gray-200 text-sm font-semibold hover:bg-brand-50 transition-colors group",
+            "flex items-center gap-3 bg-white px-4 py-3 rounded-full shadow-lg border border-gray-100 text-sm font-semibold hover:bg-brand-50 transition-colors group",
             activeWidget === "whiteboard" ? "border-brand-500 bg-brand-50 text-brand-700" : "text-gray-700"
           )}
         >
@@ -52,7 +52,7 @@ export function ParticipantScratchpad({ trainingId }: { trainingId: string }) {
         <button
           onClick={() => { setActiveWidget(activeWidget === "notes" ? null : "notes"); }}
           className={cn(
-            "flex items-center gap-3 bg-white px-4 py-3 rounded-full shadow-lg border border-gray-200 text-sm font-semibold hover:bg-brand-50 transition-colors group",
+            "flex items-center gap-3 bg-white px-4 py-3 rounded-full shadow-lg border border-gray-100 text-sm font-semibold hover:bg-brand-50 transition-colors group",
             activeWidget === "notes" ? "border-brand-500 bg-brand-50 text-brand-700" : "text-gray-700"
           )}
         >
@@ -67,10 +67,10 @@ export function ParticipantScratchpad({ trainingId }: { trainingId: string }) {
       <button
         onClick={toggleOpen}
         className={cn(
-          "w-14 h-14 rounded-full flex items-center justify-center text-white shadow-xl transition-all duration-300 z-10",
+          "w-14 h-14 rounded-full flex items-center justify-center text-white shadow-lg transition-all duration-300 z-10",
           isOpen 
             ? "bg-gray-800 hover:bg-gray-900 rotate-45 scale-90" 
-            : "bg-brand-600 hover:bg-brand-700 hover:scale-105 hover:shadow-2xl"
+            : "bg-brand-600 hover:bg-brand-700 hover:scale-105 hover:shadow-lg"
         )}
       >
         <Plus size={24} strokeWidth={2.5} />

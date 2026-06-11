@@ -42,7 +42,7 @@ export function ParticipantNotesWidget({ trainingId, onClose }: { trainingId: st
   };
 
   return (
-    <div className="flex flex-col h-[500px] w-[380px] bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-8 fade-in duration-200">
+    <div className="flex flex-col h-[500px] w-[380px] bg-white rounded-xl shadow-lg border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-8 fade-in duration-200">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50">
         <div className="flex items-center gap-2">
           <h3 className="font-semibold text-gray-800 text-sm">Personal Notes</h3>

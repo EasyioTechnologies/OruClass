@@ -55,12 +55,12 @@ export function SelectDaySlide({ days, moduleCountForDay }: Props) {
             <button
               key={d.id}
               onClick={() => select(d.id)}
-              className="group flex flex-col gap-2.5 p-4 rounded-2xl bg-white border border-gray-200 hover:border-brand-300 hover:shadow-md hover:shadow-brand-100 active:scale-[.98] transition-all text-left"
+              className="group flex flex-col gap-2.5 p-4 rounded-xl bg-white border border-gray-100 hover:border-brand-300 hover:shadow-md active:scale-[.98] transition-all text-left"
             >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-shrink-0 w-12 h-12 rounded-xl bg-brand-50 border border-brand-100 flex flex-col items-center justify-center leading-none">
                   <span className="text-[8px] font-bold uppercase tracking-wider text-brand-400">Day</span>
-                  <span className="text-[16px] font-extrabold text-brand-700 tabular-nums">{d.dayNumber}</span>
+                  <span className="text-[16px] font-bold text-brand-700 tabular-nums">{d.dayNumber}</span>
                 </div>
                 <ChevronRight size={18} className="text-gray-300 group-hover:text-brand-500 transition-all flex-shrink-0 mt-0.5" />
               </div>
@@ -83,8 +83,8 @@ export function SelectDaySlide({ days, moduleCountForDay }: Props) {
         <button
           onClick={() => select("all")}
           className={cn(
-            "group flex flex-col gap-2.5 p-4 rounded-2xl bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200",
-            "hover:from-gray-100 hover:to-gray-200 hover:border-gray-300 hover:shadow-md active:scale-[.98] transition-all text-left",
+            "group flex flex-col gap-2.5 p-4 rounded-xl bg-gray-50 border border-gray-100",
+            "hover:bg-gray-100 hover:border-gray-200 hover:shadow-md active:scale-[.98] transition-all text-left",
           )}
         >
           <div className="flex items-start justify-between gap-2">

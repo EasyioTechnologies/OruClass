@@ -112,7 +112,7 @@ export function AnalyticsDashboard({ trainingId }: { trainingId: string }) {
           <button
             onClick={() => exportExcel.mutate()}
             disabled={exportExcel.isPending || !!exportJobId}
-            className="px-4 py-2 border border-gray-200 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60 transition-colors"
+            className="px-4 py-2 border border-gray-100 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-60 transition-colors"
           >
             {exportExcel.isPending || !!exportJobId ? "Exporting…" : "Export Excel"}
           </button>
@@ -121,15 +121,15 @@ export function AnalyticsDashboard({ trainingId }: { trainingId: string }) {
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl border border-gray-100 p-5">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Participants</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">{analytics?.totalParticipants ?? 0}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl border border-gray-100 p-5">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Modules</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">{modules.length}</p>
         </div>
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl border border-gray-100 p-5">
           <p className="text-xs font-medium text-gray-500 uppercase tracking-wider">Avg Completion</p>
           <p className="text-3xl font-bold text-gray-900 mt-1">{avgCompletion}%</p>
         </div>
@@ -137,7 +137,7 @@ export function AnalyticsDashboard({ trainingId }: { trainingId: string }) {
 
       {/* Per-module completion bar chart */}
       {modules.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 p-5">
+        <div className="bg-white rounded-xl border border-gray-100 p-5">
           <h3 className="font-semibold text-gray-900 mb-4">Completion by Module</h3>
           <ResponsiveContainer width="100%" height={220}>
             <BarChart data={modules} margin={{ top: 4, right: 8, bottom: 32, left: 0 }}>
@@ -162,7 +162,7 @@ export function AnalyticsDashboard({ trainingId }: { trainingId: string }) {
 
       {/* Module breakdown table */}
       {modules.length > 0 && (
-        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+        <div className="bg-white rounded-xl border border-gray-100 overflow-hidden">
           <div className="px-5 py-4 border-b border-gray-100">
             <h3 className="font-semibold text-gray-900">Module Breakdown</h3>
           </div>
@@ -212,7 +212,7 @@ export function AnalyticsDashboard({ trainingId }: { trainingId: string }) {
       )}
 
       {!analytics && (
-        <div className="bg-white rounded-xl border border-gray-200 p-12 text-center">
+        <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
           <p className="text-gray-400">No analytics data yet. Run a live session first.</p>
         </div>
       )}

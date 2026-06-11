@@ -134,22 +134,31 @@ export function ParticipantLiveRoom({ trainingId }: { trainingId: string }) {
   return (
     <div className="flex flex-col h-full bg-gray-50 overflow-hidden">
       {/* Top bar */}
-      <div className="h-12 border-b border-gray-200 bg-white flex items-center justify-between px-4 flex-shrink-0">
+      <div className="h-14 border-b border-gray-100 bg-white flex items-center justify-between px-4 flex-shrink-0">
         <h2 className="font-semibold text-gray-900 text-[14px] truncate max-w-[200px] sm:max-w-none">
           {training.title}
         </h2>
-        <span
-          className={cn(
-            "text-[11px] px-2.5 py-0.5 rounded-full font-semibold flex-shrink-0",
-            training.sessionStatus === "live"
-              ? "bg-green-100 text-green-700"
-              : training.sessionStatus === "paused"
-              ? "bg-yellow-100 text-yellow-700"
-              : "bg-gray-100 text-gray-500"
-          )}
-        >
-          {training.sessionStatus}
-        </span>
+        {(() => {
+          const cfg = ({
+            live:       { label: "Live",    dot: "bg-green-500", pill: "bg-green-50 text-green-700 border-green-200" },
+            connecting: { label: "Open",    dot: "bg-blue-500",  pill: "bg-blue-50 text-blue-700 border-blue-200" },
+            paused:     { label: "Paused",  dot: "bg-amber-500", pill: "bg-amber-50 text-amber-700 border-amber-200" },
+            draft:      { label: "Draft",   dot: "bg-gray-400",  pill: "bg-gray-50 text-gray-500 border-gray-100" },
+            completed:  { label: "Ended",   dot: "bg-gray-400",  pill: "bg-gray-50 text-gray-500 border-gray-100" },
+          } as Record<string, { label: string; dot: string; pill: string }>)[training.sessionStatus]
+            ?? { label: training.sessionStatus, dot: "bg-gray-400", pill: "bg-gray-50 text-gray-500 border-gray-100" };
+          return (
+            <div className={cn("flex items-center gap-1.5 border rounded-full px-2.5 py-1", cfg.pill)}>
+              <span className="relative flex h-1.5 w-1.5 shrink-0">
+                {(training.sessionStatus === "live" || training.sessionStatus === "connecting") && (
+                  <span className={cn("animate-ping absolute inline-flex h-full w-full rounded-full opacity-75", cfg.dot)} />
+                )}
+                <span className={cn("relative inline-flex rounded-full h-1.5 w-1.5", cfg.dot)} />
+              </span>
+              <span className="text-[11px] font-semibold">{cfg.label}</span>
+            </div>
+          );
+        })()}
       </div>
 
       {/* Guest → account upgrade nudge (only for guest participants) */}

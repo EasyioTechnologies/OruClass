@@ -49,7 +49,7 @@ export function SuccessPage() {
       </div>
 
       {/* Receipt Card */}
-      <div className="bg-white border border-gray-200 rounded-xl p-6 text-left mb-6">
+      <div className="bg-white border border-gray-100 rounded-xl p-6 text-left mb-6">
         <div className="flex items-center justify-between mb-4">
           <h3 className="text-[13px] font-600 text-gray-400 uppercase tracking-[0.06em]">
             Payment Receipt

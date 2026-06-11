@@ -228,7 +228,7 @@ export function ControlPanel({ trainingId, workspaceId, training, userTrainingRo
                         ? "bg-brand-50 border border-brand-200 text-brand-700"
                         : m.isUnlocked
                         ? "bg-gray-50 border border-gray-100 text-gray-500 cursor-default"
-                        : "bg-white border border-gray-200 text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-[.98]",
+                        : "bg-white border border-gray-100 text-gray-700 hover:bg-gray-50 hover:border-gray-300 active:scale-[.98]",
                     )}
                   >
                     {isActive ? (

@@ -54,7 +54,7 @@ export function ParticipantAttendance({ module, trainingId }: Props) {
   if (submitted) {
     return (
       <div className="flex flex-col items-center justify-center h-full gap-4 px-6">
-        <div className="w-16 h-16 rounded-2xl bg-green-50 border-2 border-green-100 flex items-center justify-center">
+        <div className="w-16 h-16 rounded-xl bg-green-50 border-2 border-green-100 flex items-center justify-center">
           <CheckCircle2 size={32} className="text-green-500" />
         </div>
         <div className="text-center">
@@ -88,7 +88,7 @@ export function ParticipantAttendance({ module, trainingId }: Props) {
             value={values.name}
             onChange={(e) => setValues((v) => ({ ...v, name: e.target.value }))}
             className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors ${
-              errors.name ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"
+              errors.name ? "border-red-300 bg-red-50" : "border-gray-100 bg-white"
             }`}
             placeholder="Your full name"
           />
@@ -107,7 +107,7 @@ export function ParticipantAttendance({ module, trainingId }: Props) {
                 value={values[field.id] ?? ""}
                 onChange={(e) => setValues((v) => ({ ...v, [field.id]: e.target.value }))}
                 className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors bg-white ${
-                  errors[field.id] ? "border-red-300 bg-red-50" : "border-gray-200"
+                  errors[field.id] ? "border-red-300 bg-red-50" : "border-gray-100"
                 }`}
               >
                 <option value="">Select…</option>
@@ -121,7 +121,7 @@ export function ParticipantAttendance({ module, trainingId }: Props) {
                 value={values[field.id] ?? ""}
                 onChange={(e) => setValues((v) => ({ ...v, [field.id]: e.target.value }))}
                 className={`w-full px-3.5 py-2.5 border rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 transition-colors ${
-                  errors[field.id] ? "border-red-300 bg-red-50" : "border-gray-200 bg-white"
+                  errors[field.id] ? "border-red-300 bg-red-50" : "border-gray-100 bg-white"
                 }`}
                 placeholder={field.label}
               />

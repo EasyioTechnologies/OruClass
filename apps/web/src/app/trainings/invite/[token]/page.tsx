@@ -37,7 +37,7 @@ export default function AcceptInvitePage() {
     const msg = (error as { response?: { data?: { error?: string } } })?.response?.data?.error ?? "Invitation not found or has expired.";
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-        <div className="bg-white border border-gray-200 rounded-xl p-8 max-w-md w-full text-center">
+        <div className="bg-white border border-gray-100 rounded-xl p-8 max-w-md w-full text-center">
           <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
             <svg className="w-6 h-6 text-red-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
@@ -55,7 +55,7 @@ export default function AcceptInvitePage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
-      <div className="bg-white border border-gray-200 rounded-xl p-8 max-w-md w-full">
+      <div className="bg-white border border-gray-100 rounded-xl p-8 max-w-md w-full">
         <div className="mb-6">
           <span className="text-2xl font-extrabold text-gray-900 tracking-tight">Oru</span>
           <span className="text-2xl font-extrabold text-emerald-500 tracking-tight">Labs</span>
@@ -68,7 +68,7 @@ export default function AcceptInvitePage() {
           <strong className="text-gray-700">{invitation.trainingTitle}</strong>.
         </p>
 
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6 text-sm">
+        <div className="bg-gray-50 border border-gray-100 rounded-lg p-4 mb-6 text-sm">
           <p className="text-gray-500 mb-1">Invitation sent to</p>
           <p className="font-medium text-gray-900">{invitation.email}</p>
         </div>
@@ -83,13 +83,13 @@ export default function AcceptInvitePage() {
             <p className="text-sm text-gray-500 text-center">Sign in or create an account with <strong>{invitation.email}</strong> to accept.</p>
             <Link
               href={`/login/trainer?redirect=/trainings/invite/${token}`}
-              className="block w-full text-center bg-gray-900 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-gray-800 transition-colors"
+              className="block w-full text-center bg-brand-600 text-white rounded-lg py-2.5 text-sm font-medium hover:bg-brand-700 transition-colors"
             >
               Sign in
             </Link>
             <Link
               href={`/login?redirect=/trainings/invite/${token}`}
-              className="block w-full text-center border border-gray-200 text-gray-700 rounded-lg py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors"
+              className="block w-full text-center border border-gray-100 text-gray-700 rounded-lg py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors"
             >
               Create account
             </Link>
@@ -106,7 +106,7 @@ export default function AcceptInvitePage() {
             <button
               onClick={handleDecline}
               disabled={acceptMutation.isPending || declineMutation.isPending}
-              className="w-full border border-gray-200 text-gray-500 rounded-lg py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
+              className="w-full border border-gray-100 text-gray-500 rounded-lg py-2.5 text-sm font-medium hover:bg-gray-50 transition-colors disabled:opacity-50"
             >
               {declineMutation.isPending ? "Declining…" : "Decline"}
             </button>

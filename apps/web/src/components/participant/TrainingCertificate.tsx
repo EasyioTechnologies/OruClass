@@ -37,10 +37,10 @@ export function TrainingCertificate({ data, userName }: Props) {
 
       <div
         ref={certRef}
-        className="bg-white border-2 border-gray-200 rounded-2xl p-8 sm:p-12 text-center print:border-0 print:shadow-none"
+        className="bg-white border-2 border-gray-100 rounded-xl p-8 sm:p-12 text-center print:border-0 print:shadow-none"
       >
         <div className="flex justify-center mb-6">
-          <div className="w-16 h-16 rounded-2xl bg-brand-50 flex items-center justify-center">
+          <div className="w-16 h-16 rounded-xl bg-brand-50 flex items-center justify-center">
             <Award size={32} className="text-brand-500" />
           </div>
         </div>

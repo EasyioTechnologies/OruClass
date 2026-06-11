@@ -60,7 +60,7 @@ export function TrainerMapping({ module, trainingId }: Props) {
         </div>
         
         <div className="flex gap-4">
-          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-100">
             <div className="w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600">
               <Users className="w-5 h-5" />
             </div>
@@ -72,7 +72,7 @@ export function TrainerMapping({ module, trainingId }: Props) {
             </div>
           </div>
           
-          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-200">
+          <div className="flex items-center gap-3 px-4 py-2 bg-white rounded-xl shadow-sm border border-gray-100">
             <div className="w-10 h-10 rounded-full bg-brand-50 flex items-center justify-center text-brand-600">
               <FileText className="w-5 h-5" />
             </div>
@@ -90,7 +90,7 @@ export function TrainerMapping({ module, trainingId }: Props) {
             <div className="w-8 h-8 border-4 border-brand-200 border-t-brand-600 rounded-full animate-spin"></div>
           </div>
         ) : focusAreas.length === 0 ? (
-          <div className="text-center p-12 text-gray-500 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="text-center p-12 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-100">
             No focus areas configured for this module.
           </div>
         ) : (
@@ -98,7 +98,7 @@ export function TrainerMapping({ module, trainingId }: Props) {
             {focusAreas.map((area) => {
               const ideas = aggregatedIdeas.get(area.id) ?? [];
               return (
-                <div key={area.id} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm flex flex-col max-h-[500px]">
+                <div key={area.id} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm flex flex-col max-h-[500px]">
                   <div className="flex justify-between items-center border-b border-gray-100 pb-3 mb-4">
                     <h3 className="font-semibold text-gray-900 line-clamp-1">{area.title}</h3>
                     <span className="text-xs font-medium px-2 py-1 bg-gray-100 text-gray-600 rounded-full">

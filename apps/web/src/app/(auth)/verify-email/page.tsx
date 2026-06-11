@@ -5,7 +5,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { apiClient } from "@/lib/api-client";
 import { useAuthStore } from "@/store/auth";
 import { setTokens } from "@/lib/token-storage";
-import { CheckCircle2, Mail, RefreshCw, Loader2 } from "lucide-react";
+import { CheckCircle2, Mail, RefreshCw, Loader2, GraduationCap } from "lucide-react";
 import Link from "next/link";
 
 function VerifyEmailContent() {
@@ -13,9 +13,8 @@ function VerifyEmailContent() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
   const email = searchParams.get("email");
-  // Priority: explicit link param → durable signup intent → safe default.
-  // Default is /participant (NOT /dashboard) so a lost param never promotes a participant to trainer.
   const [returnTo, setReturnTo] = useState(searchParams.get("returnTo") ?? "/participant");
+
   useEffect(() => {
     if (searchParams.get("returnTo")) return;
     try {
@@ -23,8 +22,8 @@ function VerifyEmailContent() {
       if (stored) setReturnTo(stored);
     } catch {}
   }, [searchParams]);
-  const { setEmailVerified, setUser } = useAuthStore();
 
+  const { setEmailVerified, setUser } = useAuthStore();
   const [verifying, setVerifying] = useState(!!token);
   const [verified, setVerified] = useState(false);
   const [error, setError] = useState("");
@@ -32,10 +31,9 @@ function VerifyEmailContent() {
   const [resent, setResent] = useState(false);
   const [code, setCode] = useState("");
 
-  const processVerificationSuccess = (data: any) => {
-    if (data.accessToken) {
-      setTokens(data.accessToken);
-    }
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const processSuccess = (data: any) => {
+    if (data.accessToken) setTokens(data.accessToken);
     if (data.user) {
       setUser({
         id: data.user.id,
@@ -52,37 +50,38 @@ function VerifyEmailContent() {
   useEffect(() => {
     if (!token) return;
     apiClient.post("/api/auth/verify-email", { token })
-      .then(({ data }) => processVerificationSuccess(data))
+      .then(({ data }) => processSuccess(data))
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .catch((err) => setError(err.response?.data?.error || "Verification failed. The link may have expired."))
       .finally(() => setVerifying(false));
-  }, [token, setEmailVerified]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [token]);
+
+  useEffect(() => {
+    if (verified) {
+      const t = setTimeout(() => router.push(returnTo), 1500);
+      return () => clearTimeout(t);
+    }
+  }, [verified, returnTo, router]);
 
   const handleCodeSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (code.length !== 6 || !email) {
-      setError(email ? "Please enter a valid 6-digit code." : "Email is missing from the URL. Please use the link sent to you.");
+      setError(email ? "Enter a valid 6-digit code." : "Email is missing from the URL.");
       return;
     }
     setVerifying(true);
     setError("");
     try {
       const { data } = await apiClient.post("/api/auth/verify-email", { code, email });
-      processVerificationSuccess(data);
+      processSuccess(data);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     } catch (err: any) {
       setError(err.response?.data?.error || "Verification failed. Please check your code.");
     } finally {
       setVerifying(false);
     }
   };
-
-  useEffect(() => {
-    if (verified) {
-      const timer = setTimeout(() => {
-        router.push(returnTo);
-      }, 1500);
-      return () => clearTimeout(timer);
-    }
-  }, [verified, returnTo, router]);
 
   const handleResend = async () => {
     setResending(true);
@@ -99,125 +98,111 @@ function VerifyEmailContent() {
 
   if (verifying && !!token) {
     return (
-      <div className="w-full max-w-[400px] mx-auto p-6 sm:p-10 space-y-6 my-4 sm:my-8 text-center">
-        <Loader2 className="w-8 h-8 animate-spin text-brand-600 mx-auto" />
-        <p className="text-sm text-gray-500">Verifying your email...</p>
+      <div className="w-full max-w-[420px] mx-auto">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-12 text-center">
+          <Loader2 className="w-7 h-7 animate-spin text-brand-600 mx-auto mb-3" />
+          <p className="text-sm text-gray-500">Verifying your email…</p>
+        </div>
       </div>
     );
   }
 
   if (verified) {
     return (
-      <div className="w-full max-w-[400px] mx-auto p-6 sm:p-10 space-y-6 my-4 sm:my-8">
-        <div className="text-center space-y-4">
-          <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-50 flex items-center justify-center">
-            <CheckCircle2 className="w-7 h-7 text-emerald-600" />
+      <div className="w-full max-w-[420px] mx-auto">
+        <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 text-center space-y-5">
+          <div className="mx-auto w-12 h-12 rounded-xl bg-emerald-50 flex items-center justify-center">
+            <CheckCircle2 className="w-6 h-6 text-emerald-600" />
           </div>
-          <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Email verified!</h1>
-          <p className="text-sm text-gray-500">Your email has been successfully verified. You're all set.</p>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Email verified!</h1>
+            <p className="text-sm text-gray-500 mt-1">You're all set — redirecting…</p>
+          </div>
+          <button
+            onClick={() => router.push(returnTo)}
+            className="w-full py-3 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors"
+          >
+            Continue
+          </button>
         </div>
-        <button
-          onClick={() => router.push(returnTo)}
-          className="w-full py-4 bg-brand-600 text-white rounded-2xl text-base font-semibold hover:bg-brand-700 transition-all"
-        >
-          Continue
-        </button>
       </div>
     );
   }
 
   return (
-    <div className="w-full max-w-[400px] mx-auto p-6 sm:p-10 space-y-6 my-4 sm:my-8">
-      <div className="text-center space-y-4">
-        <div className="mx-auto w-14 h-14 rounded-2xl bg-brand-50 flex items-center justify-center">
-          <Mail className="w-7 h-7 text-brand-600" />
+    <div className="w-full max-w-[420px] mx-auto">
+      <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 space-y-6">
+        <div className="flex flex-col items-center gap-3 text-center">
+          <div className="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center">
+            <GraduationCap size={22} className="text-white" strokeWidth={2} />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold text-gray-900">Verify your email</h1>
+            <p className="text-sm text-gray-500 mt-1 leading-relaxed">
+              We sent a code to{" "}
+              {email ? <strong className="text-gray-700">{email}</strong> : "your email"}.
+            </p>
+          </div>
         </div>
-        <h1 className="text-xl sm:text-2xl font-extrabold text-gray-900">Verify your email</h1>
-        <p className="text-sm text-gray-500 leading-relaxed">
-          We sent a verification code to{" "}
-          {email ? <strong className="text-gray-700">{email}</strong> : "your email"}.
-          Enter the code below or click the link in the email to activate your account.
-        </p>
-      </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-100 rounded-xl p-3">
-          <p className="text-sm text-red-600 text-center">{error}</p>
-        </div>
-      )}
+        {error && (
+          <div className="bg-red-50 border border-red-200 px-3 py-2.5 rounded-xl">
+            <p className="text-xs text-red-600">{error}</p>
+          </div>
+        )}
 
-      <form onSubmit={handleCodeSubmit} className="space-y-4">
-        <div>
-          <label htmlFor="verification-code" className="sr-only">6-digit verification code</label>
+        <form onSubmit={handleCodeSubmit} className="space-y-3">
           <input
-            id="verification-code"
             type="text"
             inputMode="numeric"
             autoComplete="one-time-code"
-            aria-label="6-digit verification code"
             value={code}
-            onChange={(e) => setCode(e.target.value.replace(/\D/g, '').slice(0, 6))}
-            placeholder="Enter 6-digit code"
-            className="w-full px-5 py-4 bg-gray-200/70 border-none rounded-2xl text-center text-2xl tracking-[0.5em] font-bold text-gray-900 placeholder:text-gray-400 placeholder:tracking-normal placeholder:font-normal focus:outline-none focus:ring-2 focus:ring-brand-500 focus:bg-gray-200 transition-all"
+            onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+            placeholder="000000"
+            className="w-full px-4 py-3 bg-white border border-gray-200 rounded-xl text-center text-2xl tracking-[0.4em] font-bold text-gray-900 placeholder:text-gray-300 placeholder:tracking-normal focus:outline-none focus:ring-2 focus:ring-brand-500/30 focus:border-brand-400 transition-all"
             required
-            pattern="\d{6}"
             maxLength={6}
           />
-        </div>
-        <button
-          type="submit"
-          disabled={verifying || code.length !== 6}
-          className="w-full py-4 bg-brand-600 text-white rounded-2xl text-[16px] font-semibold hover:bg-brand-700 hover:shadow-md transition-all disabled:opacity-50"
-        >
-          {verifying ? "Verifying..." : "Verify Code"}
-        </button>
-      </form>
+          <button
+            type="submit"
+            disabled={verifying || code.length !== 6}
+            className="w-full py-3 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors disabled:opacity-50"
+          >
+            {verifying ? "Verifying…" : "Verify Code"}
+          </button>
+        </form>
 
-      <div className="bg-gray-50 rounded-xl border border-gray-200 p-4 space-y-3">
-        <p className="text-xs text-gray-500 text-center">Didn't receive the email?</p>
-        <button
-          onClick={handleResend}
-          disabled={resending || resent}
-          className="w-full py-3 bg-white border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-50 transition-all disabled:opacity-50 flex items-center justify-center gap-2"
-        >
-          {resending ? (
-            <>
-              <RefreshCw className="w-4 h-4 animate-spin" />
-              Sending...
-            </>
-          ) : resent ? (
-            <>
-              <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-              Email sent!
-            </>
-          ) : (
-            <>
-              <RefreshCw className="w-4 h-4" />
-              Resend verification email
-            </>
-          )}
-        </button>
-        
-        <div className="pt-2 border-t border-gray-200 mt-2">
-           <Link 
-             href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
-             className="w-full py-3 bg-brand-600 text-white rounded-xl text-sm font-medium hover:bg-brand-700 transition-all flex items-center justify-center gap-2"
-           >
-             Go to Login
-           </Link>
+        <div className="border-t border-gray-100 pt-4 space-y-2">
+          <button
+            onClick={handleResend}
+            disabled={resending || resent}
+            className="w-full py-2.5 bg-gray-50 border border-gray-200 text-gray-700 rounded-xl text-sm font-medium hover:bg-gray-100 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+          >
+            {resending ? (
+              <><RefreshCw className="w-3.5 h-3.5 animate-spin" /> Sending…</>
+            ) : resent ? (
+              <><CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" /> Email sent!</>
+            ) : (
+              <><Mail className="w-3.5 h-3.5" /> Resend verification email</>
+            )}
+          </button>
+          <Link
+            href={`/login?returnTo=${encodeURIComponent(returnTo)}`}
+            className="block w-full py-2.5 text-center text-sm text-gray-500 hover:text-gray-700 transition-colors"
+          >
+            Back to sign in
+          </Link>
         </div>
+
+        <p className="text-xs text-gray-400 text-center">Check your spam folder. The code expires in 24 hours.</p>
       </div>
-
-      <p className="text-xs text-gray-400 text-center">
-        Check your spam folder. The code expires in 24 hours.
-      </p>
     </div>
   );
 }
 
 export default function VerifyEmailPage() {
   return (
-    <Suspense fallback={<div className="p-10 text-center text-gray-500">Loading...</div>}>
+    <Suspense fallback={<div className="p-10 text-center text-gray-500">Loading…</div>}>
       <VerifyEmailContent />
     </Suspense>
   );

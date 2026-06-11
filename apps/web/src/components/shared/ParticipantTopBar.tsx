@@ -9,7 +9,7 @@ export function ParticipantTopBar() {
   const { toggleMobileSidebar } = useLayoutStore();
 
   return (
-    <header className="h-14 border-b border-gray-200 bg-white flex items-center justify-between px-4 flex-shrink-0">
+    <header className="h-14 border-b border-gray-100 bg-white flex items-center justify-between px-4 flex-shrink-0">
       <div className="flex items-center gap-3">
         <button
           onClick={toggleMobileSidebar}

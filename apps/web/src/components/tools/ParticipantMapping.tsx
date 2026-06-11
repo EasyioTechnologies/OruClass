@@ -60,7 +60,7 @@ export function ParticipantMapping({ module, trainingId }: Props) {
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {focusAreas.map((area) => (
-          <div key={area.id} className="bg-white p-5 rounded-2xl border border-gray-200 shadow-sm space-y-4">
+          <div key={area.id} className="bg-white p-5 rounded-xl border border-gray-100 shadow-sm space-y-4">
             <h3 className="font-semibold text-gray-900 border-b pb-2">{area.title}</h3>
             <div className="space-y-3">
               {Array.from({ length: area.numFields }).map((_, index) => (
@@ -79,13 +79,13 @@ export function ParticipantMapping({ module, trainingId }: Props) {
         ))}
         
         {focusAreas.length === 0 && (
-          <div className="col-span-full text-center p-8 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+          <div className="col-span-full text-center p-8 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-100">
             No focus areas configured for this mapping exercise.
           </div>
         )}
       </div>
 
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-200 shadow-lg flex justify-center z-10">
+      <div className="fixed bottom-0 left-0 right-0 p-4 bg-white border-t border-gray-100 shadow-lg flex justify-center z-10">
         <div className="w-full max-w-4xl px-2">
           <button
             onClick={submit}

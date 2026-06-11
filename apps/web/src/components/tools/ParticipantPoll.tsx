@@ -64,7 +64,7 @@ export function ParticipantPoll({ module, trainingId }: Props) {
             className={`w-full text-left px-4 py-3 rounded-xl border-2 text-sm font-medium transition-all disabled:opacity-60 disabled:cursor-not-allowed ${
               selected.includes(opt)
                 ? "border-brand-500 bg-brand-50 text-brand-700"
-                : "border-gray-200 bg-white text-gray-700 hover:border-gray-300"
+                : "border-gray-100 bg-white text-gray-700 hover:border-gray-300"
             }`}
           >
             {opt}

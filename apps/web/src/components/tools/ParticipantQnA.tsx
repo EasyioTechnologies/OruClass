@@ -58,7 +58,7 @@ export function ParticipantQnA({ module, trainingId }: Props) {
         rows={4}
         maxLength={500}
         disabled={isTimeUp}
-        className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none disabled:opacity-60 disabled:cursor-not-allowed"
+        className="w-full px-4 py-3 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none disabled:opacity-60 disabled:cursor-not-allowed"
         placeholder="Type your question here…"
       />
 

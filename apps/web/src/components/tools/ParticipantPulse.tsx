@@ -58,7 +58,7 @@ export function ParticipantPulse({ module, trainingId }: Props) {
             key={emoji}
             onClick={() => submit(emoji)}
             disabled={isPending || isTimeUp}
-            className={`text-3xl sm:text-5xl p-2 sm:p-3 rounded-2xl transition-all hover:scale-125 hover:bg-gray-100 active:scale-95 disabled:opacity-60 ${
+            className={`text-3xl sm:text-5xl p-2 sm:p-3 rounded-xl transition-all hover:scale-125 hover:bg-gray-100 active:scale-95 disabled:opacity-60 ${
               selected === emoji ? "bg-brand-50 scale-110" : ""
             }`}
           >

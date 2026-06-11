@@ -62,7 +62,7 @@ export function ParticipantWordCloud({ module, trainingId }: Props) {
           onKeyDown={(e) => e.key === "Enter" && addWord()}
           maxLength={40}
           disabled={isTimeUp}
-          className="flex-1 px-4 py-2.5 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60 disabled:cursor-not-allowed"
+          className="flex-1 px-4 py-2.5 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 disabled:opacity-60 disabled:cursor-not-allowed"
           placeholder="Type a word…"
         />
         <button

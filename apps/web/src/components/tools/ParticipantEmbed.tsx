@@ -31,7 +31,7 @@ export function ParticipantEmbed({ module, trainingId }: Props) {
   if (embeds.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-center p-8 text-gray-500 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+        <div className="text-center p-8 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-100">
           No embedded resources have been configured for this module.
         </div>
       </div>
@@ -40,7 +40,7 @@ export function ParticipantEmbed({ module, trainingId }: Props) {
 
   return (
     <div className="flex flex-col h-full w-full">
-      <div className="p-4 bg-white border-b border-gray-200 shadow-sm flex items-center justify-between shrink-0 z-10">
+      <div className="p-4 bg-white border-b border-gray-100 shadow-sm flex items-center justify-between shrink-0 z-10">
         <div>
           <h2 className="text-lg font-bold text-gray-900">{title}</h2>
           <p className="text-sm text-gray-600 line-clamp-1">{embeds.length} resource{embeds.length !== 1 && 's'} to review</p>
@@ -65,7 +65,7 @@ export function ParticipantEmbed({ module, trainingId }: Props) {
       
       <div className="flex-1 w-full bg-gray-100 overflow-y-auto p-4 md:p-8 space-y-8">
         {embeds.map((embed, index) => (
-          <div key={embed.id || index} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+          <div key={embed.id || index} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
             {(embed.title || embed.description) && (
               <div className="p-4 border-b border-gray-100 bg-gray-50/50">
                 {embed.title && <h3 className="font-bold text-gray-900">{embed.title}</h3>}

@@ -17,7 +17,7 @@ export function StopwatchDisplay() {
       "flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium font-mono border transition-colors",
       isRunning 
         ? "bg-brand-50 text-brand-700 border-brand-200" 
-        : "bg-gray-100 text-gray-500 border-gray-200"
+        : "bg-gray-100 text-gray-500 border-gray-100"
     )}>
       <Clock className={cn("w-3.5 h-3.5", isRunning && "animate-pulse")} />
       <span>

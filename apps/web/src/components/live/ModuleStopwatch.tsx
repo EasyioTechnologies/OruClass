@@ -82,7 +82,7 @@ export function ModuleStopwatch({ canControl = false }: { canControl?: boolean }
 
   return (
     <div className={cn(
-      "flex flex-col items-center gap-3 backdrop-blur shadow-lg px-4 py-3 sm:px-6 sm:py-4 rounded-2xl absolute top-4 right-4 z-50 transition-colors duration-300",
+      "flex flex-col items-center gap-3 backdrop-blur shadow-lg px-4 py-3 sm:px-6 sm:py-4 rounded-xl absolute top-4 right-4 z-50 transition-colors duration-300",
       "max-w-xs sm:max-w-md",
       timeUp ? "bg-red-50/95 border border-red-300 text-red-600" : "bg-white/90 border border-brand-200 text-brand-900"
     )}>

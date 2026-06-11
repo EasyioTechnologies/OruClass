@@ -38,7 +38,7 @@ export function TrainerEmbed({ module, trainingId }: Props) {
   if (embeds.length === 0) {
     return (
       <div className="flex items-center justify-center h-full">
-        <div className="text-center p-12 text-gray-500 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+        <div className="text-center p-12 text-gray-500 bg-gray-50 rounded-xl border border-dashed border-gray-100">
           No embedded resources have been configured for this module.
         </div>
       </div>
@@ -48,9 +48,9 @@ export function TrainerEmbed({ module, trainingId }: Props) {
   return (
     <div className="h-full flex flex-col md:flex-row overflow-hidden bg-gray-50">
       {/* Left side: The Embed */}
-      <div className="flex-1 h-full border-r border-gray-200 relative bg-gray-100 overflow-y-auto p-4 md:p-8 space-y-8">
+      <div className="flex-1 h-full border-r border-gray-100 relative bg-gray-100 overflow-y-auto p-4 md:p-8 space-y-8">
         {embeds.map((embed, index) => (
-          <div key={embed.id || index} className="bg-white rounded-2xl shadow-sm border border-gray-200 overflow-hidden flex flex-col">
+          <div key={embed.id || index} className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden flex flex-col">
             {(embed.title || embed.description) && (
               <div className="p-4 border-b border-gray-100 bg-gray-50/50">
                 {embed.title && <h3 className="font-bold text-gray-900">{embed.title}</h3>}
@@ -73,7 +73,7 @@ export function TrainerEmbed({ module, trainingId }: Props) {
 
       {/* Right side: Analytics */}
       <div className="w-full md:w-80 h-full flex flex-col bg-white">
-        <div className="p-5 border-b border-gray-200 shrink-0">
+        <div className="p-5 border-b border-gray-100 shrink-0">
           <h2 className="text-xl font-bold text-gray-900 mb-1">{title}</h2>
           <p className="text-xs text-gray-500">Live Viewership</p>
           

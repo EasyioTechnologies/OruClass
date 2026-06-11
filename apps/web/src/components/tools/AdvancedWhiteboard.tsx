@@ -335,7 +335,7 @@ export function AdvancedWhiteboard({ strokes, onStrokeEnd, onStrokesChange, onCl
           
           {/* Popover for Pen Size */}
           {showSizePopover && activeTool === "pen" && (
-            <div className="mb-3 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 p-2 flex items-center gap-2 animate-in slide-in-from-bottom-2 fade-in duration-200">
+            <div className="mb-3 bg-white rounded-xl shadow-md border border-gray-100 p-2 flex items-center gap-2 animate-in slide-in-from-bottom-2 fade-in duration-200">
               {SIZES.map((size) => (
                 <button
                   key={size}
@@ -360,7 +360,7 @@ export function AdvancedWhiteboard({ strokes, onStrokeEnd, onStrokesChange, onCl
 
           {/* Popover for Shapes */}
           {showShapePopover && (
-            <div className="mb-3 bg-white rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-gray-100 p-2 flex items-center gap-2 animate-in slide-in-from-bottom-2 fade-in duration-200">
+            <div className="mb-3 bg-white rounded-xl shadow-md border border-gray-100 p-2 flex items-center gap-2 animate-in slide-in-from-bottom-2 fade-in duration-200">
               <button
                 onClick={() => { setActiveTool("square"); setShowShapePopover(false); }}
                 className={cn("w-10 h-10 rounded-xl flex items-center justify-center transition-all", activeTool === "square" ? "bg-gray-100 shadow-sm" : "hover:bg-gray-50")}
@@ -386,7 +386,7 @@ export function AdvancedWhiteboard({ strokes, onStrokeEnd, onStrokesChange, onCl
           )}
 
           {/* Main Toolbar Pill */}
-          <div className="bg-white/95 backdrop-blur-xl shadow-[0_8px_30px_rgb(0,0,0,0.12)] border border-white/50 rounded-full px-1.5 md:px-2 py-1 md:py-1.5 flex items-center gap-1 md:gap-1.5">
+          <div className="bg-white/95 backdrop-blur-xl shadow-md border border-white/50 rounded-full px-1.5 md:px-2 py-1 md:py-1.5 flex items-center gap-1 md:gap-1.5">
             {/* Pens */}
             {PRESET_PENS.map((pen) => {
               const isActive = activeTool === "pen" && activePenId === pen.id;

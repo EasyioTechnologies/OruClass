@@ -57,6 +57,13 @@
       "when": 1780764280602,
       "tag": "0007_dapper_power_man",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1781183128127,
+      "tag": "0008_military_mathemanic",
+      "breakpoints": true
     }
   ]
 }

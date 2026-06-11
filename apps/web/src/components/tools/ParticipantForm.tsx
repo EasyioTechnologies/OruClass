@@ -166,7 +166,7 @@ export function ParticipantForm({ module, trainingId }: Props) {
       </div>
 
       {fields.length === 0 ? (
-        <div className="text-center p-8 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+        <div className="text-center p-8 text-gray-400 bg-gray-50 rounded-xl border border-dashed border-gray-100">
           No form fields configured.
         </div>
       ) : (

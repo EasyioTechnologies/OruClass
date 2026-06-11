@@ -59,7 +59,7 @@ function ResponseDetail({
                 </p>
               )}
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-2.5">
+            <div className="bg-white rounded-lg border border-gray-100 p-2.5">
               <pre className="text-xs text-gray-700 whitespace-pre-wrap break-words font-sans leading-relaxed">
                 {JSON.stringify(data.responseData, null, 2)}
               </pre>
@@ -151,7 +151,7 @@ export function SessionDashboard({ training }: Props) {
                 type="number"
                 value={targetInput}
                 onChange={(e) => setTargetInput(e.target.value)}
-                className="w-16 text-xs border border-gray-200 rounded px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-brand-400"
+                className="w-16 text-xs border border-gray-100 rounded px-1.5 py-0.5 text-right focus:outline-none focus:ring-1 focus:ring-brand-400"
                 placeholder="—"
                 autoFocus
                 min={1}

@@ -46,15 +46,15 @@ export function AgendaPane({ trainingId, workspaceId }: Props) {
                 className={cn(
                   "flex items-start gap-3 p-3 rounded-xl border transition-all",
                   isActive
-                    ? "bg-white border-gray-900 shadow-[0_2px_8px_rgba(0,0,0,0.08)]"
+                    ? "bg-brand-50 border-brand-300 shadow-sm"
                     : m.isUnlocked
-                    ? "bg-white border-gray-200 hover:border-gray-300 hover:shadow-sm"
+                    ? "bg-white border-gray-100 hover:border-gray-300 hover:shadow-sm"
                     : "bg-gray-50 border-gray-100 opacity-60",
                 )}
               >
                 <div className="flex-shrink-0 mt-0.5">
                   {isActive ? (
-                    <PlayCircle size={16} className="text-gray-900" strokeWidth={2.5} />
+                    <PlayCircle size={16} className="text-brand-600" strokeWidth={2.5} />
                   ) : m.isUnlocked ? (
                     <Unlock size={16} className="text-gray-400" strokeWidth={2} />
                   ) : (
@@ -71,7 +71,7 @@ export function AgendaPane({ trainingId, workspaceId }: Props) {
                   <div className="flex items-center gap-1.5 mt-1.5">
                     <span className={cn(
                       "text-[10px] uppercase tracking-wider font-semibold px-1.5 py-0.5 rounded-md",
-                      isActive ? "bg-gray-900 text-white" : m.isUnlocked ? "bg-gray-100 text-gray-700" : "bg-gray-100 text-gray-400"
+                      isActive ? "bg-brand-600 text-white" : m.isUnlocked ? "bg-gray-100 text-gray-700" : "bg-gray-100 text-gray-400"
                     )}>
                       {isActive ? "Now Playing" : m.isUnlocked ? "Unlocked" : "Locked"}
                     </span>

@@ -124,7 +124,7 @@ export default function JoinTokenPage({ params }: { params: Promise<{ token: str
             <p className="text-sm text-gray-500 mt-1">Join your live session</p>
           </div>
 
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-6 space-y-5">
+          <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 space-y-5">
             {mode === "signin" ? (
               <>
                 <div>

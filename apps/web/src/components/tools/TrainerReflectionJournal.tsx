@@ -54,7 +54,7 @@ export function TrainerReflectionJournal({ module, trainingId }: Props) {
         </div>
       </div>
 
-      <div className="flex-1 overflow-auto bg-gray-50 rounded-xl border border-gray-200 p-6 space-y-4">
+      <div className="flex-1 overflow-auto bg-gray-50 rounded-xl border border-gray-100 p-6 space-y-4">
         {isLoading ? (
           <div className="text-center text-gray-400">Loading reflections...</div>
         ) : responses?.length === 0 ? (
@@ -104,7 +104,7 @@ export function TrainerReflectionJournal({ module, trainingId }: Props) {
                           value={commentText}
                           onChange={(e) => setCommentText(e.target.value)}
                           placeholder="Type a comment..."
-                          className="flex-1 text-sm border border-gray-200 rounded-md p-2 focus:ring-2 focus:ring-brand-500 focus:outline-none resize-none"
+                          className="flex-1 text-sm border border-gray-100 rounded-md p-2 focus:ring-2 focus:ring-brand-500 focus:outline-none resize-none"
                           rows={2}
                           autoFocus
                         />

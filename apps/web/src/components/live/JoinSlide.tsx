@@ -89,7 +89,7 @@ function ParticipantCounter({ count, names }: { count: number, names: string[] }
                 className="w-10 h-10 rounded-full bg-white border-2 border-gray-50 flex items-center justify-center shadow-sm relative"
                 style={{ zIndex: 10 - i }}
               >
-                <div className="w-full h-full rounded-full bg-gradient-to-br from-brand-100 to-brand-50 flex items-center justify-center">
+                <div className="w-full h-full rounded-full bg-brand-100 flex items-center justify-center">
                   <span className="text-brand-600 font-bold text-[12px]">{name.slice(0, 2).toUpperCase()}</span>
                 </div>
               </motion.div>
@@ -169,7 +169,7 @@ export function JoinSlide({ training, trainingId, isTrainer }: JoinSlideProps) {
         <div className="flex flex-col items-center gap-5 max-w-xs text-center">
           {/* Animated logo mark */}
           <div className="relative">
-            <div className="w-16 h-16 rounded-2xl bg-brand-50 border-2 border-brand-100 flex items-center justify-center">
+            <div className="w-16 h-16 rounded-xl bg-brand-50 border-2 border-brand-100 flex items-center justify-center">
               <div className="w-8 h-8 border-3 border-brand-200 border-t-brand-600 rounded-full animate-spin" style={{ borderWidth: 3 }} />
             </div>
             <span className="absolute -bottom-1 -right-1 w-5 h-5 bg-green-500 rounded-full border-2 border-white flex items-center justify-center">
@@ -198,7 +198,7 @@ export function JoinSlide({ training, trainingId, isTrainer }: JoinSlideProps) {
 
           <a
             href={`/trainings/${trainingId}`}
-            className="mt-2 px-6 py-2 bg-white border border-gray-200 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
+            className="mt-2 px-6 py-2 bg-white border border-gray-100 text-gray-700 rounded-lg text-sm font-medium hover:bg-gray-50 transition-colors"
           >
             Go to Home
           </a>
@@ -220,12 +220,12 @@ export function JoinSlide({ training, trainingId, isTrainer }: JoinSlideProps) {
 
         {/* Blurred/locked QR preview */}
         <div className="relative flex flex-col items-center gap-2">
-          <div className="p-5 bg-white border border-gray-200 rounded-2xl shadow-sm relative overflow-hidden">
+          <div className="p-5 bg-white border border-gray-100 rounded-xl shadow-sm relative overflow-hidden">
             <div className="blur-sm pointer-events-none opacity-40">
               <QRCode value={joinUrl} size={180} />
             </div>
             <div className="absolute inset-0 flex flex-col items-center justify-center gap-2">
-              <div className="w-10 h-10 rounded-xl bg-white border border-gray-200 shadow-sm flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-white border border-gray-100 shadow-sm flex items-center justify-center">
                 <Lock size={18} className="text-gray-500" />
               </div>
               <span className="text-[11px] font-semibold text-gray-500 bg-white/90 px-2 py-0.5 rounded-full">
@@ -240,7 +240,7 @@ export function JoinSlide({ training, trainingId, isTrainer }: JoinSlideProps) {
         <button
           onClick={() => updateStatus.mutate("connecting")}
           disabled={updateStatus.isPending}
-          className="flex items-center gap-2.5 px-8 py-3.5 bg-brand-600 text-white text-[15px] font-bold rounded-2xl hover:bg-brand-700 active:scale-[.98] transition-all shadow-md shadow-brand-200 disabled:opacity-50"
+          className="flex items-center gap-2.5 px-8 py-3.5 bg-brand-600 text-white text-[15px] font-bold rounded-xl hover:bg-brand-700 active:scale-[.98] transition-all shadow-md shadow-brand-200 disabled:opacity-50"
         >
           <Users size={18} strokeWidth={2.5} />
           Open for Joining
@@ -295,7 +295,7 @@ export function JoinSlide({ training, trainingId, isTrainer }: JoinSlideProps) {
             Session code
           </p>
           <div className="flex items-center gap-3">
-            <div className="flex-1 flex items-center justify-center gap-2 bg-gray-50/50 rounded-2xl py-3 px-6">
+            <div className="flex-1 flex items-center justify-center gap-2 bg-gray-50/50 rounded-xl py-3 px-6">
               <span className="text-3xl font-extrabold tracking-widest text-brand-700 font-mono">
                 {code.slice(0, 3)}
               </span>
@@ -321,7 +321,7 @@ export function JoinSlide({ training, trainingId, isTrainer }: JoinSlideProps) {
       <button
         onClick={() => updateStatus.mutate("live")}
         disabled={updateStatus.isPending}
-        className="flex items-center gap-2.5 px-8 py-3.5 bg-green-600 text-white text-[15px] font-bold rounded-2xl hover:bg-green-700 active:scale-[.98] transition-all shadow-md shadow-green-200 disabled:opacity-50"
+        className="flex items-center gap-2.5 px-8 py-3.5 bg-green-600 text-white text-[15px] font-bold rounded-xl hover:bg-green-700 active:scale-[.98] transition-all shadow-md shadow-green-200 disabled:opacity-50"
       >
         <Play size={18} strokeWidth={2.5} />
         Start Session

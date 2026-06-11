@@ -27,7 +27,7 @@ export function SessionHistoryPage({ trainingId }: { trainingId: string }) {
       ) : (
         <div className="space-y-3">
           {sessions.map((s) => (
-            <div key={s.id} className="bg-white border border-gray-200 rounded-2xl p-4">
+            <div key={s.id} className="bg-white border border-gray-100 rounded-xl p-4">
               <div className="flex items-start justify-between gap-4">
                 <div>
                   <div className="flex items-center gap-2 mb-1">

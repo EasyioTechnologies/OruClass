@@ -58,7 +58,7 @@ export function ParticipantWhiteboardWidget({ trainingId, onClose }: { trainingI
   };
 
   return (
-    <div className="flex flex-col fixed inset-0 z-[60] md:relative md:z-auto md:h-[500px] md:w-[600px] md:max-w-[90vw] bg-white md:rounded-2xl shadow-2xl md:border border-gray-200 overflow-hidden animate-in slide-in-from-bottom-8 fade-in duration-200">
+    <div className="flex flex-col fixed inset-0 z-[60] md:relative md:z-auto md:h-[500px] md:w-[600px] md:max-w-[90vw] bg-white md:rounded-xl shadow-lg md:border border-gray-100 overflow-hidden animate-in slide-in-from-bottom-8 fade-in duration-200">
       <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 bg-gray-50/50 z-20">
         <div className="flex items-center gap-3">
           <h3 className="font-semibold text-gray-800 text-sm">Personal Whiteboard</h3>

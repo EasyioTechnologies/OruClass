@@ -56,7 +56,7 @@ export function StickyBoard({ notes, onMove, emptyState }: Props) {
   return (
     <div
       ref={boardRef}
-      className="flex-1 relative border border-gray-200 rounded-lg bg-gray-50 overflow-hidden touch-none"
+      className="flex-1 relative border border-gray-100 rounded-lg bg-gray-50 overflow-hidden touch-none"
     >
       {notes.map((note) => (
         <div

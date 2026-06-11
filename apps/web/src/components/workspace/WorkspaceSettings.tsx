@@ -29,7 +29,7 @@ export function WorkspaceSettings({ workspaceId }: { workspaceId: string }) {
       <h1 className="text-2xl font-bold text-gray-900">Workspace Settings</h1>
       <form
         onSubmit={handleSubmit((d) => mutation.mutate(d))}
-        className="bg-white rounded-xl border border-gray-200 p-6 space-y-4"
+        className="bg-white rounded-xl border border-gray-100 p-6 space-y-4"
       >
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Name</label>

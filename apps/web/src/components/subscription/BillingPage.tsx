@@ -74,7 +74,7 @@ export function BillingPage() {
       </div>
 
       {/* Current Plan Banner */}
-      <div className="bg-gradient-to-r from-brand-500 to-brand-600 rounded-2xl p-5 md:p-6 mb-6 text-white relative overflow-hidden">
+      <div className="bg-brand-600 rounded-xl p-5 md:p-6 mb-6 text-white relative overflow-hidden">
         <div className="absolute top-0 right-0 w-40 h-40 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2" />
         <div className="absolute bottom-0 left-20 w-24 h-24 bg-white/5 rounded-full translate-y-1/2" />
 
@@ -131,7 +131,7 @@ export function BillingPage() {
       {activeTab === "overview" && (
         <div className="space-y-5">
           {/* Subscription Details */}
-          <div className="bg-white border border-gray-200 rounded-xl divide-y divide-gray-100">
+          <div className="bg-white border border-gray-100 rounded-xl divide-y divide-gray-100">
             <div className="p-5">
               <h3 className="text-[13px] font-600 text-gray-400 uppercase tracking-[0.06em] mb-4">
                 Subscription Details
@@ -207,7 +207,7 @@ export function BillingPage() {
           </div>
 
           {/* Usage Stats */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
             <h3 className="text-[13px] font-600 text-gray-400 uppercase tracking-[0.06em] mb-4">
               Plan Usage
             </h3>
@@ -269,7 +269,7 @@ export function BillingPage() {
           )}
 
           {/* Cancel */}
-          <div className="bg-white border border-gray-200 rounded-xl p-5">
+          <div className="bg-white border border-gray-100 rounded-xl p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-[14px] font-600 text-gray-900">Cancel Subscription</p>
@@ -294,7 +294,7 @@ export function BillingPage() {
       )}
 
       {activeTab === "invoices" && (
-        <div className="bg-white border border-gray-200 rounded-xl">
+        <div className="bg-white border border-gray-100 rounded-xl">
           <div className="p-5 border-b border-gray-100">
             <h3 className="text-[13px] font-600 text-gray-400 uppercase tracking-[0.06em]">
               Billing History
@@ -355,7 +355,7 @@ export function BillingPage() {
       {/* Cancel Modal */}
       {showCancelModal && (
         <div className="fixed inset-0 bg-black/30 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-xl">
+          <div className="bg-white rounded-xl max-w-md w-full p-6 shadow-md">
             <div className="w-12 h-12 rounded-full bg-red-50 flex items-center justify-center mx-auto mb-4">
               <AlertTriangle size={24} className="text-red-500" />
             </div>
@@ -391,7 +391,7 @@ export function BillingPage() {
                   setShowCancelModal(false);
                   router.push("/subscription");
                 }}
-                className="flex-1 py-2.5 rounded-xl text-[13px] font-600 border border-gray-200 text-gray-600 hover:bg-gray-50 transition-all"
+                className="flex-1 py-2.5 rounded-xl text-[13px] font-600 border border-gray-100 text-gray-600 hover:bg-gray-50 transition-all"
               >
                 Yes, Cancel
               </button>

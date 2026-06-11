@@ -41,7 +41,7 @@ export function ParticipantWhiteboard({ module, trainingId }: Props) {
   }, [socket]);
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] min-h-[500px] bg-white rounded-2xl shadow-xl border border-gray-200 overflow-hidden">
+    <div className="flex flex-col h-[calc(100vh-100px)] min-h-[500px] bg-white rounded-xl shadow-md border border-gray-100 overflow-hidden">
       <div className="flex items-center gap-3 px-6 py-4 bg-gray-50/50 border-b border-gray-100">
         <h2 className="font-bold text-gray-800 flex-1">{module.title}</h2>
         <span className="text-xs px-2.5 py-1 bg-gray-100 text-gray-600 font-semibold rounded-full">

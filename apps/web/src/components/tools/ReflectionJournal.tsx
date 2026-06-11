@@ -51,7 +51,7 @@ export function ReflectionJournal({ module, trainingId }: Props) {
         value={text}
         onChange={(e) => setText(e.target.value)}
         rows={8}
-        className="w-full px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+        className="w-full px-4 py-3 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
         placeholder="Write your reflection here…"
       />
 

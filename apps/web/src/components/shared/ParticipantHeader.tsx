@@ -22,7 +22,7 @@ export function ParticipantHeader() {
       </div>
       <div className="flex items-center gap-4">
         {/* We can add profile dropdown here later */}
-        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-200">
+        <div className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 border border-gray-100">
           <UserCircle size={20} />
         </div>
       </div>
