@@ -22,7 +22,7 @@ export function ParticipantTopBar() {
       {user && (
         <div className="flex items-center gap-3">
           <span className="text-[12px] text-gray-500 hidden sm:block">{user.name}</span>
-          <div className="w-8 h-8 rounded-full bg-brand-100 flex items-center justify-center text-[11px] font-bold text-brand-600">
+          <div className="w-8 h-8 rounded-full bg-[#e8f0fe] flex items-center justify-center text-[12px] font-bold text-[#1a73e8]">
             {user.name?.[0]?.toUpperCase()}
           </div>
           <button

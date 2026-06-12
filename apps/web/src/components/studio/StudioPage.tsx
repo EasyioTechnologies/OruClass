@@ -264,7 +264,7 @@ function ModuleConfigEditor({
                 ],
               })
             }
-            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
+            className="flex items-center gap-1 text-sm text-[#1a73e8] hover:text-[#1557b0] font-medium"
           >
             <Plus size={12} />
             Add question
@@ -277,7 +277,7 @@ function ModuleConfigEditor({
           </div>
         )}
         {questions.map((q, qi) => (
-          <div key={q.id} className="bg-gray-50 rounded-xl border border-gray-100 p-3 space-y-2">
+          <div key={q.id} className="bg-white rounded-lg border border-[#dadce0] p-4 space-y-3">
             <div className="flex items-start gap-2">
               <span className="text-[10px] font-bold text-gray-400 bg-white border border-gray-100 rounded-md px-1.5 py-0.5 mt-0.5 shrink-0">
                 Q{qi + 1}
@@ -288,7 +288,7 @@ function ModuleConfigEditor({
                   const updated = questions.map((x, i) => (i === qi ? { ...x, text: e.target.value } : x));
                   onChange({ ...config, questions: updated });
                 }}
-                className="flex-1 px-2.5 py-1.5 border border-gray-100 bg-white rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent"
+                className="flex-1 px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
                 placeholder="Question text"
               />
               <button
@@ -306,7 +306,7 @@ function ModuleConfigEditor({
                 );
                 onChange({ ...config, questions: updated });
               }}
-              className="w-full px-2.5 py-1.5 border border-gray-100 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="w-full px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
             >
               <option value="multiple_choice">Multiple Choice</option>
               <option value="short_answer">Short Answer</option>
@@ -347,7 +347,7 @@ function ModuleConfigEditor({
                           );
                           onChange({ ...config, questions: updated });
                         }}
-                        className="flex-1 px-2 py-1 border border-gray-100 bg-white rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brand-500"
+                        className="flex-1 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
                         placeholder={`Option ${oi + 1}`}
                       />
                       <button
@@ -377,7 +377,7 @@ function ModuleConfigEditor({
                     const updated = questions.map((x, i) => (i === qi ? { ...x, options: opts } : x));
                     onChange({ ...config, questions: updated });
                   }}
-                  className="text-xs text-brand-600 hover:text-brand-800 font-medium flex items-center gap-1 ml-5"
+                  className="text-xs text-[#1a73e8] hover:text-[#1557b0] font-medium flex items-center gap-1 ml-5"
                 >
                   <Plus size={11} /> Add option
                 </button>
@@ -400,10 +400,10 @@ function ModuleConfigEditor({
                         );
                         onChange({ ...config, questions: updated });
                       }}
-                      className={`flex-1 px-3 py-1.5 rounded-lg text-xs font-medium border transition-colors ${
+                      className={`flex-1 px-4 py-2 rounded-md text-sm font-medium border transition-colors ${
                         isCorrect
-                          ? "bg-emerald-50 border-emerald-300 text-emerald-700"
-                          : "bg-white border-gray-100 text-gray-600 hover:border-emerald-300"
+                          ? "bg-[#e8f0fe] border-[#1a73e8] text-[#1a73e8]"
+                          : "bg-white border-[#dadce0] text-gray-700 hover:bg-[#f8f9fa]"
                       }`}
                     >
                       {isCorrect ? `✓ ${opt} (correct)` : opt}
@@ -425,7 +425,7 @@ function ModuleConfigEditor({
                       );
                       onChange({ ...config, questions: updated });
                     }}
-                    className="w-16 px-2 py-1 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    className="w-16 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
                   />
                 </div>
                 <div className="flex items-center gap-2">
@@ -439,7 +439,7 @@ function ModuleConfigEditor({
                       );
                       onChange({ ...config, questions: updated });
                     }}
-                    className="w-16 px-2 py-1 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-brand-500"
+                    className="w-16 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
                   />
                 </div>
               </div>
@@ -459,7 +459,7 @@ function ModuleConfigEditor({
             value={config.prompt ?? ""}
             onChange={(e) => onChange({ ...config, prompt: e.target.value })}
             rows={4}
-            className="w-full px-3 py-2.5 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors resize-none"
             placeholder="What would you like participants to reflect on?"
           />
         </div>
@@ -471,7 +471,7 @@ function ModuleConfigEditor({
             max={5000}
             value={config.maxLength ?? 500}
             onChange={(e) => onChange({ ...config, maxLength: Number(e.target.value) })}
-            className="w-28 px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-28 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
           />
         </div>
       </div>
@@ -502,7 +502,7 @@ function ModuleConfigEditor({
                     const updated = rows.map((x, j) => (j === i ? e.target.value : x));
                     onChange({ ...config, rows: updated });
                   }}
-                  className="flex-1 px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="flex-1 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
                 />
                 <button
                   onClick={() => onChange({ ...config, rows: rows.filter((_, j) => j !== i) })}
@@ -533,7 +533,7 @@ function ModuleConfigEditor({
                     const updated = cols.map((x, j) => (j === i ? e.target.value : x));
                     onChange({ ...config, columns: updated });
                   }}
-                  className="flex-1 px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="flex-1 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
                 />
                 <button
                   onClick={() => onChange({ ...config, columns: cols.filter((_, j) => j !== i) })}
@@ -558,7 +558,7 @@ function ModuleConfigEditor({
             type="number"
             value={config.canvasWidth ?? 1200}
             onChange={(e) => onChange({ ...config, canvasWidth: Number(e.target.value) })}
-            className="w-full px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
           />
         </div>
         <div className="flex-1">
@@ -567,7 +567,7 @@ function ModuleConfigEditor({
             type="number"
             value={config.canvasHeight ?? 800}
             onChange={(e) => onChange({ ...config, canvasHeight: Number(e.target.value) })}
-            className="w-full px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
           />
         </div>
       </div>
@@ -600,7 +600,7 @@ function ModuleConfigEditor({
           </div>
           <button
             onClick={addField}
-            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
+            className="flex items-center gap-1 text-sm text-[#1a73e8] hover:text-[#1557b0] font-medium"
           >
             <Plus size={12} /> Add field
           </button>
@@ -737,7 +737,7 @@ function ModuleConfigEditor({
           <p className="text-xs font-semibold text-gray-700">Options</p>
           <button
             onClick={() => onChange({ ...config, pollOptions: [...options, ""] })}
-            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
+            className="flex items-center gap-1 text-sm text-[#1a73e8] hover:text-[#1557b0] font-medium"
           >
             <Plus size={12} /> Add option
           </button>
@@ -755,7 +755,7 @@ function ModuleConfigEditor({
                 const updated = options.map((o, j) => (j === i ? e.target.value : o));
                 onChange({ ...config, pollOptions: updated });
               }}
-              className="flex-1 px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+              className="flex-1 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
               placeholder={`Option ${i + 1}`}
             />
             <button
@@ -779,7 +779,7 @@ function ModuleConfigEditor({
             value={config.wordcloudPrompt ?? ""}
             onChange={(e) => onChange({ ...config, wordcloudPrompt: e.target.value })}
             rows={3}
-            className="w-full px-3 py-2.5 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors resize-none"
             placeholder="What words come to mind when you think of…?"
           />
         </div>
@@ -791,7 +791,7 @@ function ModuleConfigEditor({
             max={20}
             value={config.maxWords ?? 5}
             onChange={(e) => onChange({ ...config, maxWords: Number(e.target.value) })}
-            className="w-20 px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-20 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
           />
         </div>
       </div>
@@ -807,7 +807,7 @@ function ModuleConfigEditor({
             value={config.qnaPrompt ?? ""}
             onChange={(e) => onChange({ ...config, qnaPrompt: e.target.value })}
             rows={3}
-            className="w-full px-3 py-2.5 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500 focus:border-transparent resize-none"
+            className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors resize-none"
             placeholder="Ask any questions about the session…"
           />
         </div>
@@ -837,7 +837,7 @@ function ModuleConfigEditor({
             max={120}
             value={mins}
             onChange={(e) => onChange({ ...config, durationSeconds: Number(e.target.value) * 60 + secs })}
-            className="w-16 px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-16 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
           />
           <span className="text-xs text-gray-500">min</span>
           <input
@@ -846,7 +846,7 @@ function ModuleConfigEditor({
             max={59}
             value={secs}
             onChange={(e) => onChange({ ...config, durationSeconds: mins * 60 + Number(e.target.value) })}
-            className="w-16 px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-16 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
           />
           <span className="text-xs text-gray-500">sec</span>
         </div>
@@ -936,7 +936,7 @@ function ModuleConfigEditor({
                     const updated = focusAreas.map((x, j) => (j === i ? { ...x, title: e.target.value } : x));
                     onChange({ ...config, mappingFocusAreas: updated });
                   }}
-                  className="w-full px-2.5 py-1.5 border border-gray-100 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
                   placeholder="e.g. Strengths, Weaknesses"
                 />
               </div>
@@ -992,7 +992,7 @@ function ModuleConfigEditor({
           <input
             value={config.formTitle ?? ""}
             onChange={(e) => onChange({ ...config, formTitle: e.target.value })}
-            className="w-full px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+            className="w-full px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
             placeholder="e.g. Feedback Form"
           />
         </div>
@@ -1002,7 +1002,7 @@ function ModuleConfigEditor({
             value={config.formDescription ?? ""}
             onChange={(e) => onChange({ ...config, formDescription: e.target.value })}
             rows={2}
-            className="w-full px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500 resize-none"
+            className="w-full px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors resize-none"
             placeholder="Please fill out this form..."
           />
         </div>
@@ -1011,7 +1011,7 @@ function ModuleConfigEditor({
           <p className="text-xs font-semibold text-gray-700">Form Fields</p>
           <button
             onClick={addField}
-            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
+            className="flex items-center gap-1 text-sm text-[#1a73e8] hover:text-[#1557b0] font-medium"
           >
             <Plus size={12} /> Add field
           </button>
@@ -1117,7 +1117,7 @@ function ModuleConfigEditor({
           <p className="text-xs font-semibold text-gray-700">Embedded Resources</p>
           <button
             onClick={addEmbed}
-            className="flex items-center gap-1 text-xs text-brand-600 hover:text-brand-800 font-medium"
+            className="flex items-center gap-1 text-sm text-[#1a73e8] hover:text-[#1557b0] font-medium"
           >
             <Plus size={12} /> Add embed
           </button>
@@ -1145,7 +1145,7 @@ function ModuleConfigEditor({
                 type="url"
                 value={embed.url ?? ""}
                 onChange={(e) => updateEmbed(i, { url: e.target.value })}
-                className="w-full px-2.5 py-1.5 border border-gray-100 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
                 placeholder="https://example.com"
               />
             </div>
@@ -1154,7 +1154,7 @@ function ModuleConfigEditor({
               <input
                 value={embed.title ?? ""}
                 onChange={(e) => updateEmbed(i, { title: e.target.value })}
-                className="w-full px-2.5 py-1.5 border border-gray-100 bg-white rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
                 placeholder="Title to display above embed"
               />
             </div>
@@ -1285,7 +1285,7 @@ function SortableModuleCard({
       ref={setNodeRef}
       style={{ transform: CSS.Transform.toString(transform), transition }}
       className={cn(
-        "bg-white rounded-xl border border-gray-100 overflow-hidden transition-shadow",
+        "bg-white rounded-lg border border-[#dadce0] overflow-hidden transition-shadow",
         isDragging ? "shadow-lg opacity-80 rotate-1" : "shadow-sm hover:shadow-md",
       )}
     >
@@ -1558,7 +1558,7 @@ function AddModuleDrawer({
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="bg-white w-full sm:max-w-2xl rounded-t-xl sm:rounded-xl border-t sm:border border-gray-100 shadow-lg max-h-[88vh] sm:max-h-[85vh] flex flex-col animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
+        className="bg-white w-full sm:max-w-4xl rounded-t-xl sm:rounded-2xl border-t sm:border border-gray-100 shadow-xl max-h-[88vh] sm:max-h-[85vh] flex flex-col animate-in slide-in-from-bottom-4 sm:zoom-in-95 duration-200"
       >
         <div className="flex items-center justify-between px-5 sm:px-6 pt-5 pb-4 border-b border-gray-100">
           <div>
@@ -1574,8 +1574,8 @@ function AddModuleDrawer({
           </button>
         </div>
 
-        <div className="overflow-y-auto px-5 sm:px-6 py-4">
-          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+        <div className="overflow-y-auto px-5 sm:px-6 py-4 sm:py-6 bg-[#f8f9fa] rounded-b-xl sm:rounded-b-2xl">
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4">
             {MODULE_TYPES.map((t) => {
               const selected = selectedType === t.type;
               return (
@@ -1587,17 +1587,17 @@ function AddModuleDrawer({
                   }}
                   disabled={addModule.isPending}
                   className={cn(
-                    "flex flex-col items-start gap-2 p-3 sm:p-3.5 rounded-xl border-2 text-left transition-all",
-                    selected ? `${t.bg} ${t.border}` : "border-gray-100 bg-gray-50/70 hover:border-gray-100 hover:bg-white",
+                    "flex flex-col items-start text-left p-5 rounded-2xl border border-gray-100 transition-all h-full",
+                    selected ? "border-[#1a73e8] bg-blue-50/30" : "bg-white hover:border-[#dadce0] hover:shadow-sm",
                     addModule.isPending && !selected && "opacity-50 cursor-not-allowed",
                   )}
                 >
-                  <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center shrink-0", selected ? "bg-white/70" : "bg-white border border-gray-100")}>
-                    <t.Icon size={16} className={selected ? t.color : "text-gray-500"} />
+                  <div className={cn("w-10 h-10 rounded-full flex items-center justify-center shrink-0 border border-gray-100 mb-3", selected ? "bg-[#1a73e8] border-[#1a73e8]" : "bg-white")}>
+                    <t.Icon size={18} className={selected ? "text-white" : "text-gray-600"} />
                   </div>
-                  <div className="min-w-0">
-                    <p className={cn("text-[13px] font-bold", selected ? t.color : "text-gray-800")}>{t.label}</p>
-                    <SafeHTML html={t.description} className="text-[10px] text-gray-400 leading-tight mt-0.5 line-clamp-2" />
+                  <div className="min-w-0 flex-1">
+                    <p className={cn("text-[15px] font-bold mb-1", selected ? "text-[#1a73e8]" : "text-[#1f2937]")}>{t.label}</p>
+                    <SafeHTML html={t.description} className="text-[11px] text-[#6b7280] leading-snug" />
                   </div>
                 </button>
               );
@@ -1820,7 +1820,7 @@ function DayModuleList({
 
       {modules.length === 0 && !adding && canEdit && (
         <div
-          className="flex flex-col items-center justify-center py-12 bg-brand-50/40 rounded-xl border-2 border-dashed border-brand-200 cursor-pointer hover:border-brand-400 hover:bg-brand-50 transition-all group"
+          className="flex flex-col items-center justify-center py-12 bg-[#f8f9fa] rounded-lg border-2 border-dashed border-[#dadce0] cursor-pointer hover:border-[#1a73e8] hover:bg-[#f1f3f4] transition-all group"
           onClick={() => setAdding(true)}
         >
           <div className="w-10 h-10 rounded-xl bg-brand-100 group-hover:bg-brand-200 flex items-center justify-center mb-2.5 transition-colors">
@@ -1842,7 +1842,7 @@ function DayModuleList({
       {!adding && modules.length > 0 && canEdit && (
         <button
           onClick={() => setAdding(true)}
-          className="flex items-center justify-center gap-2 w-full py-3 rounded-xl bg-brand-50 border-2 border-dashed border-brand-200 text-brand-700 font-semibold text-sm hover:bg-brand-100 hover:border-brand-300 transition-all group"
+          className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-white border border-[#dadce0] text-[#1a73e8] font-medium text-sm hover:bg-[#f8f9fa] hover:border-[#1a73e8] transition-all group shadow-sm"
         >
           <Plus size={16} strokeWidth={2.5} className="group-hover:scale-110 transition-transform" />
           Add module
@@ -1887,7 +1887,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
     FACILITATOR_ROLES.find((r) => r.value === role)?.label ?? role;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-[#dadce0] overflow-hidden">
       <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Users size={15} className="text-gray-500" />
@@ -2036,7 +2036,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                     <select
                       value={selectedUserId}
                       onChange={(e) => setSelectedUserId(e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
                     >
                       <option value="">Select member…</option>
                       {unassigned.map((m) => (
@@ -2048,7 +2048,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                     <select
                       value={selectedRole}
                       onChange={(e) => setSelectedRole(e.target.value as TrainingRole)}
-                      className="w-full px-3 py-2 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                      className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
                     >
                       {FACILITATOR_ROLES.map((r) => (
                         <option key={r.value} value={r.value}>
@@ -2059,7 +2059,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                     <div className="flex gap-2">
                       <button
                         onClick={() => setShowAssign(false)}
-                        className="flex-1 py-2 border border-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-50"
+                        className="flex-1 py-2 text-[#1a73e8] bg-transparent rounded-full text-xs font-medium hover:bg-blue-50/50 transition-colors"
                       >
                         Cancel
                       </button>
@@ -2071,7 +2071,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                             { onSuccess: () => { setSelectedUserId(""); setShowAssign(false); } },
                           );
                         }}
-                        className="flex-1 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 disabled:opacity-60 transition-colors"
+                        className="flex-1 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-full text-xs font-medium disabled:opacity-60 transition-colors shadow-sm"
                       >
                         {assignFacilitator.isPending ? "Assigning…" : "Assign"}
                       </button>
@@ -2095,12 +2095,12 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                   value={inviteEmail}
                   onChange={(e) => setInviteEmail(e.target.value)}
                   placeholder="Enter email address"
-                  className="w-full px-3 py-2 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
                 />
                 <select
                   value={selectedRole}
                   onChange={(e) => setSelectedRole(e.target.value as TrainingRole)}
-                  className="w-full px-3 py-2 border border-gray-100 rounded-xl text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
                 >
                   {FACILITATOR_ROLES.map((r) => (
                     <option key={r.value} value={r.value}>
@@ -2111,7 +2111,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                 <div className="flex gap-2">
                   <button
                     onClick={() => setShowAssign(false)}
-                    className="flex-1 py-2 border border-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-50"
+                    className="flex-1 py-2 text-[#1a73e8] bg-transparent rounded-full text-xs font-medium hover:bg-blue-50/50 transition-colors"
                   >
                     Cancel
                   </button>
@@ -2123,7 +2123,7 @@ function FacilitatorPanel({ trainingId, workspaceId }: { trainingId: string; wor
                         { onSuccess: () => { setInviteEmail(""); setShowAssign(false); setSelectedRole("full_editor"); } },
                       );
                     }}
-                    className="flex-1 py-2 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 disabled:opacity-60 transition-colors"
+                    className="flex-1 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-full text-xs font-medium disabled:opacity-60 transition-colors shadow-sm"
                   >
                     {inviteFacilitator.isPending ? "Inviting…" : "Invite"}
                   </button>
@@ -2190,7 +2190,7 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
   if (!training) return null;
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-[#dadce0] overflow-hidden">
       <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
         <div className="flex items-center gap-2">
           <Pencil size={14} className="text-gray-500" />
@@ -2215,7 +2215,7 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
               <input
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
-                className="w-full px-2.5 py-1.5 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
               />
             </div>
             <div>
@@ -2223,7 +2223,7 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
               <input
                 value={labels}
                 onChange={(e) => setLabels(e.target.value)}
-                className="w-full px-2.5 py-1.5 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
               />
             </div>
             <div>
@@ -2231,7 +2231,7 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
               <select
                 value={type}
                 onChange={(e) => setType(e.target.value)}
-                className="w-full px-2.5 py-1.5 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
               >
                 <option value="in_person">In-Person</option>
                 <option value="online">Online</option>
@@ -2259,7 +2259,7 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
                   type="text"
                   value={venue}
                   onChange={(e) => setVenue(e.target.value)}
-                  className="w-full px-2.5 py-1.5 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
                 />
               </div>
             ) : null}
@@ -2270,7 +2270,7 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
                   type="url"
                   value={meetingLink}
                   onChange={(e) => setMeetingLink(e.target.value)}
-                  className="w-full px-2.5 py-1.5 border border-gray-100 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+                  className="w-full px-4 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-sm outline-none transition-colors"
                 />
               </div>
             ) : null}
@@ -2280,14 +2280,14 @@ function TrainingInfoPanel({ trainingId, workspaceId }: { trainingId: string; wo
             <div className="flex gap-2">
               <button
                 onClick={() => setEditing(false)}
-                className="flex-1 py-1.5 border border-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-50"
+                className="flex-1 py-1.5 text-[#1a73e8] bg-transparent rounded-full text-xs font-medium hover:bg-blue-50/50 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={save}
                 disabled={updateTraining.isPending || !title.trim()}
-                className="flex-1 py-1.5 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 disabled:opacity-60"
+                className="flex-1 py-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-full text-xs font-medium disabled:opacity-60 transition-colors shadow-sm"
               >
                 {updateTraining.isPending ? "Saving…" : "Save"}
               </button>
@@ -2355,7 +2355,7 @@ function SessionChecklist({ workspaceId, trainingId }: { workspaceId: string; tr
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+    <div className="bg-white rounded-lg border border-[#dadce0] overflow-hidden">
       <div className="px-4 py-3.5 border-b border-gray-100 flex items-center justify-between">
         <h2 className="text-sm font-bold text-gray-900">Session checklist</h2>
         {!editing && canEdit && (
@@ -2379,7 +2379,7 @@ function SessionChecklist({ workspaceId, trainingId }: { workspaceId: string; tr
                   setDraft((prev) => prev.map((p) => (p.id === d.id ? { ...p, label: e.target.value } : p)))
                 }
                 placeholder="Checklist item…"
-                className="flex-1 px-2.5 py-1.5 border border-gray-100 rounded-lg text-xs focus:outline-none focus:ring-2 focus:ring-brand-500"
+                className="flex-1 px-3 py-2 bg-[#f1f3f4] border-b-2 border-transparent border-b-gray-400 focus:border-b-[#1a73e8] hover:bg-[#e8eaed] rounded-t-md text-xs outline-none transition-colors"
               />
               <button
                 onClick={() => setDraft((prev) => prev.filter((_, idx) => idx !== i))}
@@ -2402,14 +2402,14 @@ function SessionChecklist({ workspaceId, trainingId }: { workspaceId: string; tr
           <div className="flex gap-2 pt-1">
             <button
               onClick={() => setEditing(false)}
-              className="flex-1 py-1.5 border border-gray-100 text-gray-600 rounded-xl text-xs font-medium hover:bg-gray-50"
+              className="flex-1 py-1.5 text-[#1a73e8] bg-transparent rounded-full text-xs font-medium hover:bg-blue-50/50 transition-colors"
             >
               Cancel
             </button>
             <button
               onClick={save}
               disabled={updateTraining.isPending}
-              className="flex-1 py-1.5 bg-brand-600 text-white rounded-xl text-xs font-semibold hover:bg-brand-700 disabled:opacity-60"
+              className="flex-1 py-1.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-full text-xs font-medium disabled:opacity-60 transition-colors shadow-sm"
             >
               {updateTraining.isPending ? "Saving…" : "Save"}
             </button>
@@ -2583,9 +2583,9 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
         {(!myRole || canDo(myRole, "pause_room")) && (
           <Link
             href={`/trainings/${trainingId}/live`}
-            className="flex items-center justify-center gap-2 px-4 py-2.5 bg-brand-600 text-white rounded-xl text-sm font-semibold hover:bg-brand-700 transition-colors shadow-sm shadow-brand-200 w-full sm:w-auto shrink-0"
+            className="flex items-center justify-center gap-2 px-6 py-2 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-full text-sm font-medium transition-colors shadow-sm w-full sm:w-auto shrink-0"
           >
-            <Radio size={14} />
+            <Radio size={16} />
             Go Live
           </Link>
         )}
@@ -2629,19 +2629,19 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
               key={day.id}
               onClick={() => setActiveTab(day.id)}
               className={cn(
-                "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold shrink-0 transition-all border",
+                "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium shrink-0 transition-all border-none",
                 isActive
-                  ? "bg-brand-600 text-white border-brand-600 shadow-sm shadow-brand-200"
-                  : "bg-white text-gray-600 border-gray-100 hover:border-brand-200 hover:text-brand-700 hover:bg-brand-50/50",
+                  ? "bg-[#e8f0fe] text-[#1a73e8]"
+                  : "bg-white text-gray-600 hover:bg-[#f1f3f4]",
               )}
             >
-              <CalendarDays size={13} />
+              <CalendarDays size={16} />
               <span>{day.title}</span>
               {dayMods.length > 0 && (
                 <span
                   className={cn(
                     "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
-                    isActive ? "bg-white/20 text-white" : "bg-gray-100 text-gray-500",
+                    isActive ? "bg-blue-200/50 text-[#1a73e8]" : "bg-gray-100 text-gray-500",
                   )}
                 >
                   {dayMods.length}
@@ -2656,18 +2656,18 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
           <button
             onClick={() => setActiveTab("general")}
             className={cn(
-              "flex items-center gap-2 px-3.5 py-2 rounded-xl text-sm font-semibold shrink-0 transition-all border",
+              "flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium shrink-0 transition-all border-none",
               effectiveTab === "general"
-                ? "bg-amber-500 text-white border-amber-500 shadow-sm"
-                : "bg-white text-amber-600 border-amber-200 hover:bg-amber-50",
+                ? "bg-amber-100 text-amber-800"
+                : "bg-white text-amber-700 hover:bg-amber-50",
             )}
           >
-            <AlertTriangle size={13} />
+            <AlertTriangle size={16} />
             <span>Unassigned</span>
             <span
               className={cn(
                 "text-[10px] font-bold px-1.5 py-0.5 rounded-full",
-                effectiveTab === "general" ? "bg-white/20 text-white" : "bg-amber-100 text-amber-600",
+                effectiveTab === "general" ? "bg-amber-200/50 text-amber-800" : "bg-amber-100 text-amber-600",
               )}
             >
               {unassignedModules.length}
@@ -2680,9 +2680,9 @@ export function StudioPage({ trainingId }: { trainingId: string }) {
           <button
             onClick={handleAddDay}
             disabled={createDay.isPending}
-            className="flex items-center gap-1.5 px-3 py-2 rounded-xl text-sm font-semibold shrink-0 border border-dashed border-gray-300 text-gray-400 hover:border-brand-300 hover:text-brand-600 hover:bg-brand-50/30 transition-all disabled:opacity-50"
+            className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium shrink-0 border-none bg-white text-gray-500 hover:bg-[#f1f3f4] hover:text-gray-800 transition-all disabled:opacity-50"
           >
-            <Plus size={13} />
+            <Plus size={16} />
             {createDay.isPending ? "Adding…" : "Add Day"}
           </button>
         )}

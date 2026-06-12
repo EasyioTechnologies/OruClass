@@ -39,7 +39,7 @@ export function Sidebar() {
   const router = useRouter();
   const { data: workspaces } = useWorkspaces();
   const { activeWorkspaceId, setActiveWorkspace } = useWorkspaceStore();
-  const { isMobileSidebarOpen, setMobileSidebarOpen } = useLayoutStore();
+  const { isMobileSidebarOpen, setMobileSidebarOpen, isDesktopSidebarOpen } = useLayoutStore();
   const { planId, status } = useSubscriptionStore();
   const isPro = status === "active";
   const currentPlan = planId ? getPlan(planId) : null;
@@ -65,27 +65,14 @@ export function Sidebar() {
 
       <aside
         className={cn(
-          "bg-white border-r border-gray-100 flex flex-col h-screen flex-shrink-0 transition-transform duration-300 md:w-[220px] md:relative md:translate-x-0 w-[260px] fixed z-50 left-0 top-0",
-          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full"
+          "bg-white flex flex-col h-full flex-shrink-0 transition-all duration-300 fixed z-40 left-0 top-0 overflow-hidden whitespace-nowrap md:relative",
+          isMobileSidebarOpen ? "translate-x-0" : "-translate-x-full md:translate-x-0",
+          isDesktopSidebarOpen ? "w-[260px] md:w-[260px]" : "w-[260px] md:w-0 md:border-none"
         )}
       >
-        {/* Logo — same height as header */}
-        <div className="h-16 flex items-center px-4 border-b border-gray-100 flex-shrink-0">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center flex-shrink-0">
-              <GraduationCap size={16} className="text-white" strokeWidth={2} />
-            </div>
-            <span className="text-[15px] font-semibold text-gray-900 tracking-tight">OruLabs</span>
-            {isPro && currentPlan && (
-              <span className="text-[10px] font-bold text-amber-600 bg-amber-50 border border-amber-200 px-1.5 py-0.5 rounded-full uppercase tracking-wide leading-none">
-                Pro
-              </span>
-            )}
-          </div>
-        </div>
 
         {/* Nav */}
-        <nav className="flex-1 px-3 py-3 space-y-0.5 overflow-y-auto">
+        <nav className="flex-1 py-3 space-y-0.5 overflow-y-auto">
           {(hasWorkspace || isParticipant) && navItems.map((item) => {
             const Icon = item.icon;
             const active = item.exact
@@ -97,15 +84,15 @@ export function Sidebar() {
                 href={item.href}
                 onClick={() => setMobileSidebarOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors duration-150",
+                  "flex items-center gap-5 pl-6 pr-4 py-2.5 rounded-r-full text-[14.5px] font-medium transition-colors duration-150 mr-4",
                   active
-                    ? "bg-brand-50 text-brand-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ? "bg-[#e8f0fe] text-[#1967d2]"
+                    : "text-[#3c4043] hover:bg-gray-100"
                 )}
               >
                 <Icon
-                  size={17}
-                  className={active ? "text-brand-600" : "text-gray-400"}
+                  size={20}
+                  className={active ? "text-[#1967d2]" : "text-[#5f6368]"}
                   strokeWidth={active ? 2.5 : 2}
                 />
                 {item.label}
@@ -113,43 +100,17 @@ export function Sidebar() {
             );
           })}
 
-          {hasWorkspace && !isParticipant && (
-            <Link
-              href={isPro ? "/subscription/billing" : "/subscription"}
-              onClick={() => setMobileSidebarOpen(false)}
-              className={cn(
-                "flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors duration-150",
-                pathname.startsWith("/subscription")
-                  ? "bg-brand-50 text-brand-700 font-medium"
-                  : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
-              )}
-            >
-              {isPro ? (
-                <Crown
-                  size={17}
-                  className={pathname.startsWith("/subscription") ? "text-amber-500" : "text-amber-400"}
-                  strokeWidth={pathname.startsWith("/subscription") ? 2.5 : 2}
-                />
-              ) : (
-                <CreditCard
-                  size={17}
-                  className={pathname.startsWith("/subscription") ? "text-brand-600" : "text-gray-400"}
-                  strokeWidth={pathname.startsWith("/subscription") ? 2.5 : 2}
-                />
-              )}
-              {isPro ? "My Plan" : "Plans"}
-            </Link>
-          )}
+          {/* Plans link removed */}
         </nav>
 
         {/* Bottom */}
-        <div className="px-3 py-3 border-t border-gray-100 flex-shrink-0">
+        <div className="py-3 border-t border-gray-100 flex-shrink-0">
           {!isPro && hasWorkspace && !isParticipant && (
             <Link
               href="/subscription"
-              className="flex items-center gap-2.5 px-3 py-2 rounded-xl text-sm text-brand-600 hover:bg-brand-50 transition-colors font-medium"
+              className="flex items-center gap-5 pl-6 pr-4 py-2.5 rounded-r-full text-[14.5px] font-medium text-[#1967d2] hover:bg-[#e8f0fe] transition-colors mr-4"
             >
-              <Sparkles size={15} />
+              <Sparkles size={20} />
               Upgrade to Pro
             </Link>
           )}

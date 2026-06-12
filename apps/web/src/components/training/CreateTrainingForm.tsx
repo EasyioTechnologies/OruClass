@@ -8,6 +8,7 @@ import { useWorkspaceStore } from "@/store/workspace";
 import { useCreateTraining } from "@/hooks/useTrainings";
 import type { z } from "zod";
 import { RichTextEditor } from "@/components/ui/RichTextEditor";
+import { cn } from "@oruclass/utils";
 
 type FormData = {
   title: string;
@@ -31,6 +32,54 @@ const TYPES: { value: string; label: string }[] = [
   { value: "online", label: "Online" },
   { value: "hybrid", label: "Hybrid" },
 ];
+
+const MaterialInput = ({ label, register, error, type = "text", ...props }: any) => (
+  <div className="relative group">
+    <input
+      type={type}
+      {...register}
+      {...props}
+      placeholder=" "
+      className={cn(
+        "block w-full rounded-t-md border-0 border-b bg-[#f1f3f4] px-4 pb-2 pt-6 text-[15px] text-gray-900 focus:border-b-2 focus:ring-0 peer hover:bg-[#e8eaed] transition-all outline-none",
+        error ? "border-red-500 focus:border-red-500" : "border-gray-400 focus:border-[#1a73e8]"
+      )}
+    />
+    <label className={cn(
+      "absolute left-4 top-4 z-10 origin-[0] -translate-y-2.5 scale-75 transform text-[15px] duration-150 peer-focus:-translate-y-2.5 peer-focus:scale-75 pointer-events-none",
+      type === "date" || type === "time" ? "-translate-y-2.5 scale-75" : "peer-placeholder-shown:translate-y-0 peer-placeholder-shown:scale-100",
+      error ? "text-red-500" : "text-gray-500 peer-focus:text-[#1a73e8]"
+    )}>
+      {label}
+    </label>
+    {error && <p className="text-[11px] text-red-500 mt-1 pl-1">{error}</p>}
+  </div>
+);
+
+const MaterialSelect = ({ label, register, error, options, ...props }: any) => (
+  <div className="relative group">
+    <select
+      {...register}
+      {...props}
+      className={cn(
+        "block w-full rounded-t-md border-0 border-b bg-[#f1f3f4] px-4 pb-2 pt-6 text-[15px] text-gray-900 focus:border-b-2 focus:ring-0 peer hover:bg-[#e8eaed] transition-all appearance-none cursor-pointer outline-none",
+        error ? "border-red-500 focus:border-red-500" : "border-gray-400 focus:border-[#1a73e8]"
+      )}
+    >
+      {options.map((o: any) => <option key={o.value} value={o.value}>{o.label}</option>)}
+    </select>
+    <label className={cn(
+      "absolute left-4 top-4 z-10 origin-[0] -translate-y-2.5 scale-75 transform text-[15px] duration-150 peer-focus:text-[#1a73e8] pointer-events-none",
+      error ? "text-red-500" : "text-gray-500"
+    )}>
+      {label}
+    </label>
+    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-4 text-gray-500 pt-3">
+      <svg className="h-4 w-4 fill-current" viewBox="0 0 20 20"><path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z"/></svg>
+    </div>
+    {error && <p className="text-[11px] text-red-500 mt-1 pl-1">{error}</p>}
+  </div>
+);
 
 export function CreateTrainingForm({ onSuccess }: Props = {}) {
   const router = useRouter();
@@ -82,137 +131,117 @@ export function CreateTrainingForm({ onSuccess }: Props = {}) {
   };
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="bg-white rounded-xl border border-gray-100 p-6 space-y-4">
-      <div>
-        <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
-        <input
-          {...register("title")}
-          className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-          placeholder="e.g. Classroom Management Strategies"
+    <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+      <div className="space-y-6">
+        <MaterialInput
+          label="Title"
+          register={register("title")}
+          error={errors.title?.message}
         />
-        {errors.title && <p className="text-xs text-red-500 mt-1">{errors.title.message}</p>}
-      </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Labels (comma separated)</label>
-          <input
-            {...register("labels")}
-            placeholder="e.g. leadership, tech, optional"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <MaterialInput
+            label="Labels (comma separated)"
+            register={register("labels")}
+            error={errors.labels?.message as string}
           />
-          {errors.labels && <p className="text-xs text-red-500 mt-1">{errors.labels.message as string}</p>}
+
+          <MaterialSelect
+            label="Type"
+            options={TYPES}
+            register={register("type")}
+            error={errors.type?.message}
+          />
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Type</label>
-          <select
-            {...register("type")}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-          >
-            {TYPES.map((t) => (
-              <option key={t.value} value={t.value}>{t.label}</option>
-            ))}
-          </select>
-          {errors.type && <p className="text-xs text-red-500 mt-1">{errors.type.message}</p>}
-        </div>
-      </div>
-
-      <div>
-        <div className="flex justify-between items-center mb-1">
-          <label className="block text-sm font-medium text-gray-700">Description</label>
-        </div>
-        <Controller
-          name="description"
-          control={control}
-          render={({ field }) => {
-            const charCount = field.value ? field.value.replace(new RegExp("<[^>]*>?", "gm"), '').length : 0;
-            const limit = 2000;
-            const isOverLimit = charCount > limit;
-            
-            return (
-              <div>
-                <RichTextEditor
-                  value={field.value || ""}
-                  onChange={field.onChange}
-                  placeholder="Optional description…"
-                  minHeight="120px"
-                />
-                <div className={`text-xs mt-1 text-right ${isOverLimit ? 'text-red-500' : 'text-gray-500'}`}>
-                  {charCount} / {limit} characters
+          <div className="flex justify-between items-center mb-2 px-1">
+            <label className="block text-[13px] font-semibold tracking-wide text-gray-500 uppercase">Description</label>
+          </div>
+          <Controller
+            name="description"
+            control={control}
+            render={({ field }) => {
+              const charCount = field.value ? field.value.replace(new RegExp("<[^>]*>?", "gm"), '').length : 0;
+              const limit = 2000;
+              const isOverLimit = charCount > limit;
+              
+              return (
+                <div>
+                  <div className="border border-gray-300 rounded-md overflow-hidden focus-within:border-[#1a73e8] focus-within:ring-1 focus-within:ring-[#1a73e8] transition-all">
+                    <RichTextEditor
+                      value={field.value || ""}
+                      onChange={field.onChange}
+                      placeholder="Optional description…"
+                      minHeight="140px"
+                    />
+                  </div>
+                  <div className={`text-[11px] mt-1.5 text-right font-medium ${isOverLimit ? 'text-red-500' : 'text-gray-400'}`}>
+                    {charCount} / {limit} characters
+                  </div>
                 </div>
-              </div>
-            );
-          }}
-        />
-      </div>
+              );
+            }}
+          />
+        </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <div>
-          <label htmlFor="startDate" className="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
-          <input
-            id="startDate"
-            {...register("startDate")}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <MaterialInput
+            label="Start Date"
             type="date"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+            register={register("startDate")}
+            error={errors.startDate?.message}
           />
+          <div>
+            <MaterialInput
+              label="End Date"
+              type="date"
+              min={startDateStr || undefined}
+              register={register("endDate")}
+              error={errors.endDate?.message as string}
+            />
+            <p className="text-[11px] text-gray-400 mt-1.5 pl-1">Each day in this range becomes a planned day automatically.</p>
+          </div>
         </div>
-        <div>
-          <label htmlFor="endDate" className="block text-sm font-medium text-gray-700 mb-1">End Date</label>
-          <input
-            id="endDate"
-            {...register("endDate")}
-            type="date"
-            min={startDateStr || undefined}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
+
+        {duration && (
+          <div aria-live="polite" className="bg-[#e8f0fe] rounded-md p-4 flex justify-between items-center text-[14px] text-[#1967d2]">
+            <span><strong>Duration:</strong> {duration.days} Day{duration.days !== 1 ? 's' : ''}</span>
+            <span className="opacity-70 font-medium">{duration.hours} Total Hours</span>
+          </div>
+        )}
+
+        {selectedType === "in_person" || selectedType === "hybrid" ? (
+          <MaterialInput
+            label="Venue Location"
+            register={register("venue")}
+            error={errors.venue?.message}
           />
-          <p className="text-xs text-gray-400 mt-1">Each day in this range becomes a planned day automatically.</p>
-        </div>
-      </div>
+        ) : null}
 
-      {errors.endDate && <p className="text-xs text-red-500 -mt-2">{errors.endDate.message as string}</p>}
-
-      {duration && (
-        <div aria-live="polite" className="bg-brand-50 border border-brand-100 rounded-lg p-3 flex justify-between items-center text-sm text-brand-800">
-          <span><strong>Duration:</strong> {duration.days} Day{duration.days !== 1 ? 's' : ''}</span>
-          <span className="opacity-70">{duration.hours} Total Hours</span>
-        </div>
-      )}
-
-      {selectedType === "in_person" || selectedType === "hybrid" ? (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Venue Location</label>
-          <input
-            {...register("venue")}
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-            placeholder="e.g. Conference Room A"
-          />
-        </div>
-      ) : null}
-
-      {selectedType === "online" || selectedType === "hybrid" ? (
-        <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Virtual Meeting Link</label>
-          <input
-            {...register("meetingLink")}
+        {selectedType === "online" || selectedType === "hybrid" ? (
+          <MaterialInput
+            label="Virtual Meeting Link"
             type="url"
-            className="w-full px-3 py-2 border border-gray-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-brand-500"
-            placeholder="e.g. https://zoom.us/j/123456789"
+            register={register("meetingLink")}
+            error={errors.meetingLink?.message}
           />
-        </div>
-      ) : null}
+        ) : null}
 
-      {createTraining.isError && (
-        <p className="text-sm text-red-500">Failed to create training. Try again.</p>
-      )}
+        {createTraining.isError && (
+          <p className="text-sm text-red-500 font-medium">Failed to create training. Try again.</p>
+        )}
+      </div>
 
-      <button
-        type="submit"
-        disabled={createTraining.isPending}
-        className="w-full py-2.5 bg-brand-600 text-white rounded-lg font-medium text-sm hover:bg-brand-700 disabled:opacity-60 transition-colors"
-      >
-        {createTraining.isPending ? "Creating…" : "Create Training"}
-      </button>
+      <div className="flex justify-end pt-2">
+        <button
+          type="submit"
+          disabled={createTraining.isPending}
+          className="px-6 py-2.5 bg-[#1a73e8] hover:bg-[#1557b0] text-white rounded-md font-medium text-[14px] disabled:opacity-60 transition-colors shadow-sm focus:ring-4 focus:ring-blue-100 outline-none"
+        >
+          {createTraining.isPending ? "Creating…" : "Create Training"}
+        </button>
+      </div>
     </form>
   );
 }

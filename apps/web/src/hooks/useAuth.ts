@@ -32,9 +32,9 @@ export function useAuth() {
           setEmailVerified(data.user.emailVerified ?? false);
         })
         .catch((err) => {
-          // Only hard-logout when the refresh token is definitively rejected (401).
+          // Only hard-logout when the refresh token is definitively rejected (401 or 400).
           // Survive network blips / API restarts so live participants aren't kicked out.
-          if (err?.response?.status === 401) {
+          if (err?.response?.status === 401 || err?.response?.status === 400) {
             clearUser();
             clearTokens();
           }
@@ -58,7 +58,7 @@ export function useAuth() {
         })
         .catch((err) => {
           // Same rule: only drop the session on a real auth rejection, ride out blips.
-          if (err?.response?.status === 401) {
+          if (err?.response?.status === 401 || err?.response?.status === 400) {
             clearUser();
             clearTokens();
           }

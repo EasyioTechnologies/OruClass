@@ -251,24 +251,24 @@ function RestoreTrainingCard({ t }: { t: Training }) {
   const restoreTraining = useRestoreTraining(workspaceId);
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm flex flex-col overflow-hidden opacity-70">
-      <div className="h-24 bg-gray-200 flex-shrink-0" />
-      <div className="p-4 flex-1 flex flex-col">
-        <h3 className="text-[15px] font-semibold text-gray-700 leading-snug mb-1">{t.title}</h3>
+    <div className="bg-white rounded-2xl border border-[#dadce0] shadow-sm flex flex-col overflow-hidden opacity-70">
+      <div className="h-32 bg-gray-200 flex-shrink-0" />
+      <div className="p-5 flex-1 flex flex-col">
+        <h3 className="text-[17px] font-bold text-gray-700 leading-snug mb-1">{t.title}</h3>
         <p className="text-xs text-gray-400 mb-3">{t.days?.length || 0} days · Deleted</p>
         {t.labels && t.labels.length > 0 && (
           <div className="flex flex-wrap gap-1.5 mt-auto">
             {t.labels.map((label, idx) => (
-              <span key={idx} className="px-2.5 py-0.5 bg-gray-100 text-gray-500 text-xs rounded-full">{label}</span>
+              <span key={idx} className="px-3 py-1 bg-[#f1f3f4] text-gray-700 text-[11px] font-medium rounded-full">{label}</span>
             ))}
           </div>
         )}
       </div>
-      <div className="px-4 py-3 border-t border-gray-100">
+      <div className="px-5 py-4 border-t border-gray-100">
         <button
           onClick={() => restoreTraining.mutate(t.id)}
           disabled={restoreTraining.isPending}
-          className="w-full py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 disabled:opacity-60 transition-colors text-xs font-semibold"
+          className="w-full py-2 bg-[#1a73e8] text-white rounded-md hover:bg-[#1557b0] disabled:opacity-60 transition-colors text-sm font-medium shadow-sm"
         >
           {restoreTraining.isPending ? "Restoring…" : "Restore"}
         </button>
@@ -290,10 +290,10 @@ function TrainingCard({ t, index }: { t: Training; index: number }) {
 
   return (
     <>
-      <div className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow duration-200 group flex flex-col overflow-hidden">
+      <div className="bg-white rounded-2xl border border-[#dadce0] hover:border-[#1a73e8] hover:shadow-md transition-all duration-200 group flex flex-col overflow-hidden">
         {/* Colored banner */}
         <div
-          className="h-28 relative flex-shrink-0"
+          className="h-32 relative flex-shrink-0"
           style={{ backgroundColor: bannerColor(t.id) }}
         >
           <div className="absolute top-2 right-2 flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity duration-150">
@@ -315,8 +315,8 @@ function TrainingCard({ t, index }: { t: Training; index: number }) {
         </div>
 
         {/* Body */}
-        <div className="p-4 flex-1 flex flex-col">
-          <h3 className="text-[15px] font-semibold text-gray-900 leading-snug mb-1.5">{t.title}</h3>
+        <div className="p-5 flex-1 flex flex-col">
+          <h3 className="text-[17px] font-bold text-gray-900 leading-snug mb-1.5">{t.title}</h3>
           <div className="flex items-center gap-2 mb-2 flex-wrap">
             <span className="text-xs text-gray-500">{t.days?.length || 0} days</span>
             <span className="text-xs text-gray-300">·</span>
@@ -326,12 +326,12 @@ function TrainingCard({ t, index }: { t: Training; index: number }) {
             </span>
           </div>
           {t.description && (
-            <SafeHTML html={t.description} className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-2 flex-1" />
+            <SafeHTML html={t.description} className="text-xs text-gray-500 line-clamp-2 leading-relaxed mb-3 flex-1" />
           )}
           {t.labels && t.labels.length > 0 && (
             <div className="flex flex-wrap gap-1.5 mt-auto pt-1">
               {t.labels.map((label, idx) => (
-                <span key={idx} className="px-2.5 py-0.5 bg-gray-100 text-gray-600 text-xs rounded-full">
+                <span key={idx} className="px-3 py-1 bg-[#f1f3f4] text-gray-700 text-[11px] font-medium rounded-full">
                   {label}
                 </span>
               ))}
@@ -340,18 +340,18 @@ function TrainingCard({ t, index }: { t: Training; index: number }) {
         </div>
 
         {/* Footer */}
-        <div className="px-4 py-3 border-t border-gray-100 flex items-center justify-between">
+        <div className="px-5 py-4 border-t border-gray-100 flex items-center justify-between">
           <Link
             href={`/trainings/${t.id}/studio`}
             data-tour={index === 0 ? "open-studio" : undefined}
-            className="text-xs px-3.5 py-1.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 transition-colors font-semibold"
+            className="text-xs px-5 py-2 bg-[#1a73e8] text-white rounded-md hover:bg-[#1557b0] transition-colors font-medium shadow-sm"
           >
             Open Studio
           </Link>
           <Link
             href={`/trainings/${t.id}/analytics`}
             data-tour={index === 0 ? "analytics" : undefined}
-            className="text-xs text-gray-400 font-medium hover:text-brand-600 flex items-center gap-1 transition-colors"
+            className="text-xs text-gray-400 font-medium hover:text-[#1a73e8] flex items-center gap-1 transition-colors"
           >
             Analytics <ArrowRight size={12} />
           </Link>
@@ -448,59 +448,7 @@ export function WorkspaceDashboard() {
 
   return (
     <div className="space-y-6 max-w-6xl mx-auto pb-12">
-      {/* Subscription Banner */}
-      {isPro && currentPlan ? (
-        <div className="rounded-xl border border-gray-100 bg-white p-4 md:p-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-emerald-50 flex items-center justify-center flex-shrink-0">
-                <Check size={18} className="text-emerald-600" strokeWidth={2.5} />
-              </div>
-              <div className="min-w-0">
-                <div className="flex items-center gap-2 flex-wrap">
-                  <h2 className="text-sm font-semibold text-gray-900">{currentPlan.name}</h2>
-                  <span className="bg-emerald-50 text-emerald-700 text-[10px] font-semibold px-2 py-0.5 rounded-md">Active</span>
-                </div>
-                <p className="text-xs text-gray-500 mt-0.5">
-                  All features unlocked &middot; Renews {currentPlan.period === "month" ? "monthly" : currentPlan.period === "quarter" ? "quarterly" : "yearly"}
-                </p>
-              </div>
-            </div>
-            <Link
-              href="/subscription/billing"
-              className="flex items-center justify-center gap-1.5 border border-gray-100 text-gray-700 px-3.5 py-2 rounded-lg text-xs font-medium hover:bg-gray-50 transition-colors flex-shrink-0 sm:w-auto w-full"
-            >
-              Manage Billing <ArrowRight size={12} />
-            </Link>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 md:p-5">
-          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <div className="flex items-center gap-3 min-w-0">
-              <div className="w-9 h-9 rounded-lg bg-brand-50 flex items-center justify-center flex-shrink-0">
-                <ArrowRight size={18} className="text-brand-600" strokeWidth={2} />
-              </div>
-              <div className="min-w-0">
-                <h2 className="text-sm font-semibold text-gray-900">Upgrade your plan</h2>
-                <p className="text-xs text-gray-500 mt-0.5">Unlock unlimited participants, analytics, and custom branding</p>
-              </div>
-            </div>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
-              <div className="hidden lg:flex items-center gap-3 text-[11px] text-gray-400 mr-1">
-                <span className="flex items-center gap-1"><Check size={11} strokeWidth={2.5} className="text-gray-400" /> 7-day trial</span>
-                <span className="flex items-center gap-1"><Check size={11} strokeWidth={2.5} className="text-gray-400" /> Cancel anytime</span>
-              </div>
-              <Link
-                href="/subscription"
-                className="bg-brand-600 text-white px-4 py-2 rounded-lg text-xs font-semibold hover:bg-brand-700 transition-colors flex items-center justify-center gap-1.5 flex-shrink-0"
-              >
-                View Plans <ArrowRight size={12} />
-              </Link>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Subscription banner moved to header */ }
 
       {/* Page Header */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
@@ -515,7 +463,7 @@ export function WorkspaceDashboard() {
         <div className="flex items-center gap-2">
           <button
             onClick={startTour}
-            className="flex items-center gap-1.5 px-3 py-2 text-gray-500 hover:text-brand-600 text-sm font-medium transition-colors rounded-lg hover:bg-gray-100"
+            className="flex items-center gap-1.5 px-4 py-2 text-gray-600 hover:text-[#1a73e8] text-sm font-medium transition-colors rounded-md hover:bg-gray-100"
             title="Show me around"
           >
             <HelpCircle size={16} />
@@ -524,7 +472,7 @@ export function WorkspaceDashboard() {
           {!showTrash && trash && trash.length > 0 && (
             <button
               onClick={() => setShowTrash(true)}
-              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors border border-gray-100"
+              className="flex items-center gap-1.5 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium transition-colors border border-[#dadce0]"
             >
               <Trash2 size={15} />
               Trash ({trash.length})
@@ -533,7 +481,7 @@ export function WorkspaceDashboard() {
           {showTrash && (
             <button
               onClick={() => setShowTrash(false)}
-              className="flex items-center gap-1.5 px-3 py-2 text-gray-600 hover:bg-gray-100 rounded-lg text-sm font-medium transition-colors border border-gray-100"
+              className="flex items-center gap-1.5 px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md text-sm font-medium transition-colors border border-[#dadce0]"
             >
               Back
             </button>
@@ -542,7 +490,7 @@ export function WorkspaceDashboard() {
             <Link
               href="/trainings/new"
               data-tour="new-training"
-              className="px-4 py-2 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm transition-colors text-sm font-semibold"
+              className="px-5 py-2.5 bg-[#1a73e8] text-white rounded-md hover:bg-[#1557b0] shadow-sm transition-colors text-sm font-medium"
             >
               + New Training
             </Link>
@@ -578,7 +526,7 @@ export function WorkspaceDashboard() {
           <Link
             href="/trainings/new"
             data-tour="new-training"
-            className="px-5 py-2.5 bg-brand-600 text-white rounded-lg hover:bg-brand-700 shadow-sm transition-colors text-sm font-semibold inline-flex"
+            className="px-6 py-2.5 bg-[#1a73e8] text-white rounded-md hover:bg-[#1557b0] shadow-sm transition-colors text-sm font-medium inline-flex"
           >
             Create Training
           </Link>

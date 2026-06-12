@@ -57,7 +57,7 @@ export function ParticipantJoin() {
   const isFull = digits.every((d) => d !== "");
 
   return (
-    <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4 h-full">
+    <div className="bg-white rounded-2xl border border-[#dadce0] shadow-sm p-6 flex flex-col gap-5 h-full hover:shadow-md transition-shadow">
       <div>
         <p className="text-sm font-semibold text-gray-900">Join a Live Session</p>
         <p className="text-xs text-gray-500 mt-0.5">Enter the 6-digit code from your trainer</p>
@@ -76,12 +76,12 @@ export function ParticipantJoin() {
             onKeyDown={(e) => handleKeyDown(i, e)}
             onPaste={handlePaste}
             className={[
-              "w-10 h-12 text-center text-xl font-bold rounded-xl border-2 outline-none transition-colors bg-white",
+              "w-11 h-14 text-center text-xl font-bold rounded-lg border-2 outline-none transition-colors bg-[#f8f9fa]",
               error
                 ? "border-red-300 text-red-600 focus:border-red-400"
                 : d
-                ? "border-brand-400 text-brand-700"
-                : "border-gray-200 text-gray-900 focus:border-brand-400",
+                ? "border-[#1a73e8] text-[#1a73e8] bg-blue-50/30"
+                : "border-[#dadce0] text-gray-900 focus:border-[#1a73e8]",
             ].join(" ")}
           />
         ))}
@@ -92,7 +92,7 @@ export function ParticipantJoin() {
       <button
         onClick={handleSubmit}
         disabled={!isFull || loading}
-        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-lg bg-brand-600 text-white text-sm font-semibold hover:bg-brand-700 disabled:opacity-40 disabled:cursor-not-allowed transition-colors mt-auto"
+        className="flex items-center justify-center gap-2 w-full py-3 rounded-full bg-[#1a73e8] text-white text-[15px] font-medium hover:bg-[#1557b0] disabled:opacity-40 disabled:cursor-not-allowed shadow-sm transition-colors mt-auto"
       >
         {loading ? <Loader2 size={15} className="animate-spin" /> : <LogIn size={15} />}
         Join Session

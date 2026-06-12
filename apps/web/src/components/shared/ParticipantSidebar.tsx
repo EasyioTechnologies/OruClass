@@ -2,9 +2,10 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { GraduationCap, PlayCircle, History } from "lucide-react";
+import { PlayCircle, History } from "lucide-react";
 import { useLayoutStore } from "@/store/layout";
 import { cn } from "@oruclass/utils";
+import { Logo } from "@/components/shared/Logo";
 
 const navItems = [
   { href: "/participant", label: "Current Session", icon: PlayCircle, exact: true },
@@ -33,9 +34,7 @@ export function ParticipantSidebar() {
         {/* Logo */}
         <div className="h-16 flex items-center px-4 border-b border-gray-100 flex-shrink-0">
           <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-brand-600 flex items-center justify-center flex-shrink-0">
-              <GraduationCap size={16} className="text-white" strokeWidth={2} />
-            </div>
+            <Logo size={32} />
             <span className="text-[15px] font-semibold text-gray-900 tracking-tight">OruLabs</span>
           </div>
         </div>
@@ -51,15 +50,15 @@ export function ParticipantSidebar() {
                 href={item.href}
                 onClick={() => setMobileSidebarOpen(false)}
                 className={cn(
-                  "flex items-center gap-3 px-3 py-2 rounded-xl text-sm transition-colors duration-150",
+                  "flex items-center gap-3 px-4 py-2.5 rounded-full text-[14px] transition-colors duration-150",
                   active
-                    ? "bg-brand-50 text-brand-700 font-medium"
-                    : "text-gray-600 hover:bg-gray-50 hover:text-gray-900"
+                    ? "bg-[#e8f0fe] text-[#1a73e8] font-bold"
+                    : "text-gray-700 hover:bg-gray-100 hover:text-gray-900 font-medium"
                 )}
               >
                 <Icon
-                  size={17}
-                  className={active ? "text-brand-600" : "text-gray-400"}
+                  size={18}
+                  className={active ? "text-[#1a73e8]" : "text-gray-500"}
                   strokeWidth={active ? 2.5 : 2}
                 />
                 {item.label}

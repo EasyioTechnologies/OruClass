@@ -24,6 +24,7 @@ export async function getTrainingAnalytics(trainingId: string) {
     const responses = responseRows.filter((r) => r.moduleId === mod.id);
     return {
       moduleId: mod.id,
+      dayId: mod.dayId,
       title: mod.title,
       moduleType: mod.moduleType,
       responseCount: responses.length,

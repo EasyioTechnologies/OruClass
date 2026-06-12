@@ -1,6 +1,6 @@
 "use client";
 
-import { GraduationCap } from "lucide-react";
+import { Logo } from "@/components/shared/Logo";
 import Link from "next/link";
 import { EmailAuthForm } from "./EmailAuthForm";
 
@@ -18,9 +18,7 @@ export function AuthPanel({
       <div className="bg-white rounded-xl border border-gray-100 shadow-sm p-8 space-y-6">
         {/* Brand */}
         <div className="flex flex-col items-center gap-3 text-center">
-          <div className="w-12 h-12 rounded-xl bg-brand-600 flex items-center justify-center">
-            <GraduationCap size={22} className="text-white" strokeWidth={2} />
-          </div>
+          <Logo size={48} />
           <div>
             <h1 className="text-xl font-bold text-gray-900">{title}</h1>
             <p className="text-sm text-gray-500 mt-1">{subtitle}</p>

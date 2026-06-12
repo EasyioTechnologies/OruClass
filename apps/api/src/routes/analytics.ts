@@ -24,9 +24,10 @@ analyticsRouter.get(
       where: eq(trainingAnalytics.trainingId, trainingId),
     });
 
-    // Return stored snapshot's aggregateData (same shape as live result)
-    if (saved?.aggregateData && Object.keys(saved.aggregateData).length > 0) {
-      return c.json(saved.aggregateData);
+    const agg = saved?.aggregateData as any;
+    // Return stored snapshot's aggregateData only if it has the new dayId field
+    if (agg && Object.keys(agg).length > 0 && (!agg.modules || agg.modules.length === 0 || agg.modules[0].dayId !== undefined)) {
+      return c.json(agg);
     }
 
     const live = await getTrainingAnalytics(trainingId);

@@ -1,5 +1,6 @@
 import axios from "axios";
 import { getAccessToken, setTokens, clearTokens } from "./token-storage";
+import { useAuthStore } from "@/store/auth";
 
 const getBaseUrl = () => {
   return process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:3001";
@@ -85,6 +86,7 @@ apiClient.interceptors.response.use(
       const status = axios.isAxiosError(refreshError) ? refreshError.response?.status : undefined;
       if (status === 401 || status === 400) {
         clearTokens();
+        useAuthStore.getState().clearUser();
       }
       return Promise.reject(refreshError);
     } finally {

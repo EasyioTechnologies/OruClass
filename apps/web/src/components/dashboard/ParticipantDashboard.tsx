@@ -58,7 +58,7 @@ export function ParticipantDashboard() {
       {/* Join + Welcome */}
       <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
         {/* Welcome */}
-        <div className="md:col-span-3 bg-white rounded-xl border border-gray-100 shadow-sm p-6 flex flex-col justify-between">
+        <div className="md:col-span-3 bg-white rounded-2xl border border-[#dadce0] shadow-sm hover:shadow-md transition-shadow p-7 flex flex-col justify-between">
           <div>
             <div className="flex items-center gap-2 mb-2">
               <h2 className="text-lg font-semibold text-gray-900">Participant Dashboard</h2>
@@ -77,7 +77,7 @@ export function ParticipantDashboard() {
           <div className="mt-4 pt-4 border-t border-gray-100">
             <p className="text-xs text-gray-400">
               Want to host sessions?{" "}
-              <Link href="/login/trainer" className="text-brand-600 font-medium hover:underline">
+              <Link href="/login/trainer" className="text-[#1a73e8] font-medium hover:underline">
                 Switch to Trainer
               </Link>
             </p>
@@ -101,7 +101,7 @@ export function ParticipantDashboard() {
             <div className="w-5 h-5 border-2 border-brand-600 border-t-transparent rounded-full animate-spin" />
           </div>
         ) : !sessions.length ? (
-          <div className="bg-white rounded-xl border border-gray-100 p-12 text-center">
+          <div className="bg-white rounded-2xl border border-dashed border-[#dadce0] p-12 text-center">
             <BookOpen size={32} className="text-gray-300 mx-auto mb-3" />
             <p className="text-sm font-medium text-gray-500">No active sessions right now</p>
             <p className="text-xs text-gray-400 mt-1">Enter a code above to join a live training</p>
@@ -111,17 +111,17 @@ export function ParticipantDashboard() {
             {sessions.map((t) => (
               <div
                 key={t.id}
-                className="bg-white rounded-xl border border-gray-100 shadow-sm hover:shadow-md transition-shadow flex flex-col overflow-hidden"
+                className="bg-white rounded-2xl border border-[#dadce0] hover:border-[#1a73e8] shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col overflow-hidden"
               >
                 {/* Colored banner */}
-                <div className={cn("h-24 flex items-end px-4 pb-3", bannerColor(t.id))}>
+                <div className={cn("h-28 flex items-end px-5 pb-3", bannerColor(t.id))}>
                   <div className="flex items-center justify-between w-full">
                     <h3 className="text-sm font-semibold text-white truncate" title={t.title}>
                       {t.title}
                     </h3>
                     <span
                       className={cn(
-                        "text-[11px] px-2 py-0.5 rounded-full font-semibold flex-shrink-0 ml-2",
+                        "text-[11px] px-2 py-0.5 rounded-md font-semibold flex-shrink-0 ml-2",
                         t.sessionStatus === "live"
                           ? "bg-green-400/30 text-green-100 border border-green-300/30"
                           : "bg-yellow-400/30 text-yellow-100 border border-yellow-300/30"
@@ -133,7 +133,7 @@ export function ParticipantDashboard() {
                 </div>
 
                 {/* Card body */}
-                <div className="p-4 flex flex-col flex-1">
+                <div className="p-5 flex flex-col flex-1">
                   {t.creator?.name && (
                     <p className="text-xs text-gray-500 mb-1">Trainer: <span className="font-medium text-gray-700">{t.creator.name}</span></p>
                   )}
@@ -141,10 +141,10 @@ export function ParticipantDashboard() {
                     <p className="text-xs text-gray-400">Joined: {formatDate(new Date(t.participantJoinedAt))}</p>
                   )}
 
-                  <div className="mt-auto pt-3">
+                  <div className="mt-auto pt-4">
                     <Link
                       href={`/join/${t.joinToken}`}
-                      className="block w-full text-center py-2 rounded-lg text-sm font-semibold transition-colors bg-brand-600 text-white hover:bg-brand-700"
+                      className="block w-full text-center py-2 bg-[#1a73e8] text-white rounded-md hover:bg-[#1557b0] transition-colors text-sm font-medium shadow-sm"
                     >
                       Rejoin Session
                     </Link>

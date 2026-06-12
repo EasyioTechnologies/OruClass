@@ -1,7 +1,6 @@
 {
   "permissions": {
     "allow": [
-      "*",
       "Bash(xargs ls:*)",
       "Bash(xargs -I{} bash -c \"echo '=== {} ===' && find {} -maxdepth 1 -type f -name '*.tsx' | head -5\")",
       "Bash(xargs -I {} sh -c 'echo \"=== $\\(basename {}\\) ===\" && find {} -maxdepth 1 -type f -name \"*.tsx\" | wc -l && echo')",
@@ -37,7 +36,15 @@
       "Bash(PGPASSWORD=postgres psql -h localhost -p 5433 -U postgres -d oruclass -c \"\\\\d users\")",
       "Bash(PGPASSWORD=oruclass_dev_secret psql -h localhost -p 5433 -U oruclass -d oruclass -c \"\\\\d users\")",
       "Bash(kill %1)",
-      "Bash(PGPASSWORD=oruclass_dev_secret psql:*)"
+      "Bash(PGPASSWORD=oruclass_dev_secret psql:*)",
+      "Bash(grep -E \"\\\\.ts$\")",
+      "Bash(grep -r \"GET\\\\|POST\\\\|PUT\\\\|DELETE\\\\|PATCH\" /f/OruClass/apps/api/src/routes/*.ts)",
+      "Bash(sed -n '59,93p' F:/OruClass/apps/api/src/db/schema.ts)",
+      "Bash(sed -n '138,155p' F:/OruClass/apps/api/src/db/schema.ts)",
+      "Bash(sed -n '185,210p' F:/OruClass/apps/api/src/db/schema.ts)",
+      "Bash(sed -n '210,230p' F:/OruClass/apps/api/src/db/schema.ts)",
+      "Bash(sed -n '249,275p' F:/OruClass/apps/api/src/db/schema.ts)",
+      "Bash(grep -n \"plan\\\\|price\\\\|monthly\\\\|annual\\\\|free\\\\|starter\\\\|pro\\\\|₹\\\\|\\\\$\" F:/OruClass/apps/web/src/components/subscription/PricingPage.tsx)"
     ],
     "mode": "bypass"
   }
